@@ -736,6 +736,34 @@ insertAfter = (qnum, contents) ->
   console.log "insertAfter #qnum #contents"
   contents.insertAfter $("\#body_#qnum")
 
+isVideoFocused = root.isVideoFocused = ->
+  video = $(\.activevideo)
+  if not video? or not video.length? or video.length < 1
+    return false
+  return video.data('focused')
+
+timeSinceVideoFocus = root.timeSinceVideoFocus = ->
+  video = $(\.activevideo)
+  if not video? or not video.length? or video.length < 1
+    return 0
+  if not video.data('focused')
+    return 0
+  if not video.data('timeVideoFocused')
+    return 0
+  return (Date.now() - video.data('timeVideoFocused')) / 1000
+
+setVideoFocused = root.setVideoFocused = (isFocused) ->
+  video = $(\.activevideo)
+  if not video? or not video.length? or video.length < 1
+    return false
+  if isFocused
+    video.data('timeVideoFocused', Date.now())
+    video-top = video.offset().top
+    $(window).scrollTop(video-top)
+  else
+    pauseVideo()
+  video.data('focused', isFocused)
+
 insertVideo = (vidname, partnum, reasonForInsertion) ->
   if partnum?
     {start,end} = root.video_info[vidname].parts[partnum]
@@ -756,17 +784,25 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
   if reasonForInsertion?
     body.append reasonForInsertion
   body.append J('h3#progress_' + qnum).text 'foobar'
+  $('.activevideo').removeClass 'activevideo'
+  videodiv = J \div
   video = J('video')
     .attr('id', "video_#qnum")
     .attr('controls', 'controls')
     .attr('ontimeupdate', 'timeUpdated(' + qnum + ')')
+    .css('width', '100%')
+    .addClass('activevideo')
+    #.data('focused', true)
+    .click (evt) ->
+      setVideoFocused(true)
     .append J('source')
       .attr('src', fileurl)
   #setInterval ->
   #  console.log $("\#video_#qnum")[0].currentTime
   #, 1000
   console.log video
-  body.append video
+  videodiv.append video
+  body.append videodiv
   body.append J 'br'
   if (partnum? and partnum > 0) or (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
@@ -927,7 +963,112 @@ questionCorrect = (question) -> markQuestion question, 'correct'
 
 questionIncorrect = (question) -> markQuestion question, 'incorrect'
 
-insertQuestion = (question, options) ->
+root.overlap-button = null
+
+resetButtonFill = ->
+  autotrigger = $('.autotrigger')
+  if not autotrigger? or not autotrigger.length? or autotrigger.length == 0
+    return
+  button-fill = 0
+  autotrigger.data('button-fill', button-fill)
+  partialFillButton button-fill  
+
+increaseButtonFill = ->
+  autotrigger = $('.autotrigger')
+  if not autotrigger? or not autotrigger.length? or autotrigger.length == 0
+    return
+  button-fill = 0
+  if autotrigger.data('button-fill')?
+    button-fill = autotrigger.data('button-fill')
+  button-fill += 0.1
+  if button-fill >= 1.0
+    autotrigger.removeClass 'autotrigger'
+    autotrigger.click()
+    root.overlap-button.hide()
+    return
+  autotrigger.data('button-fill', button-fill)
+  partialFillButton button-fill
+
+partialFillButton = root.partialFillButton = (fraction) ->
+  autotrigger = $('.autotrigger')
+  if not autotrigger? or not autotrigger.length? or autotrigger.length == 0
+    return
+  if not root.overlap-button?
+    root.overlap-button = J('button.btn.btn-success.btn-lg').css('position', 'absolute')
+    $('.panel-body').append J('#overlapButtonContainer').append root.overlap-button
+  root.overlap-button.text autotrigger.text()
+  root.overlap-button.width autotrigger.width()
+  root.overlap-button.height autotrigger.height()
+  root.overlap-button.offset autotrigger.offset()
+  root.overlap-button.css 'clip', 'rect(0px ' + (autotrigger.outerWidth() * fraction) + 'px auto 0px)' # top right bottom left
+  root.overlap-button.show()
+
+root.inserted-reviews = {}
+
+haveInsertedReview = (qnum) ->
+  if root.inserted-reviews[qnum]?
+    return true
+  return false
+
+reviewInserted = (qnum) ->
+  root.inserted-reviews[qnum] = true
+
+showAnswer = (question, qnum, isCorrect) ->
+  console.log 'answer shown!'
+  feedback = J('div')
+  if isCorrect
+    feedback.append J('span').css('color', 'green').text 'correct'
+    feedback.append J 'br'
+  else
+    feedback.append J('span').css('color', 'red').text 'incorrect'
+    feedback.append J 'br'
+  feedback.append question.explanation
+  answer = $("\#answer_#qnum")
+  answer.text question.explanation
+  answer.html('')
+  answer.append feedback
+
+videoAtFront = ->
+  video = $('.activevideo')
+  if video[0].currentTime < 1.0
+    return true
+  return false
+
+videoAtEnd = ->
+  video = $('.activevideo')
+  if Math.abs(video[0].currentTime - video[0].duration) < 1.0
+    return true
+  return false
+
+scrollVideoForward = ->
+  video = $('.activevideo')
+  video[0].currentTime += 5.0
+
+scrollVideoBackward = ->
+  video = $('.activevideo')
+  video[0].currentTime -= 5.0
+
+isVideoPlaying = ->
+  video = $('.activevideo')
+  return not video[0].paused
+
+playVideoFromStart = ->
+  video = $('.activevideo')
+  video[0].currentTime = 0
+  if video[0].paused
+    video[0].play()
+
+playVideo = ->
+  video = $('.activevideo')
+  if video[0].paused
+    video[0].play()
+
+pauseVideo = ->
+  video = $('.activevideo')
+  if not video[0].paused
+    video[0].pause()
+
+insertQuestion = root.insertQuestion = (question, options) ->
   options = {} if not options?
   qnum = counterNext 'qnum'
   body = J('.panel-body').attr('id', "body_#qnum")
@@ -936,42 +1077,112 @@ insertQuestion = (question, options) ->
   body.append J('br')
   for option,idx in question.options
     createWidget(question.type, qnum, idx, option, body)
-  body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).attr('disabled', true).text('check answer').click (evt) ->
-    answer = $("\#answer_#qnum")
-    answer.text question.explanation
-    answers = getAnswerValue question.type, qnum
-    console.log answers
-    feedback = J('div')
-    if isAnswerCorrect question, answers
-      feedback.append J('span').css('color', 'green').text 'correct'
-      feedback.append J 'br'
-      questionCorrect question
-      insertQuestion getNextQuestion()
-    else
-      feedback.append J('span').css('color', 'red').text 'incorrect'
-      feedback.append J 'br'
-      questionIncorrect question
-      insertReview question
-    feedback.append question.explanation
-    answer.html('')
-    answer.append feedback
-    disableQuestion qnum
-  if not options.skip-video?
-    body.append J('button.btn.btn-primary.btn-lg#review_' + qnum).css('margin-left', '15px').text("watch video").click (evt) ->
+  insertCheckAnswerButton = ->
+    body.append J('button.btn.btn-default.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check answer').click (evt) ->
+      answers = getAnswerValue question.type, qnum
+      console.log answers
+      if isAnswerCorrect question, answers
+        showAnswer question, qnum, true
+        questionCorrect question
+        insertQuestion getNextQuestion()
+        disableQuestion qnum
+      else
+        showAnswer question, qnum, false
+        questionIncorrect question
+        if not haveInsertedReview qnum
+          disableQuestion qnum
+          insertReview question
+          reviewInserted (counterCurrent \qnum)
+  insertWatchVideoButton = (autotrigger) ->
+    watch-video-button = J('button.btn.btn-default.btn-lg#review_' + qnum).css('margin-right', '15px').text("watch video").click (evt) ->
       insertReview question
       #disableQuestion qnum
       hideQuestion qnum
-  body.append J('button.btn.btn-primary.btn-lg#skip_' + qnum).css('margin-left', '15px').text('already know answer').click (evt) ->
-    console.log 'skipping question'
-    disableQuestion qnum
-    questionSkip question
-    insertQuestion getNextQuestion()
+      setVideoFocused(true)
+      #$(window).scrollTop $('.activevideo').offset().top
+    if autotrigger
+      watch-video-button.addClass 'autotrigger'
+      watch-video-button.removeClass 'btn-default'
+      watch-video-button.addClass 'btn-primary'
+    body.append watch-video-button
+  insertSkipButton = ->
+    body.append J('button.btn.btn-default.btn-lg#skip_' + qnum).css('margin-right', '15px').text('already know answer').click (evt) ->
+      console.log 'skipping question'
+      disableQuestion qnum
+      questionSkip question
+      insertQuestion getNextQuestion()
+  if root.question_progress[question.idx].correct.length > 0
+    insertCheckAnswerButton()
+    if not options.skip-video?
+      insertWatchVideoButton()
+  else
+    if not options.skip-video?
+      insertWatchVideoButton(true)
+    insertCheckAnswerButton()
+  if root.question_progress[question.idx].correct.length > 0
+    insertSkipButton()
   body.append J("\#answer_#qnum")
   $('#quizstream').append /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/ body
 
 $(document).ready ->
   console.log 'ready'
   insertQuestion getNextQuestion()
+  $(document).mousewheel (evt) ->
+    #console.log evt
+    if $('.activevideo').length > 0
+      window-top = $(window).scrollTop()
+      video-top = $('.activevideo').offset().top
+      window-bottom = window-top + $(window).height()
+      video-bottom = video-top + $('.activevideo').height()
+      #if Math.abs(window-bottom - video-bottom) < 50
+      invideo = false
+      if isVideoFocused()
+        if evt.deltaY < 0 and videoAtEnd()
+          setVideoFocused false
+        else if evt.deltaY > 0 and videoAtFront()
+          setVideoFocused false
+        else
+          invideo = true
+      if timeSinceVideoFocus() > 1.0 and not (video-top <= parseFloat(evt.pageY) <= video-bottom)
+        invideo = false
+        console.log 'evt.pageY is:' + parseFloat(evt.pageY)
+        console.log 'video-bottom is:' + video-bottom
+        console.log 'video-top is:' + video-top
+        setVideoFocused(false)
+      /*
+      if evt.deltaY < 0 and (Math.abs(window-top - video-top) <= 20) and not videoAtEnd() # scrolling downwards
+        invideo = true
+      if evt.deltaY > 0 and (Math.abs(window-top - video-top) <= 20) and not videoAtFront()
+        invideo = true
+      */
+      if invideo
+        $(window).scrollTop(video-top)
+        if not isVideoPlaying() and not videoAtEnd()
+          playVideoFromStart()
+        else
+          if evt.deltaY < 0
+            #if videoAtEnd()
+            #  return
+            scrollVideoForward()
+          else
+            #if videoAtFront()
+            #  return
+            scrollVideoBackward()
+        evt.preventDefault()
+        return false
+      else
+        pauseVideo()
+    if evt.deltaY < 0
+      increaseButtonFill()
+    else
+      resetButtonFill()
+    if not isVideoFocused()
+      if evt.deltaY < 0
+        $(window).scrollTop $(window).scrollTop()+10
+      else if evt.deltaY > 0
+        $(window).scrollTop $(window).scrollTop()-10
+    evt.preventDefault()
+    return false
   #insertQuestion questions[0]
   #for question in root.questions.slice 0,1
   #  insertQuestion question
