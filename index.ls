@@ -4,6 +4,8 @@ J = $.jade
 
 {sum} = require \prelude-ls
 
+# Date.now = Date.now || -> +new Date
+
 stringEach = (l) ->
   output = []
   for x in l
@@ -680,7 +682,51 @@ root.questions = [
 ]
 */
 
+root.logged-data = []
 
+root.username = 'defaultuser'
+
+randomFromList = (list) ->
+  return list[Math.floor(Math.random() * list.length)]
+
+randomString = (length) ->
+  alphabet = [\a to \z] ++ [\A to \Z] ++ [\0 to \9]
+  return [randomFromList(alphabet) for x in [0 til length]].join('')
+
+do ->
+  if $.cookie('username')?
+    root.username = $.cookie('username')
+  else
+    root.username = randomString(14)
+    $.cookie('username', root.username)
+
+
+getlog = root.getlog = (callback) ->
+  $.getJSON '/viewlog?' + $.param({username: root.username}), (logs) ->
+    for line in logs
+      console.log JSON.stringify(line)
+    callback logs
+
+postJSON = (jsondata, url) ->
+  $.ajax {
+    type: 'POST'
+    url: url
+    data: JSON.stringify(jsondata)
+    success: (data) -> console.log data
+    contentType: 'application/json'
+    dataType: 'json'
+  }
+
+addlog = root.addlog = (logdata) ->
+  data = $.extend {}, logdata
+  if not data.username?
+    data.username = root.username
+  if not data.time?
+    data.time = Date.now()
+  if not data.timeloc?
+    data.timeloc = new Date().toString()
+  root.logged-data.push data
+  postJSON data, '/addlog'
 
 root.counter_values = {}
 
@@ -697,25 +743,8 @@ counterCurrent = root.counterCurrent = (name) ->
   return root.counter_values[name]
 
 toPercent = (num) ->
-  return (num * 100).toFixed(2)
-
-timeUpdatedReal = (qnum) ->
-  video = $("\#video_#qnum")
-  console.log video[0].currentTime
-  console.log qnum
-  if not video.data('duration')?
-    video.data 'duration', video[0].duration
-  if not video.data('viewed')?
-    video.data('viewed', [0]*(Math.round(video.data 'duration')+1))
-  curtime = video[0].currentTime
-  viewed = video.data('viewed')
-  viewed[Math.round(curtime)] = 1
-  percent-viewed = sum(viewed) / viewed.length
-  $('#progress_' + qnum).text(toPercent(percent-viewed) + '% seen')
-  $('.watch_' + getVidnamePart(qnum)).text('watch video (' + toPercent(percent-viewed) + '% seen)')
-  console.log percent-viewed
-
-timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 1000
+  #return (num * 100).toFixed(2)
+  return (num * 100).toFixed(0)
 
 toSeconds = (time) ->
   if not time?
@@ -733,6 +762,71 @@ toSeconds = (time) ->
     if timeParts.length == 3
       return timeParts[0]*3600 + timeParts[1]*60 + timeParts[2]
   return null
+
+getVideoEnd = (vidinfo) ->
+  return toSeconds(vidinfo.parts[*-1].end)
+
+getVideoStartEnd = (vidname, vidpart) ->
+  vidinfo = root.video_info[vidname]
+  if vidpart?
+    {start,end} = vidinfo.parts[vidpart]
+    return [toSeconds(start), toSeconds(end)]
+  else
+    start = 0
+    end = getVideoEnd vidinfo
+    return [toSeconds(start), toSeconds(end)]
+
+root.video-parts-seen = []
+console.log 'vidinfo!!!---------------------==================='
+do ->
+  for vidname,vidinfo of root.video_info
+    seen = [0] * (Math.round(getVideoEnd(vidinfo)) + 1)
+    root.video-parts-seen[vidname] = seen
+
+getVideoProgress = root.getVideoProgress = (vidname, vidpart) ->
+  [start,end] = getVideoStartEnd vidname, vidpart
+  viewing-history = root.video-parts-seen[vidname]
+  relevant-section = viewing-history[Math.round(start) to Math.round(end)]
+  return sum(relevant-section) / relevant-section.length
+
+markVideoSecondWatched = root.markVideoSecondWatched = (vidname, vidpart, second) ->
+  [start,end] = getVideoStartEnd vidname, vidpart
+  viewing-history = root.video-parts-seen[vidname]
+  viewing-history[Math.round(second + start)] = 1
+
+setWatchButtonProgress = root.setWatchButtonProgress = (vidname, vidpart, percent-viewed) ->
+  $('.watch_' + toVidnamePart(vidname, vidpart)).text('watch video (' + toPercent(percent-viewed) + '% seen)')
+
+updateWatchButtonProgress = root.updateWatchButtonProgress = (vidname, vidpart) ->
+  console.log "setWatchButtonProgress(#vidname, #vidpart)"
+  percent-viewed = getVideoProgress vidname, vidpart
+  console.log 'percent-viewed: ' + percent-viewed
+  setWatchButtonProgress vidname, vidpart, percent-viewed
+
+timeUpdatedReal = (qnum) ->
+  video = $("\#video_#qnum")
+  #body = getBody qnum
+  vidname = getVidname qnum
+  vidpart = getVidpart qnum
+  /*
+  if not video.data('duration')?
+    video.data 'duration', video[0].duration
+  if not video.data('viewed')?
+    video.data('viewed', [0]*(Math.round(video.data 'duration')+1))
+  viewed = video.data('viewed')
+  if video.length > 0
+    curtime = video[0].currentTime
+    viewed[Math.round(curtime)] = 1
+  percent-viewed = sum(viewed) / viewed.length
+  */
+  if video.length > 0
+    curtime = video[0].currentTime
+    markVideoSecondWatched vidname, vidpart, curtime
+  percent-viewed = getVideoProgress vidname, vidpart
+  $('#progress_' + qnum).text(toPercent(percent-viewed) + '% seen')
+  setWatchButtonProgress vidname, vidpart, percent-viewed
+
+timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 1000
 
 setStartTime = root.setStartTime = (time, qnum) ->
   video = $("\#video_#qnum")
@@ -771,16 +865,12 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
   video.data('focused', isFocused)
 
 insertVideo = (vidname, partnum, reasonForInsertion) ->
-  if partnum?
-    {start,end} = root.video_info[vidname].parts[partnum]
-  else
-    start = 0
-    end = root.video_info[vidname].parts[*-1].end
+  [start,end] = getVideoStartEnd vidname, partnum
   qnum = counterNext 'qnum'
   body = J('.panel-body').attr('id', "body_#qnum").data(\type, \video).data(\vidname, vidname).data(\vidpart, partnum)
   console.log vidname
   basefilename = root.video_info[vidname].filename
-  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: toSeconds(start), end: toSeconds(end)}
+  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: start, end: end}
   title = root.video_info[vidname].title
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title
@@ -885,10 +975,26 @@ getBody = (qnum) ->
 getQidx = (qnum) ->
   return $("\#body_#qnum").data \qidx
 
+getVidnameForQuestion = (question) ->
+  vidinfo = question.videos[0]
+  vidname = vidinfo.name
+  return vidname
+
+getVidpartForQuestion = (question) ->
+  vidinfo = question.videos[0]
+  vidpart = vidinfo.part
+  return vidpart
+
 getVidnamePartForQuestion = (question) ->
   vidinfo = question.videos[0]
   vidname = vidinfo.name
   vidpart = vidinfo.part
+  if vidpart?
+    return vidname + '_' + vidpart
+  else
+    return vidname
+
+toVidnamePart = (vidname, vidpart) ->
   if vidpart?
     return vidname + '_' + vidpart
   else
@@ -1033,8 +1139,76 @@ getNextQuestion = ->
   #qidx = Math.random() * root.questions.length |> Math.floor
   return root.questions[qidx]
 
+interleavedConcat = (list1, list2) ->
+  output = []
+  l1 = 0
+  l2 = 0
+  while l1 < list1.length or l2 < list2.length
+    if l1 == list1.length and l2 == list2.length
+      break
+    else if l1 == list1.length
+      output.push list2[l2++]
+    else if l2 == list2.length
+      output.push list1[l1++]
+    else if (l1 + l2) % 0 == 0
+      output.push list1[l1++]
+    else
+      output.push list2[l2++]
+  return output
+
+toBrainData = (list, outval) ->
+  return {input: list, output: [outval]}
+
+getInitialTrainData = ->
+  # features:
+  # % of immediate dependent video watched
+  # has been correctly answered previously [1 or 0]
+  # ratio of correct vs incorrect responses 
+  positive-instances-raw = [
+    [1.0, 0.0, 0.0]
+    [1.0, 1.0, 0.5]
+
+  ]
+  positive-instances = [toBrainData(x, 1.0) for x in positive-instances-raw]
+  negative-instances-raw = [
+    [0.0, 0.0, 0.0]
+  ]
+  negative-instances = [toBrainData(x, 0.0) for x in negative-instances-raw]
+  return interleavedConcat positive-instances, negative-instances
+
+getClassifier = root.getClassifier = ->
+  net = new brain.NeuralNetwork()
+  net.train getInitialTrainData()
+  return net
+
+/*
+tovol = root.tovol = (l) -> return new convnetjs.Vol(l)
+
+getInitialTrainData = ->
+  # features: % of immediate dependent video watched, has been correctly answered previously, was answered correctly last time, % correctly answered thus far, 
+  answered_correctly_data = [tovol([1.0])]
+  answered_incorrectly_data = [tovol([0.0])]
+  return [interleavedConcat(answered_correctly_data, answered_incorrectly_data), interleavedConcat([1]*answered_correctly_data.length, [0]*answered_incorrectly_data.length)] # data, labels
+
+getMagicNet = root.getMagicNet = ->
+  [train_data,train_labels] = getInitialTrainData()
+  magic-net = new convnetjs.MagicNet(train_data, train_labels)
+  console.log train_data
+  console.log train_labels
+  magic-net.onFinishBatch ->
+    console.log 'batch finished!'
+    testData = tovol([1.0])
+    results = magic-net.predict_soft(testData)
+    #console.log results.w[0]
+    console.log results
+  setInterval ->
+    #console.log 'magic-net step!'
+    magic-net.step()
+  , 0
+*/
+
 createRadio = (qnum, idx, option, body) ->
-  body.append J("input(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#qnum").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
+  body.append J("input.radiogroup_#{qnum}(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#{qnum}").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
     setDefaultButton qnum, \check
     #$('#check_' + qnum).attr('disabled', false)
   body.append J("label(style='display: inline-block; font-weight: normal' for='radio_#{qnum}_#{idx}')").html option
@@ -1042,7 +1216,7 @@ createRadio = (qnum, idx, option, body) ->
 
 createCheckbox = (qnum, idx, option, body) ->
   console.log option
-  body.append J("input(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
+  body.append J("input.checkboxgroup_#{qnum}(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
     setDefaultButton qnum, \check
     #$('#check_' + qnum).attr('disabled', false)
   body.append J("label(style='display: inline-block; font-weight: normal' for='checkbox_#{qnum}_#{idx}')").html option
@@ -1175,7 +1349,7 @@ showAnswer = (qnum) ->
   question = root.questions[qidx]
   body = getBody qnum
   if question.type == \checkbox
-    $("\#checkboxgroup_#{qnum}").prop \checked, false
+    $(".checkboxgroup_#{qnum}").prop \checked, false
     for answeridx in question.correct
       $("\#checkbox_#{qnum}_#{answeridx}").prop \checked, true
   else if question.type == \radio
@@ -1315,6 +1489,9 @@ insertQuestion = root.insertQuestion = (question, options) ->
   body.append J('h3').text question.title
   body.append J('span').text question.text
   body.append J('br')
+  vidname = getVidnameForQuestion(question)
+  vidpart = getVidpartForQuestion(question)
+  vidnamepart = getVidnamePartForQuestion(question)
   for option,idx in question.options
     createWidget(question.type, qnum, idx, option, body)
   insertShowAnswerButton = ->
@@ -1347,8 +1524,9 @@ insertQuestion = root.insertQuestion = (question, options) ->
         #  insertReview question
         #  reviewInserted (counterCurrent \qnum)
   insertWatchVideoButton = (autotrigger) ->
-    watch-video-button = J('button.btn.btn-default.btn-lg#watch_' + qnum).addClass('watch_' + getVidnamePartForQuestion(question)).css('margin-right', '15px').text("watch video").click (evt) ->
+    watch-video-button = J('button.btn.btn-default.btn-lg#watch_' + qnum).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px')/*.text("watch video (0% seen)")*/.click (evt) ->
       showChildVideo qnum
+      playVideo()
       #playVideoFromStart()
     if autotrigger
       setDefaultButton watch-video-button
@@ -1386,6 +1564,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   insertShowAnswerButton()
   insertNextQuestionButton()
   $('#quizstream').append /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/ body
+  updateWatchButtonProgress(vidname, vidpart)
   if root.question_progress[question.idx].correct.length > 0
     showButton qnum, \show
     setDefaultButton qnum, \show

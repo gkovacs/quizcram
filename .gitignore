@@ -3,3 +3,6 @@ bower_components/
 index.css
 index.js
 node_modules/
+mongologin.json
+mongologin.json.ls
+static/

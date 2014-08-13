@@ -1,0 +1,7 @@
+#!/usr/bin/env python
+
+import json
+from subprocess import call
+
+login = json.load(open('mongologin.json'))
+call(['mongo', login['mongoserver'], '-u', login['mongouser'], '-p', login['mongopassword']])

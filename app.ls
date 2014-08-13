@@ -4,6 +4,40 @@ fs = require 'fs'
 app = express()
 exec = require('child_process').exec
 
+bodyParser = require 'body-parser'
+
+MongoClient = require(\mongodb).MongoClient
+
+getMongoDbReal = (callback) ->
+  {mongourl} = JSON.parse(fs.readFileSync(\mongologin.json, \utf-8))
+  #mongourl = 
+  MongoClient.connect mongourl, (err, db) ->
+    if err
+      throw err
+    callback db
+
+getMongoDb = (callback) ->
+  if root.mongo-db?
+    callback root.mongo-db
+  else
+    getMongoDbReal (db) ->
+      root.mongo-db = db
+      callback db
+
+getLogsCollectionReal = (callback) ->
+  getMongoDb (db) ->
+    callback db.collection('logs')
+
+getLogsCollection = (callback) ->
+  if root.logs-collection?
+    callback root.logs-collection
+  else
+    getLogsCollectionReal (logs) ->
+      root.logs-collection = logs
+      callback logs
+
+app.use(bodyParser.json())
+
 app.use(express.static(path.join(__dirname, ''))) #  "public" off of current is root
 
 #app.use(require('stylus').middleware(__dirname))
@@ -12,6 +46,41 @@ app.set 'view engine', 'jade'
 app.set 'views', __dirname
 
 app.locals.pretty = true
+
+app.get '/ipaddress', (req, res) ->
+  res.send req.ip
+
+app.post '/addlog', (req, res) ->
+  if Object.keys(req.body).length == 0
+    res.send 'need to provide data'
+  if not req.body.ip?
+    req.body.ip = req.ip
+  getLogsCollection (logs) ->
+    logs.insert req.body, (err, docs) ->
+      #res.send JSON.stringify(req.body)
+      res.send 'done'
+
+app.get '/addlogget', (req, res) ->
+  if Object.keys(req.query).length == 0
+    res.send 'need to provide data'
+  if not req.query.ip?
+    req.query.ip = req.ip
+  getLogsCollection (logs) ->
+    logs.insert req.query, (err, docs) ->
+      #res.send JSON.stringify(req.query)
+      res.send 'done'
+
+app.get '/viewlog', (req, res) ->
+  if not req.query.username?
+    res.send 'need to provide username'
+  getLogsCollection (logs) ->
+    logs.find({username: req.query.username}).toArray (err, results) ->
+      res.send JSON.stringify(results)
+
+app.get '/viewlogall', (req, res) ->
+  getLogsCollection (logs) ->
+    logs.find().toArray (err, results) ->
+      res.send JSON.stringify(results)
 
 get_index = (req, res) ->
   res.render 'index', {}
@@ -67,7 +136,7 @@ makeSegment = (video, start, end, output, callback) ->
   #callCommand command, options, ->
   #  callCommand 'qtfaststart', [output], callback
 
-serverRootStatic = 'http://10.172.99.34:80/'
+serverRootStatic = 'http://10.172.99.36:80/'
 
 segmentVideo = (req, res) ->
   console.log 'segmentvideo'
