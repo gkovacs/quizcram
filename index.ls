@@ -682,8 +682,6 @@ root.questions = [
 ]
 */
 
-root.logged-data = []
-
 root.username = 'defaultuser'
 
 randomFromList = (list) ->
@@ -700,24 +698,64 @@ do ->
     root.username = randomString(14)
     $.cookie('username', root.username)
 
-
 getlog = root.getlog = (callback) ->
   $.getJSON '/viewlog?' + $.param({username: root.username}), (logs) ->
     for line in logs
       console.log JSON.stringify(line)
     callback logs
 
-postJSON = (jsondata, url) ->
+postJSON = root.postJSON = (url, jsondata, callback) ->
   $.ajax {
     type: 'POST'
     url: url
     data: JSON.stringify(jsondata)
-    success: (data) -> console.log data
+    success: (data) ->
+      if callback?
+        callback data
+      else
+        console.log data
     contentType: 'application/json'
-    dataType: 'json'
+    #dataType: 'json'
   }
 
+clearlog = root.clearlog = ->
+  postJSON '/clearlog', {
+    username: root.username
+  }
+
+root.logged-data = []
+root.logging-disabled = false
+
+ensureLoggedToServer = (list, name) ->
+  if not name?
+    name = randomString(14)
+  if not root.server-received-logidx?
+    root.server-received-logidx = {}
+  if root.server-received-logidx[name]?
+    console.log 'already ensuring logged to server: ' + name
+    return
+  root.server-received-logidx[name] = -1
+  setInterval ->
+    nextidx = root.server-received-logidx[name] + 1
+    if nextidx < list.length
+      # have new data to send
+      console.log 'sending item ' + nextidx
+      postJSON '/addlog', list[nextidx], (updated-idx) ->
+        console.log 'updated-idx: ' + updated-idx
+        updated-idx = parseInt(updated-idx)
+        if isFinite(updated-idx)
+          root.server-received-logidx[name] = updated-idx
+  , 350
+
+addlogReal = root.addlogReal = (data) ->
+  if not data.logidx?
+    data.logidx = root.logged-data.length
+  root.logged-data.push data
+  #postJSON '/addlog', data
+
 addlog = root.addlog = (logdata) ->
+  if root.logging-disabled
+    return
   data = $.extend {}, logdata
   if not data.username?
     data.username = root.username
@@ -725,8 +763,10 @@ addlog = root.addlog = (logdata) ->
     data.time = Date.now()
   if not data.timeloc?
     data.timeloc = new Date().toString()
-  root.logged-data.push data
-  postJSON data, '/addlog'
+  if not data.automatic? and root.automatic-trigger
+    data.automatic = true
+    root.automatic-trigger = false
+  addlogReal data
 
 root.counter_values = {}
 
@@ -736,6 +776,9 @@ counterNext = root.counterNext = (name) ->
   else
     root.counter_values[name] += 1
   return root.counter_values[name]
+
+counterSet = root.counterSet = (name, val) ->
+  root.counter_values[name] = val
 
 counterCurrent = root.counterCurrent = (name) ->
   if not root.counter_values[name]
@@ -969,6 +1012,9 @@ insertReview = (question) ->
 getType = (qnum) ->
   return $("\#body_#qnum").data \type
 
+bodyExists = (qnum) ->
+  return $("\#body_#qnum").length > 0
+
 getBody = (qnum) ->
   return $("\#body_#qnum")
 
@@ -1066,7 +1112,7 @@ disableAnswerOptions = (qnum) ->
   $("input[type=radio][name=radiogroup_#qnum]").attr('disabled', true)
   $("input[type=checkbox][name=checkboxgroup_#qnum]").attr('disabled', true)
 
-disableQuestion = (qnum) ->
+disableQuestion = root.disableQuestion = (qnum) ->
   type = getType qnum
   body = getBody qnum
   switch type
@@ -1209,6 +1255,12 @@ getMagicNet = root.getMagicNet = ->
 
 createRadio = (qnum, idx, option, body) ->
   body.append J("input.radiogroup_#{qnum}(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#{qnum}").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
+    addlog {
+      event: \radiobox
+      type: \selection
+      qnum: qnum
+      optionidx: idx
+    }
     setDefaultButton qnum, \check
     #$('#check_' + qnum).attr('disabled', false)
   body.append J("label(style='display: inline-block; font-weight: normal' for='radio_#{qnum}_#{idx}')").html option
@@ -1217,6 +1269,12 @@ createRadio = (qnum, idx, option, body) ->
 createCheckbox = (qnum, idx, option, body) ->
   console.log option
   body.append J("input.checkboxgroup_#{qnum}(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
+    addlog {
+      event: \checkbox
+      type: \selection
+      qnum: qnum
+      optionidx: idx
+    }
     setDefaultButton qnum, \check
     #$('#check_' + qnum).attr('disabled', false)
   body.append J("label(style='display: inline-block; font-weight: normal' for='checkbox_#{qnum}_#{idx}')").html option
@@ -1269,6 +1327,7 @@ questionCorrect = (question) -> markQuestion question, 'correct'
 questionIncorrect = (question) -> markQuestion question, 'incorrect'
 
 root.overlap-button = null
+root.automatic-trigger = false
 
 resetButtonFill = ->
   if root.overlap-button?
@@ -1291,7 +1350,9 @@ increaseButtonFill = ->
   if button-fill >= 1.0
     resetButtonFill()
     #disableButtonAutotrigger()
+    root.automatic-trigger = true
     autotrigger.click()
+    root.automatic-trigger = false
     return
   console.log 'increaseButtionFill ' + button-fill
   console.log 'autotrigger offset: ' + autotrigger.offset().top
@@ -1484,7 +1545,11 @@ showChildVideo = root.showChildVideo = (qnum) ->
 
 insertQuestion = root.insertQuestion = (question, options) ->
   options = {} if not options?
-  qnum = counterNext 'qnum'
+  if options.qnum?
+    qnum = options.qnum
+    counterSet 'qnum', qnum
+  else
+    qnum = counterNext 'qnum'
   body = J('.panel-body').attr('id', "body_#qnum").data('qidx', question.idx).data(\type, \question)
   body.append J('h3').text question.title
   body.append J('span').text question.text
@@ -1494,17 +1559,37 @@ insertQuestion = root.insertQuestion = (question, options) ->
   vidnamepart = getVidnamePartForQuestion(question)
   for option,idx in question.options
     createWidget(question.type, qnum, idx, option, body)
+  addlog {
+    event: 'insertquestion'
+    type: 'question'
+    qidx: question.idx
+    qnum: qnum
+  }
   insertShowAnswerButton = ->
     body.append J('button.btn.btn-default.btn-lg#show_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.text('see solution').click (evt) ->
       questionSkip question
       showAnswer qnum
       showButton qnum, \next
       setDefaultButton qnum, \next
+      addlog {
+        event: 'show'
+        type: 'button'
+        qidx: question.idx
+        qnum: qnum
+      }
   insertCheckAnswerButton = ->
     body.append J('button.btn.btn-default.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check my answer').click (evt) ->
       answers = getAnswerValue question.type, qnum
       console.log answers
       if isAnswerCorrect question, answers
+        addlog {
+          event: 'check'
+          type: 'button'
+          correct: true
+          qidx: question.idx
+          answers: answers
+          qnum: qnum
+        }
         showIsCorrect qnum, true
         questionCorrect question
         #insertQuestion getNextQuestion()
@@ -1515,6 +1600,14 @@ insertQuestion = root.insertQuestion = (question, options) ->
         setDefaultButton qnum, \next
         disableAnswerOptions qnum
       else
+        addlog {
+          event: 'check'
+          type: 'button'
+          correct: false
+          qidx: question.idx
+          answers: answers
+          qnum: qnum
+        }
         showIsCorrect qnum, false
         questionIncorrect question
         setDefaultButton qnum, \watch
@@ -1525,6 +1618,12 @@ insertQuestion = root.insertQuestion = (question, options) ->
         #  reviewInserted (counterCurrent \qnum)
   insertWatchVideoButton = (autotrigger) ->
     watch-video-button = J('button.btn.btn-default.btn-lg#watch_' + qnum).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px')/*.text("watch video (0% seen)")*/.click (evt) ->
+      addlog {
+        event: 'watch'
+        type: 'button'
+        qidx: question.idx
+        qnum: qnum
+      }
       showChildVideo qnum
       playVideo()
       #playVideoFromStart()
@@ -1533,6 +1632,12 @@ insertQuestion = root.insertQuestion = (question, options) ->
     body.append watch-video-button
   insertNextQuestionButton = ->
     body.append J('button.btn.btn-default.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.text('next question').click (evt) ->
+      addlog {
+        event: 'next'
+        type: 'button'
+        qidx: question.idx
+        qnum: qnum
+      }
       disableQuestion qnum
       insertQuestion getNextQuestion()
   /*
@@ -1582,9 +1687,25 @@ isMouseInVideo = (evt) ->
 isScrollAtBottom = ->
   return $(window).scrollTop() + $(window).height() == $(document).height()
 
+replayLogs = (logs) ->
+  for log in logs
+    console.log 'replaying: ' + JSON.stringify(log)
+    switch log.event
+    | \insertquestion =>
+      if bodyExists(log.qnum)
+        continue
+      insertQuestion root.questions[log.qidx], {qnum: log.qnum}
+    | \check =>
+      (getButton log.qnum, \check).click()
+    | \show =>
+      (getButton log.qnum, \show).click()
+    | \next =>
+      (getButton log.qnum, \next).click()
+    | _ =>
+      console.log(log)
+
 $(document).ready ->
   console.log 'ready'
-  insertQuestion getNextQuestion()
   $(document).mousedown (evt) ->
     console.log 'document mousedown'
     resetButtonFill()
@@ -1657,6 +1778,16 @@ $(document).ready ->
     finally
       evt.preventDefault()
       return false
+  getlog (logs) ->
+    if logs.length > 0
+      root.logging-disabled = true
+      console.log 'replaying logs!'
+      root.logged-data = logs
+      replayLogs(logs)
+      root.logging-disabled = false
+    else
+      insertQuestion getNextQuestion()
+    ensureLoggedToServer(root.logged-data, 'logged-data')
   #insertQuestion questions[0]
   #for question in root.questions.slice 0,1
   #  insertQuestion question

@@ -50,36 +50,96 @@ app.locals.pretty = true
 app.get '/ipaddress', (req, res) ->
   res.send req.ip
 
-app.post '/addlog', (req, res) ->
-  if Object.keys(req.body).length == 0
-    res.send 'need to provide data'
-  if not req.body.ip?
-    req.body.ip = req.ip
+app.post '/clearlog', (req, res) ->
+  username = req.body.username
+  if not username?
+    res.send 'need to provide username'
+    return
   getLogsCollection (logs) ->
-    logs.insert req.body, (err, docs) ->
-      #res.send JSON.stringify(req.body)
+    logs.remove {username: username}, (err, docs) ->
+      if user-to-logidx[username]?
+        delete user-to-logidx[username]
       res.send 'done'
 
-app.get '/addlogget', (req, res) ->
-  if Object.keys(req.query).length == 0
-    res.send 'need to provide data'
-  if not req.query.ip?
-    req.query.ip = req.ip
+app.post '/testpost', (req, res) ->
+  res.send 'yay post! you sent: ' + JSON.stringify(req.body)
+
+user-to-logidx = {}
+
+getLogIdxForUsernameReal = (username, callback) ->
   getLogsCollection (logs) ->
-    logs.insert req.query, (err, docs) ->
-      #res.send JSON.stringify(req.query)
-      res.send 'done'
+    logs.find({username: username}).sort({logidx: 1}).toArray (err, results) ->
+      topidx = -1
+      for val in results
+        if val.logidx == topidx + 1
+          topidx = val.logidx
+      user-to-logidx[username] = topidx
+      callback topidx
+
+getLogIdxForUsername = (username, callback) ->
+  if user-to-logidx[username]?
+    callback(user-to-logidx[username])
+    return
+  getLogIdxForUsernameReal username, (topidx) ->
+    callback topidx
+
+app.get '/getlogidx', (req, res) ->
+  username = req.query.username
+  getLogIdxForUsername username, (topidx) ->
+    res.send topidx.toString()
+
+padTo10 = (num) ->
+  s = num + ''
+  for i in [s.length til 10]
+    s = '0' + s
+  return s
+
+app.post '/addlog', (req, res) ->
+  #if Object.keys(req.body).length == 0
+  #  res.send 'need to provide data'
+  #  return
+  logidx = req.body.logidx
+  username = req.body.username
+  if not logidx?
+    res.send 'need to provide logidx'
+    return
+  if not username?
+    res.send 'need to provide username'
+    return
+  if not req.body.ip?
+    req.body.ip = req.ip
+  if not req.body._id?
+    req.body._id = username + '_' + padTo10(logidx)
+  getLogIdxForUsername username, (topidx) ->
+    if logidx != topidx + 1
+      #res.send 'out of order'
+      res.send topidx.toString()
+      return
+    getLogsCollection (logs) ->
+      logs.insert req.body, (err, docs) ->
+        # res.send JSON.stringify(req.body)
+        if not err?
+          user-to-logidx[username] = logidx
+          res.send logidx.toString()
+        else
+          console.log 'mongodb error on insertion:'
+          console.log err
+          getLogIdxForUsernameReal username, (topidx) ->
+            res.send topidx.toString()
+
+          
 
 app.get '/viewlog', (req, res) ->
   if not req.query.username?
     res.send 'need to provide username'
+    return
   getLogsCollection (logs) ->
-    logs.find({username: req.query.username}).toArray (err, results) ->
+    logs.find({username: req.query.username}).sort({_id: 1}).toArray (err, results) ->
       res.send JSON.stringify(results)
 
 app.get '/viewlogall', (req, res) ->
   getLogsCollection (logs) ->
-    logs.find().toArray (err, results) ->
+    logs.find().sort({_id: 1}).toArray (err, results) ->
       res.send JSON.stringify(results)
 
 get_index = (req, res) ->
