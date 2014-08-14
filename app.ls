@@ -196,7 +196,7 @@ makeSegment = (video, start, end, output, callback) ->
   #callCommand command, options, ->
   #  callCommand 'qtfaststart', [output], callback
 
-serverRootStatic = 'http://10.172.99.36:80/'
+#serverRootStatic = 'http://10.172.99.36:80/'
 
 segmentVideo = (req, res) ->
   console.log 'segmentvideo'
@@ -206,15 +206,17 @@ segmentVideo = (req, res) ->
   video_base = video.split('.')[0]
   video_path = video
   output_file = video_base + '_' + start + '_' + end + '.mp4'
+  if not fs.existsSync('static')
+    fs.mkdirSync('static')
   output_path = 'static/' + output_file
   if fs.existsSync(output_path)
-    console.log serverRootStatic + output_path
-    res.redirect serverRootStatic + output_path #+ '?' + Math.floor(Math.random() * 2**32)
-    #res.sendfile output_path
+    #console.log serverRootStatic + output_path
+    #res.redirect serverRootStatic + output_path #+ '?' + Math.floor(Math.random() * 2**32)
+    res.sendfile output_path
   else
     makeSegment video_path, start, end, output_path, ->
-      #res.sendfile output_path
-      res.redirect serverRootStatic + output_path #+ '?' + Math.floor(Math.random() * 2**32)
+      res.sendfile output_path
+      #res.redirect serverRootStatic + output_path #+ '?' + Math.floor(Math.random() * 2**32)
 
 app.get '/segmentvideo', segmentVideo
 #app.get '/segmentvideo*', segmentVideo
