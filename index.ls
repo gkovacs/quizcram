@@ -925,16 +925,18 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
     .css \width, \100%
   video = J('video')
     .attr('id', "video_#qnum")
-    #.attr('controls', 'controls')
+    .attr('controls', 'controls')
     .attr('ontimeupdate', 'timeUpdated(' + qnum + ')')
     .css('width', '100%')
     .addClass('activevideo')
     #.data('focused', true)
-    .mousedown (evt) ->
+    .click (evt) ->
       console.log 'mousedown video ' + qnum
       gotoNum qnum
       if not isVideoPlaying()
         playVideo()
+        evt.preventDefault()
+        return false
       /*
       if not $(this).hasClass \activevideo
         console.log 'mousedown video not active ' + qnum
