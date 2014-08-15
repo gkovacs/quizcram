@@ -838,7 +838,7 @@ markVideoSecondWatched = root.markVideoSecondWatched = (vidname, vidpart, second
   viewing-history[Math.round(second + start)] = 1
 
 setWatchButtonProgress = root.setWatchButtonProgress = (vidname, vidpart, percent-viewed) ->
-  $('.watch_' + toVidnamePart(vidname, vidpart)).text('watch video (' + toPercent(percent-viewed) + '% seen)')
+  $('.watch_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).text('watch video (' + toPercent(percent-viewed) + '% seen)')
 
 updateWatchButtonProgress = root.updateWatchButtonProgress = (vidname, vidpart) ->
   console.log "setWatchButtonProgress(#vidname, #vidpart)"
@@ -925,7 +925,7 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
     .css \width, \100%
   video = J('video')
     .attr('id', "video_#qnum")
-    .attr('controls', 'controls')
+    #.attr('controls', 'controls')
     .attr('ontimeupdate', 'timeUpdated(' + qnum + ')')
     .css('width', '100%')
     .addClass('activevideo')
@@ -933,6 +933,8 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
     .mousedown (evt) ->
       console.log 'mousedown video ' + qnum
       gotoNum qnum
+      if not isVideoPlaying()
+        playVideo()
       /*
       if not $(this).hasClass \activevideo
         console.log 'mousedown video not active ' + qnum
@@ -953,7 +955,7 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
     .css \position, \absolute
     .css \top, \0px
   video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
-  video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text 'foobar'
+  video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
   if reasonForInsertion?
     video-header.append $(reasonForInsertion).css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)
   videodiv.append video
@@ -962,7 +964,7 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
   body.append J 'br'
   if (partnum? and partnum > 0) or (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
-    video-header.append J(\h3.linklike).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text('view related videos from earlier').click (evt) ->
+    video-header.append J(\h3.linklike).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text('view previous clip').click (evt) ->
       console.log 'do not understand video'
       console.log vidname
       showChildVideo qnum
@@ -1015,7 +1017,7 @@ getType = (qnum) ->
 bodyExists = (qnum) ->
   return $("\#body_#qnum").length > 0
 
-getBody = (qnum) ->
+getBody = root.getBody = (qnum) ->
   return $("\#body_#qnum")
 
 getQidx = (qnum) ->
@@ -1111,6 +1113,11 @@ gotoNum = root.gotoNum = (qnum) ->
 disableAnswerOptions = (qnum) ->
   $("input[type=radio][name=radiogroup_#qnum]").attr('disabled', true)
   $("input[type=checkbox][name=checkboxgroup_#qnum]").attr('disabled', true)
+
+enableAnswerOptions = (qnum) ->
+  $("input[type=radio][name=radiogroup_#qnum]").attr('disabled', false)
+  $("input[type=checkbox][name=checkboxgroup_#qnum]").attr('disabled', false)
+
 
 disableQuestion = root.disableQuestion = (qnum) ->
   type = getType qnum
@@ -1254,31 +1261,45 @@ getMagicNet = root.getMagicNet = ->
 */
 
 createRadio = (qnum, idx, option, body) ->
-  body.append J("input.radiogroup_#{qnum}(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#{qnum}").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
+  inputbox = J("input.radiogroup_#{qnum}(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#{qnum}").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
     addlog {
       event: \radiobox
       type: \selection
       qnum: qnum
       optionidx: idx
     }
-    setDefaultButton qnum, \check
+    #setDefaultButton qnum, \check
+    question = root.questions[getQidx(qnum)]
+    answers = getAnswerValue \radio, qnum
+    if isAnswerCorrect question, answers
+      #showAnswer qnum, true
+      (getButton qnum, \check).click()
     #$('#check_' + qnum).attr('disabled', false)
-  body.append J("label(style='display: inline-block; font-weight: normal' for='radio_#{qnum}_#{idx}')").html option
-  body.append J('br')
+  body.append J('.checkbox').append J('label').append(inputbox).append(option)
+  #body.append inputbox
+  #body.append J("label(style='display: inline-block; font-weight: normal' for='radio_#{qnum}_#{idx}')").html option
+  #body.append J('br')
 
 createCheckbox = (qnum, idx, option, body) ->
   console.log option
-  body.append J("input.checkboxgroup_#{qnum}(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
+  inputbox = J("input.checkboxgroup_#{qnum}(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).click (evt) ->
     addlog {
       event: \checkbox
       type: \selection
       qnum: qnum
       optionidx: idx
     }
-    setDefaultButton qnum, \check
+    #setDefaultButton qnum, \check
+    question = root.questions[getQidx(qnum)]
+    answers = getAnswerValue \checkbox, qnum
+    if isAnswerCorrect question, answers
+      #showAnswer qnum, true
+      (getButton qnum, \check).click()
     #$('#check_' + qnum).attr('disabled', false)
-  body.append J("label(style='display: inline-block; font-weight: normal' for='checkbox_#{qnum}_#{idx}')").html option
-  body.append J('br')
+  body.append J('.radio').append J('label').append(inputbox).append(option)
+  #body.append inputbox
+  #body.append J("label(style='display: inline-block; font-weight: normal' for='checkbox_#{qnum}_#{idx}')").html option
+  #body.append J('br')
 
 createWidget = (type, qnum, idx, option, body) ->
   switch type
@@ -1405,7 +1426,27 @@ showIsCorrect = (qnum, isCorrect) ->
   feedback-display.html ''
   feedback-display.append feedback
 
-showAnswer = (qnum) ->
+scrambleAnswerOptions = root.scrambleAnswerOptions = (qnum) ->
+  return
+
+hideAnswer = root.hideAnswer = (qnum) ->
+  qidx = getQidx qnum
+  question = root.questions[qidx]
+  body = getBody qnum
+  if question.type == \checkbox
+    $(".checkboxgroup_#{qnum}").prop \checked, false
+  else if question.type == \radio
+    throw 'radio show answer not yet implemented'
+  feedback-display = $("\#iscorrect_#qnum")
+  feedback-display.html ''
+  explanation-display = $("\#explanation_#qnum")
+  explanation-display.text ''
+  hideButton qnum, \show
+  hideButton qnum, \next
+  showButton qnum, \check
+  enableAnswerOptions qnum
+
+showAnswer = root.showAnswer = (qnum) ->
   qidx = getQidx qnum
   question = root.questions[qidx]
   body = getBody qnum
@@ -1416,7 +1457,7 @@ showAnswer = (qnum) ->
   else if question.type == \radio
     throw 'radio show answer not yet implemented'
   feedback-display = $("\#iscorrect_#qnum")
-  feedback-display.html '<b>Solution</b>'
+  feedback-display.html '<b style="color: red">Incorrect - see correct answer above and review the video</b>'
   explanation-display = $("\#explanation_#qnum")
   explanation-display.text question.explanation
   hideButton qnum, \show
@@ -1443,8 +1484,10 @@ scrollVideoBackward = ->
   video = $('.activevideo')
   video[0].currentTime -= 5.0
 
-isVideoPlaying = ->
+isVideoPlaying = root.isVideoPlaying = ->
   video = $('.activevideo')
+  if video.length == 0
+    return false
   return not video[0].paused
 
 playVideoFromStart = ->
@@ -1455,7 +1498,13 @@ playVideoFromStart = ->
   if video[0].paused
     video[0].play()
 
+root.currentQuestionQnum = 0
+
+getCurrentQuestionQnum = root.getCurrentQuestionQnum = ->
+  root.currentQuestionQnum
+
 playVideo = ->
+  resetIfNeeded getCurrentQuestionQnum()
   video = $('.activevideo')
   if video.length > 0
     if video[0].paused
@@ -1513,8 +1562,9 @@ showChildVideoForQuestion = (qnum) ->
 
 getVideoDependencies = (vidname, vidpart) ->
   dependencies = []
-  for prevpart in [0 til vidpart]
-    dependencies.push [vidname, prevpart]
+  if vidpart?
+    for prevpart in [0 til vidpart]
+      dependencies.push [vidname, prevpart]
   dependencies = dependencies ++ [[x,null] for x in root.video_dependencies[vidname]]
   return dependencies
 
@@ -1525,7 +1575,7 @@ showChildVideoForVideo = (qnum) ->
   if childVideoAlreadyInserted qnum
     gotoNum getChildVideoQnum(qnum)
   else
-    dependency = getVideoDependencies(vidname, vidpart)[0]
+    dependency = getVideoDependencies(vidname, vidpart)[*-1]
     [dvidname,dvidpart] = dependency
     if vidpart?
       insertBefore qnum, (insertVideo dvidname, dvidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{vidname} part #{vidpart+1}</span>)</h3>")
@@ -1545,6 +1595,14 @@ showChildVideo = root.showChildVideo = (qnum) ->
   | \video => showChildVideoForVideo(qnum)
   | _ => throw 'unknown item type ' + type
 
+resetIfNeeded = root.resetIfNeeded = (qnum) ->
+  if (getBody qnum).data(\answered)
+    if not (getBody qnum).data(\correct)
+      # hide answer and require user to try again
+      (getBody qnum).data(\answered, false)
+      (getBody qnum).data(\correct, false)
+      hideAnswer qnum
+
 insertQuestion = root.insertQuestion = (question, options) ->
   options = {} if not options?
   if options.qnum?
@@ -1552,6 +1610,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
     counterSet 'qnum', qnum
   else
     qnum = counterNext 'qnum'
+  root.currentQuestionQnum = qnum
   body = J('.panel-body').attr('id', "body_#qnum").data('qidx', question.idx).data(\type, \question)
   body.append J('h3').text question.title
   body.append J('span').text question.text
@@ -1561,6 +1620,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   vidnamepart = getVidnamePartForQuestion(question)
   for option,idx in question.options
     createWidget(question.type, qnum, idx, option, body)
+  scrambleAnswerOptions qnum
   addlog {
     event: 'insertquestion'
     type: 'question'
@@ -1580,7 +1640,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qnum: qnum
       }
   insertCheckAnswerButton = ->
-    body.append J('button.btn.btn-default.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check my answer').click (evt) ->
+    body.append J('button.btn.btn-default.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check answer').click (evt) ->
       answers = getAnswerValue question.type, qnum
       console.log answers
       if isAnswerCorrect question, answers
@@ -1601,6 +1661,10 @@ insertQuestion = root.insertQuestion = (question, options) ->
         showButton qnum, \next
         setDefaultButton qnum, \next
         disableAnswerOptions qnum
+        insertQuestion getNextQuestion()
+        (getButton qnum, \next).hide()
+        (getBody qnum).data(\answered, true)
+        (getBody qnum).data(\correct, true)
       else
         addlog {
           event: 'check'
@@ -1613,7 +1677,17 @@ insertQuestion = root.insertQuestion = (question, options) ->
         showIsCorrect qnum, false
         questionIncorrect question
         setDefaultButton qnum, \watch
-        showButton qnum, \show
+        showAnswer qnum
+        (getBody qnum).data(\answered, true)
+        (getBody qnum).data(\correct, false)
+        #if (getButton qnum, \watch).data('progress') > 0.1
+        #  showButton qnum, \next
+        
+        #showButton qnum, \show
+        #(getButton qnum, \show).click()
+        #insertQuestion getNextQuestion()
+        #(getButton qnum, \next).hide()
+        
         #if not haveInsertedReview qnum
         #  disableQuestion qnum
         #  insertReview question
@@ -1640,7 +1714,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qidx: question.idx
         qnum: qnum
       }
-      disableQuestion qnum
+      #disableQuestion qnum
       insertQuestion getNextQuestion()
   /*
   insertSkipButton = ->
@@ -1706,6 +1780,30 @@ replayLogs = (logs) ->
     | _ =>
       console.log(log)
 
+videoHeightFractionVisible = ->
+  video = $('.activevideo')
+  if video.length == 0
+    return 0
+  video-height = video.height()
+  if video-height <= 0 or not isFinite video-height
+    return 0
+  window-height = $(window).height()
+  window-top = $(window).scrollTop()
+  console.log 'window-top:' + window-top
+  window-bottom = window-top + window-height
+  video-top = video.offset().top
+  video-bottom = video-top + video-height
+  video-hidden-top = Math.max(0, window-top - video-top)
+  console.log 'video-hidden-top:' + video-hidden-top
+  video-hidden-bottom = Math.max(0, video-bottom - window-bottom)
+  console.log 'video-hidden-bottom:' + video-hidden-bottom
+  video-hidden = video-hidden-top + video-hidden-bottom
+  fraction-hidden = video-hidden / Math.min(window-height, video-height)
+  console.log 'video-hidden:' + video-hidden
+  console.log 'fraction hiddden:' +  (1 - fraction-hidden)
+  return 1 - fraction-hidden
+
+
 $(document).ready ->
   console.log 'ready'
   $(document).mousedown (evt) ->
@@ -1723,7 +1821,11 @@ $(document).ready ->
   $(document).mousewheel (evt) ->
     try
       #console.log evt
-      if $('.activevideo').length > 0
+      if isVideoPlaying() and videoHeightFractionVisible() < 0.85
+        pauseVideo()
+      else if not isVideoPlaying() and videoHeightFractionVisible() > 0.85
+        playVideo()
+      if $('.activevideo').length > 0 and false #and isVideoPlaying()
         window-top = $(window).scrollTop()
         video-top = $('.activevideo').offset().top
         window-bottom = window-top + $(window).height()
@@ -1766,15 +1868,18 @@ $(document).ready ->
           return false
         else
           pauseVideo()
+        return
+      /*
       if evt.deltaY < 0 and isScrollAtBottom()
         increaseButtonFill()
+        return
       else
         resetButtonFill()
-      if not isVideoFocused()
-        if evt.deltaY < 0
-          $(window).scrollTop $(window).scrollTop() + 30
-        else if evt.deltaY > 0
-          $(window).scrollTop $(window).scrollTop() - 30
+      */
+      if evt.deltaY < 0
+        $(window).scrollTop $(window).scrollTop() + 30
+      else if evt.deltaY > 0
+        $(window).scrollTop $(window).scrollTop() - 30
     catch e
       console.log e
     finally
