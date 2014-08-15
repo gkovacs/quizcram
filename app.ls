@@ -191,7 +191,7 @@ makeSegment = (video, start, end, output, callback) ->
   #  #extra_options = <[ -codec:v libx264 -profile:v high -preset ultrafast -b:v 500k -maxrate 500k -bufsize 1000k -vf scale=-1:480 -threads 0 -codec:a aac ]>
   command = './ffmpeg'
   #command = 'avconv'
-  options = ['-ss', start, '-t', (end - start), '-i', video].concat extra_options.concat ['-y', output]
+  options = ['-ss', start, '-t', (end - start), '-i', video] ++ extra_options ++ ['-y', output]
   callCommand command, options, callback
   #callCommand command, options, ->
   #  callCommand 'qtfaststart', [output], callback

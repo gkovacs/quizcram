@@ -625,7 +625,7 @@ do ->
   for question,idx in root.questions
     question.idx = idx
 
-root.questions = root.questions[0 to 3] # TEMPORARY # TODO remove this
+#root.questions = root.questions[0 to 3] # TEMPORARY # TODO remove this
 
 /*
 root.video_info = {
