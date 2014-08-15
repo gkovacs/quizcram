@@ -1519,6 +1519,7 @@ getVideoDependencies = (vidname, vidpart) ->
   return dependencies
 
 showChildVideoForVideo = (qnum) ->
+  setVideoFocused(false)
   vidname = getVidname qnum
   vidpart = getVidpart qnum
   if childVideoAlreadyInserted qnum
@@ -1535,6 +1536,7 @@ showChildVideoForVideo = (qnum) ->
     body.data \video, counterCurrent(\qnum)
     gotoNum getChildVideoQnum(qnum)
   setVideoFocused(true)
+  playVideo()
 
 showChildVideo = root.showChildVideo = (qnum) ->
   type = getType qnum
