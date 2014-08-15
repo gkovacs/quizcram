@@ -1472,6 +1472,7 @@ hideAnswer = root.hideAnswer = (qnum) ->
   hideButton qnum, \show
   hideButton qnum, \next
   showButton qnum, \check
+  hideButton qnum, \review
   enableAnswerOptions qnum
   scrambleAnswerOptions qnum
 
@@ -1486,11 +1487,12 @@ showAnswer = root.showAnswer = (qnum) ->
   else if question.type == \radio
     throw 'radio show answer not yet implemented'
   feedback-display = $("\#iscorrect_#qnum")
-  feedback-display.html '<b style="color: red">Incorrect - see correct answer above and review the video</b>'
+  feedback-display.html '<b style="color: red">Incorrect - see correct answer above</b>'
   explanation-display = $("\#explanation_#qnum")
   explanation-display.text question.explanation
   hideButton qnum, \show
   hideButton qnum, \check
+  showButton qnum, \review
   disableAnswerOptions qnum
 
 videoAtFront = ->
@@ -1562,6 +1564,7 @@ getButton = (qnum, buttontype) ->
   | \check => $("\#check_#qnum")
   | \watch => $("\#watch_#qnum")
   | \next => $("\#next_#qnum")
+  | \review => $("\#review_#qnum")
   | _ => throw 'unknown button type ' + buttontype
 
 showButton = (qnum, buttontype) ->
@@ -1736,6 +1739,10 @@ insertQuestion = root.insertQuestion = (question, options) ->
     if autotrigger
       setDefaultButton watch-video-button
     body.append watch-video-button
+  insertReviewVideoButton = ->
+    review-video-button = J('button.btn.btn-default.btn-lg#review_' + qnum).css(\display, \none).css('margin-right', '15px').text('review video before answering again').click (evt) ->
+      (getButton qnum, \watch).click()
+    body.append review-video-button
   insertNextQuestionButton = ->
     body.append J('button.btn.btn-default.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.text('next question').click (evt) ->
       addlog {
@@ -1760,6 +1767,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   body.append J(\br)
   insertWatchVideoButton(true)
   insertCheckAnswerButton()
+  insertReviewVideoButton()
   /*
   if root.question_progress[question.idx].correct.length > 0
     insertCheckAnswerButton()
