@@ -1275,7 +1275,7 @@ createRadio = (qnum, idx, option, body) ->
       #showAnswer qnum, true
       (getButton qnum, \check).click()
     #$('#check_' + qnum).attr('disabled', false)
-  body.append J('.checkbox').append J('label').append(inputbox).append(option)
+  body.append J('.radio').append J('label').append(inputbox).append(option)
   #body.append inputbox
   #body.append J("label(style='display: inline-block; font-weight: normal' for='radio_#{qnum}_#{idx}')").html option
   #body.append J('br')
@@ -1296,7 +1296,7 @@ createCheckbox = (qnum, idx, option, body) ->
       #showAnswer qnum, true
       (getButton qnum, \check).click()
     #$('#check_' + qnum).attr('disabled', false)
-  body.append J('.radio').append J('label').append(inputbox).append(option)
+  body.append J('.checkbox').append J('label').append(inputbox).append(option)
   #body.append inputbox
   #body.append J("label(style='display: inline-block; font-weight: normal' for='checkbox_#{qnum}_#{idx}')").html option
   #body.append J('br')
@@ -1426,8 +1426,17 @@ showIsCorrect = (qnum, isCorrect) ->
   feedback-display.html ''
   feedback-display.append feedback
 
+scrambleAnswerOptionsCheckbox = (qnum) ->
+  #options = $(".checkboxgroup_#{qnum}")
+  optionsdiv = $("\#options_#{qnum}")
+  options = optionsdiv.find('.checkbox')
+  for i in [0 til options.length]
+    randidx = Math.floor(Math.random() * options.length)
+    curopt = $(options[randidx]).detach()
+    optionsdiv.append curopt
+
 scrambleAnswerOptions = root.scrambleAnswerOptions = (qnum) ->
-  return
+  scrambleAnswerOptionsCheckbox(qnum)
 
 hideAnswer = root.hideAnswer = (qnum) ->
   qidx = getQidx qnum
@@ -1445,6 +1454,7 @@ hideAnswer = root.hideAnswer = (qnum) ->
   hideButton qnum, \next
   showButton qnum, \check
   enableAnswerOptions qnum
+  scrambleAnswerOptions qnum
 
 showAnswer = root.showAnswer = (qnum) ->
   qidx = getQidx qnum
@@ -1618,9 +1628,10 @@ insertQuestion = root.insertQuestion = (question, options) ->
   vidname = getVidnameForQuestion(question)
   vidpart = getVidpartForQuestion(question)
   vidnamepart = getVidnamePartForQuestion(question)
+  optionsdiv = J("\#options_#qnum")
   for option,idx in question.options
-    createWidget(question.type, qnum, idx, option, body)
-  scrambleAnswerOptions qnum
+    createWidget(question.type, qnum, idx, option, optionsdiv)
+  body.append optionsdiv
   addlog {
     event: 'insertquestion'
     type: 'question'
@@ -1745,6 +1756,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   insertShowAnswerButton()
   insertNextQuestionButton()
   $('#quizstream').append /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/ body
+  scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
   if root.question_progress[question.idx].correct.length > 0
     showButton qnum, \show
@@ -1798,10 +1810,13 @@ videoHeightFractionVisible = ->
   video-hidden-bottom = Math.max(0, video-bottom - window-bottom)
   console.log 'video-hidden-bottom:' + video-hidden-bottom
   video-hidden = video-hidden-top + video-hidden-bottom
-  fraction-hidden = video-hidden / Math.min(window-height, video-height)
-  console.log 'video-hidden:' + video-hidden
-  console.log 'fraction hiddden:' +  (1 - fraction-hidden)
-  return 1 - fraction-hidden
+  video-shown = video-height - video-hidden
+  #fraction-hidden = video-hidden / Math.min(window-height, video-height)
+  #console.log 'video-hidden:' + video-hidden
+  #console.log 'fraction hiddden:' +  (1 - fraction-hidden)
+  #return 1 - fraction-hidden
+  fraction-shown = video-shown / Math.min(window-height, video-height)
+  return fraction-shown
 
 
 $(document).ready ->
