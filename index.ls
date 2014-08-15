@@ -1308,10 +1308,27 @@ createWidget = (type, qnum, idx, option, body) ->
   | _ => throw 'nonexistant question type ' + type
 
 getRadioValue = root.getRadioValue = (radioname) ->
-  return parseInt $("input[type=radio][name=#radioname]:checked").val()
+  throw 'getRadioValue not implemented'
+  #return parseInt $("input[type=radio][name=#radioname]:checked").val()
 
-getCheckboxValue = root.getCheckboxValue = (checkboxname) ->
-  return [parseInt(x) for x in $("input[type=checkbox][name=#checkboxname]:checked").map(-> $(this).val()).get()]
+getCheckboxes = root.getCheckboxes = (qnum) ->
+  numoptions = $('.checkboxgroup_' + qnum).length
+  return [$('#checkbox_' + qnum + '_' + i)[0] for i in [0 til numoptions]]
+
+getCheckboxValue = root.getCheckboxValue = (qnum) ->
+  output = []
+  for checkbox,i in getCheckboxes(qnum)
+    if checkbox.checked
+      output.push i
+  return output
+  #return [parseInt(x) for x in $("input[type=checkbox][name=#checkboxname]:checked").map(-> $(this).val()).get()]
+
+arraysEqualUnsorted = root.arraysEqualUnsorted = (a,b) ->
+  a = a[to]
+  a.sort()
+  b = b[to]
+  b.sort()
+  return arraysEqual a, b
 
 arraysEqual = root.arraysEqual = (a,b) ->
   return a === b
@@ -1324,14 +1341,14 @@ arraysEqual = root.arraysEqual = (a,b) ->
 
 getAnswerValue = (type, qnum) ->
   switch type
-  | \radio => getRadioValue "radiogroup_#qnum"
-  | \checkbox => getCheckboxValue "checkboxgroup_#qnum"
+  | \radio => getRadioValue qnum # "radiogroup_#qnum"
+  | \checkbox => getCheckboxValue qnum # "checkboxgroup_#qnum"
   | _ => throw 'nonexistant question type ' + type 
 
 isAnswerCorrect = (question, answers) ->
   switch question.type
   | \radio => answers == question.correct
-  | \checkbox => arraysEqual answers, question.correct
+  | \checkbox => arraysEqualUnsorted answers, question.correct
   | _ => throw 'nonexistant question type ' + type
 
 markQuestion = (question_idx, mark) ->
