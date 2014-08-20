@@ -205,7 +205,7 @@ segmentVideo = (req, res) ->
   end = req.query.end
   video_base = video.split('.')[0]
   video_path = video
-  output_file = video_base + '_' + start + '_' + end + '.mp4'
+  output_file = video_base + '_' + start + '_' + end + '.webm' #'.mp4'
   if not fs.existsSync('static')
     fs.mkdirSync('static')
   output_path = 'static/' + output_file
