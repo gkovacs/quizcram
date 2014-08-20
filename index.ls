@@ -938,7 +938,8 @@ removeAllVideos = root.removeAllVideos = ->
 insertVideo = (vidname, partnum, reasonForInsertion) ->
   [start,end] = getVideoStartEnd vidname, partnum
   qnum = counterNext 'qnum'
-  body = J('.panel-body').attr('id', "body_#qnum").addClass(\videopanel).data(\type, \video).data(\vidname, vidname).data(\vidpart, partnum)
+  vidnamepart = toVidnamePart(vidname, partnum)
+  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, partnum)
   console.log vidname
   basefilename = root.video_info[vidname].filename
   fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: start, end: end}
@@ -987,7 +988,7 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
   video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
   if reasonForInsertion?
-    video-header.append $(reasonForInsertion).css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)
+    video-header.append $(reasonForInsertion).addClass('insertionreason').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)
   videodiv.append video
   videodiv.append video-header
   body.append videodiv
@@ -1634,7 +1635,20 @@ showButton = (qnum, buttontype) ->
 hideButton = (qnum, buttontype) ->
   (getButton qnum, buttontype).hide()
 
+turnOffAllDefaultbuttons = ->
+  buttons = $(\.btn-primary)
+  buttons.removeClass \btn-primary
+  buttons.addClass \btn-default
+
+turnOffDefaultButton = (button, buttontype) ->
+  if typeof button == typeof 0 # first argument is actually qnum
+    button = getButton button, buttontype
+  if button.hasClass \btn-primary
+    button.removeClass \btn-primary
+    button.addClass \btn-default
+
 setDefaultButton = (button, buttontype) -> # or alternativey: button
+  return # should no longer do anything
   if typeof button == typeof 0 # first argument is actually qnum
     button = getButton button, buttontype
   if not button.hasClass \autotrigger
@@ -1696,6 +1710,37 @@ resetIfNeeded = root.resetIfNeeded = (qnum) ->
       (getBody qnum).data(\correct, false)
       hideAnswer qnum
 
+getVideo = (vidname, vidpart) ->
+  vidnamepart = toVidnamePart vidname, vidpart
+  return $('.video_' + vidnamepart)
+
+setInsertionReasonAs = (vidname, vidpart, reason) ->
+  curvid = getVideo(vidname, vidpart)
+  curvid.find('.insertionreason').html(reason)
+
+setInsertionReasonAsQuestion = (vidname, vidpart, qnum) ->
+  qidx = getQidx qnum
+  question = root.questions[qidx]
+  setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)"
+
+showVideo = (vidname, vidpart) ->
+  curvid = getVideo(vidname, vidpart)
+  gotoNum curvid.data(\qnum)
+
+placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
+  vidnamepart = toVidnamePart vidname, vidpart
+  curvid = getVideo(vidname, vidpart)
+  if curvid.length > 0
+    if curvid.data(\prebody) == qnum
+      return # already inserted in the correct location
+    else
+      target-body = $('#prebody_' + qnum)
+      curvid.detach()
+      target-body.append curvid
+  else
+    $('#prebody_' + qnum).append (insertVideo vidname, vidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</h3>")
+    getVideo(vidname, vidpart).data(\prebody, qnum)
+
 insertQuestion = root.insertQuestion = (question, options) ->
   options = {} if not options?
   if options.qnum?
@@ -1704,6 +1749,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   else
     qnum = counterNext 'qnum'
   root.currentQuestionQnum = qnum
+  turnOffAllDefaultbuttons()
   removeAllVideos()
   body = J('.panel-body').attr('id', "body_#qnum").data('qidx', question.idx).data(\type, \question)
   body.append J('h3').text question.title
@@ -1735,7 +1781,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qnum: qnum
       }
   insertCheckAnswerButton = ->
-    body.append J('button.btn.btn-default.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check answer').click (evt) ->
+    body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check answer').click (evt) ->
       answers = getAnswerValue question.type, qnum
       console.log answers
       if isAnswerCorrect question, answers
@@ -1790,7 +1836,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         #  insertReview question
         #  reviewInserted (counterCurrent \qnum)
   insertWatchVideoButton = (autotrigger) ->
-    watch-video-button = J('button.btn.btn-default.btn-lg#watch_' + qnum).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px')/*.text("watch video (0% seen)")*/.click (evt) ->
+    watch-video-button = J('button.btn.btn-primary.btn-lg#watch_' + qnum).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px')/*.text("watch video (0% seen)")*/.click (evt) ->
       addlog {
         event: 'watch'
         type: 'button'
@@ -1799,14 +1845,17 @@ insertQuestion = root.insertQuestion = (question, options) ->
       }
       resetIfNeeded getCurrentQuestionQnum()
       if not root.mock-insert-video
-        showChildVideo qnum
+        placeVideoBefore(vidname, vidpart, qnum)
+        setInsertionReasonAsQuestion(vidname, vidpart, qnum)
+        showVideo(vidname, vidpart)
+        #showChildVideo qnum
         playVideo()
       #playVideoFromStart()
     if autotrigger
       setDefaultButton watch-video-button
     body.append watch-video-button
   insertReviewVideoButton = ->
-    review-video-button = J('button.btn.btn-default.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').text('review video before answering again (0% seen)').click (evt) ->
+    review-video-button = J('button.btn.btn-primary.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').text('review video before answering again (0% seen)').click (evt) ->
       (getButton qnum, \watch).click()
     body.append review-video-button
   insertNextQuestionButton = ->
@@ -1848,6 +1897,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   #  insertSkipButton()
   insertShowAnswerButton()
   insertNextQuestionButton()
+  $('#quizstream').append J('#prebody_' + qnum)
   $('#quizstream').append /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/ body
   scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
