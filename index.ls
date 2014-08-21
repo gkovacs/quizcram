@@ -935,19 +935,19 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
 removeAllVideos = root.removeAllVideos = ->
   $('.videopanel').remove()
 
-insertVideo = (vidname, partnum, reasonForInsertion) ->
-  [start,end] = getVideoStartEnd vidname, partnum
+insertVideo = (vidname, vidpart, reasonForInsertion) ->
+  [start,end] = getVideoStartEnd vidname, vidpart
   qnum = counterNext 'qnum'
-  vidnamepart = toVidnamePart(vidname, partnum)
-  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, partnum)
+  vidnamepart = toVidnamePart(vidname, vidpart)
+  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, vidpart)
   console.log vidname
   basefilename = root.video_info[vidname].filename
   fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: start, end: end}
   title = root.video_info[vidname].title
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title
-  if partnum?
-    fulltitle = fulltitle + ' part ' + (partnum+1)
+  if vidpart?
+    fulltitle = fulltitle + ' part ' + (vidpart+1)
   $('.activevideo').removeClass 'activevideo'
   videodiv = J(\div)
     .css \position, \relative
@@ -993,12 +993,13 @@ insertVideo = (vidname, partnum, reasonForInsertion) ->
   videodiv.append video-header
   body.append videodiv
   body.append J 'br'
-  if (partnum? and partnum > 0) or (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
+  if (vidpart? and vidpart > 0) or (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
     video-header.append J(\h3.linklike).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text('view previous clip').click (evt) ->
       console.log 'do not understand video'
       console.log vidname
-      showChildVideo qnum
+      viewPreviousClip vidname, vidpart
+      #showChildVideo qnum
       #dependencies = []
       #for prevpart in [0 til partnum]
       #  dependencies.push [vidname, prevpart]
@@ -1679,15 +1680,20 @@ showChildVideoForVideo = (qnum) ->
   setVideoFocused(false)
   vidname = getVidname qnum
   vidpart = getVidpart qnum
+  prebody-qnum = getVideo(vidname, vidpart).data(\prebody)
   if childVideoAlreadyInserted qnum
     gotoNum getChildVideoQnum(qnum)
   else
     dependency = getVideoDependencies(vidname, vidpart)[*-1]
     [dvidname,dvidpart] = dependency
+    /*
     if vidpart?
       insertBefore qnum, (insertVideo dvidname, dvidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{vidname} part #{vidpart+1}</span>)</h3>")
     else
       insertBefore qnum, (insertVideo dvidname, dvidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{vidname}</span>)</h3>")
+    */
+    placeVideoBefore dvidname, dvidpart, prebody-qnum
+    setInsertionReasonAsVideo dvidname, dvidpart, vidname, vidpart
     addVideoDependsOnQuestion qnum, counterCurrent(\qnum)
     body = getBody qnum
     body.data \video, counterCurrent(\qnum)
@@ -1723,9 +1729,28 @@ setInsertionReasonAsQuestion = (vidname, vidpart, qnum) ->
   question = root.questions[qidx]
   setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)"
 
+setInsertionReasonAsVideo = (vidname, vidpart, pvidname, pvidpart) ->
+  pqnum = getVideo(pvidname, pvidpart).data(\qnum)
+  if pvidpart?
+    setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#pqnum)'>#{pvidname} part #{pvidpart + 1}</span>)"
+  else
+    setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#pqnum)'>#{pvidname}</span>)"
+
 showVideo = (vidname, vidpart) ->
   curvid = getVideo(vidname, vidpart)
   gotoNum curvid.data(\qnum)
+
+viewPreviousClip = (vidname, vidpart) ->
+  pauseVideo()
+  curvid = getVideo(vidname, vidpart)
+  qnum = curvid.data(\qnum)
+  prebody-qnum = curvid.data(\prebody)
+  dependency = getVideoDependencies(vidname, vidpart)[*-1]
+  [dvidname,dvidpart] = dependency
+  placeVideoBefore dvidname, dvidpart, prebody-qnum
+  setInsertionReasonAsVideo dvidname, dvidpart, vidname, vidpart
+  showVideo dvidname, dvidpart
+  playVideo()
 
 placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
   vidnamepart = toVidnamePart vidname, vidpart
@@ -1736,9 +1761,10 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
     else
       target-body = $('#prebody_' + qnum)
       curvid.detach()
-      target-body.append curvid
+      target-body.prepend curvid
+      curvid.data(\prebody, qnum)
   else
-    $('#prebody_' + qnum).append (insertVideo vidname, vidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</h3>")
+    $('#prebody_' + qnum).prepend (insertVideo vidname, vidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</h3>")
     getVideo(vidname, vidpart).data(\prebody, qnum)
 
 insertQuestion = root.insertQuestion = (question, options) ->
