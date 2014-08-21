@@ -876,6 +876,7 @@ timeUpdatedReal = (qnum) ->
   #body = getBody qnum
   vidname = getVidname qnum
   vidpart = getVidpart qnum
+  fixVideoHeight video
   /*
   if not video.data('duration')?
     video.data 'duration', video[0].duration
@@ -903,6 +904,27 @@ setStartTime = root.setStartTime = (time, qnum) ->
 insertAfter = (qnum, contents) ->
   console.log "insertAfter #qnum #contents"
   contents.insertAfter $("\#body_#qnum")
+
+seekVideoTo = (time) ->
+  video = $(\.activevideo)
+  if not video? or not video.length? or video.length < 1
+    return
+  video[0].currentTime = time
+
+seekVideoByOffset = (offset) ->
+  video = $(\.activevideo)
+  if not video? or not video.length? or video.length < 1
+    return
+  video[0].currentTime += offset
+
+playPauseVideo = ->
+  video = $(\.activevideo)
+  if not video? or not video.length? or video.length < 1
+    return
+  if video[0].paused
+    video[0].play()
+  else
+    video[0].pause()
 
 isVideoFocused = root.isVideoFocused = ->
   video = $(\.activevideo)
@@ -935,7 +957,12 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
     #video-top = video.offset().top
     #$(window).scrollTop(video-top)
     #scrollWindow video-top
+    #scrollToElement getVideoPanel(video)
     scrollToElement video #getVideoPanel(video)
+    fixVideoHeight video
+    setTimeout ->
+      fixVideoHeight video
+    , 250
   else
     pauseVideo()
   video.data('focused', isFocused)
@@ -954,7 +981,7 @@ getQnumOfPanelAbove = root.getQnumOfPanelAbove = (qnum) ->
 removeAllVideos = root.removeAllVideos = ->
   $('.videopanel').remove()
 
-fixVideoHeight = (video) ->
+fixVideoHeight = root.fixVideoHeight = (video) ->
   if video.length < 1
     return
   height = video[0].videoHeight
@@ -963,7 +990,8 @@ fixVideoHeight = (video) ->
   max-width = $(window).width()
   max-width = Math.min max-width, max-height * width / height
   max-height = Math.min max-height, max-width * height / width
-  video.height max-height
+  if video.height != max-height
+    video.height max-height
   /*
   if video.height() >= height # is either correct size or have to shrink
     if height > $(window).height() # video is too large doesn't fit vertically
@@ -995,6 +1023,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .attr('controls', 'controls')
     .attr('ontimeupdate', 'timeUpdated(' + qnum + ')')
     .css('width', '100%')
+    #.css('position', 'absolute')
+    #.css('top', '0px')
     .addClass('activevideo')
     #.data('focused', true)
     .click (evt) ->
@@ -1012,8 +1042,14 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
         $(this).addClass \activevideo
       setVideoFocused(true)
       */
-    .on 'loadedmetadata', (evt) ->
-      fixVideoHeight $(this)
+    #.on 'canplay', (evt) ->
+    #  console.log 'loaded meatadata!'
+    #  setTimeout ->
+    #    fixVideoHeight $(this)
+    #  , 300
+    .on 'ended', (evt) ->
+      this.pause()
+      gotoNum getCurrentQuestionQnum()
     .append J('source')
       .attr('src', fileurl)
   #setInterval ->
@@ -1029,6 +1065,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .css \padding-left, \10px
     .css \padding-top, \2px
     .css \padding-bottom, \2px
+    .css \margin-top, \0px
+    .css \margin-bottom, \0px
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).text fulltitle
   video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \30px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
@@ -2121,10 +2159,17 @@ $(document).ready ->
         console.log 'document mousedown setvideofocused false'
         setVideoFocused(false)
   $(document).keydown (evt) ->
-    key = evt.keyCode
+    key = evt.which
     if $('.activevideo').length > 0 # in video
-      if key == 27 # esc
-        setVideoFocused(false)
+      switch key
+      | 27 => setVideoFocused(false) # esc
+      | 37 => seekVideoByOffset(-5) # left
+      | 39 => seekVideoByOffset(5) # right
+      | 13 => seekVideoByOffset(5) # enter, should actually be used for skipping over unseen part
+      | 32 => playPauseVideo() # space
+      | _ => console.log key; return true
+      evt.preventDefault()
+      return false
   $(document).mousewheel (evt) ->
     try
       #console.log evt
