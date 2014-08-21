@@ -862,8 +862,8 @@ markVideoSecondWatched = root.markVideoSecondWatched = (vidname, vidpart, second
   viewing-history[Math.round(second + start)] = 1
 
 setWatchButtonProgress = root.setWatchButtonProgress = (vidname, vidpart, percent-viewed) ->
-  $('.watch_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).text('watch video (' + toPercent(percent-viewed) + '% seen)')
-  $('.review_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).text('review video before answering again (' + toPercent(percent-viewed) + '% seen)')
+  $('.watch_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> watch video (' + toPercent(percent-viewed) + '% seen)')
+  $('.review_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> review video before answering again (' + toPercent(percent-viewed) + '% seen)')
 
 updateWatchButtonProgress = root.updateWatchButtonProgress = (vidname, vidpart) ->
   console.log "setWatchButtonProgress(#vidname, #vidpart)"
@@ -927,10 +927,22 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
   if isFocused
     video.data('timeVideoFocused', Date.now())
     video-top = video.offset().top
-    $(window).scrollTop(video-top)
+    #$(window).scrollTop(video-top)
+    scrollWindow video-top
   else
     pauseVideo()
   video.data('focused', isFocused)
+
+getQnumOfPanelAbove = root.getQnumOfPanelAbove = (qnum) ->
+  panels = $(\.panel-body).filter (idx, elem) -> $(elem).data(\qnum)?
+  panels.sort (a,b) ->
+    $(a).offset().top - $(b).offset().top
+  panel-qnums = $.map panels, (elem) -> $(elem).data(\qnum)
+  target-idx = panel-qnums.indexOf(qnum)
+  if target-idx <= 0
+    return panel-qnums[0]
+  return panel-qnums[target-idx - 1]
+
 
 removeAllVideos = root.removeAllVideos = ->
   $('.videopanel').remove()
@@ -985,17 +997,18 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     #.css \height, \100px
     .css \position, \absolute
     .css \top, \0px
-  video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
-  video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
+  #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
+  video-header.append J('span').css(\color, \white).css(\margin-left, \15px).css(\font-size, \24px).text fulltitle
+  video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \30px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
   if reasonForInsertion?
-    video-header.append $(reasonForInsertion).addClass('insertionreason').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)
+    video-header.append $(reasonForInsertion).addClass('insertionreason').css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
   videodiv.append video
   videodiv.append video-header
   body.append videodiv
   body.append J 'br'
   if (vidpart? and vidpart > 0) or (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
-    video-header.append J(\h3.linklike).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text('view previous clip').click (evt) ->
+    video-header.append J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css(\margin-left, \30px).css(\font-size, \24px).html('<span class="glyphicon glyphicon-step-backward"></span> view previous video').click (evt) ->
       console.log 'do not understand video'
       console.log vidname
       viewPreviousClip vidname, vidpart
@@ -1014,6 +1027,16 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
         gotoNum counterCurrent(\qnum)
         break
       */
+  close-button = J(\span.glyphicon.glyphicon-remove-circle).css(\font-size, \24px).css(\float, \right).css(\color, \white).css(\display, \block)
+    ..hover ->
+      $(this).css \cursor, \pointer
+    ..click ->
+      amount-to-scroll-up = $('#body_' + qnum).height()
+      target-qnum = getQnumOfPanelAbove qnum
+      $('#body_' + qnum).remove()
+      #scrollWindowBy -amount-to-scroll-up
+      gotoNum target-qnum
+  video-header.append close-button
   return body
 
 root.question-to-video-dependencies = {}
@@ -1106,7 +1129,7 @@ insertReviewForQuestion = (qnum) ->
   if question.videos?
     for vidinfo in question.videos
       #$('#quizstream').append insertVideo vidinfo.name, vidinfo.part, "<h3>(to help you understand <a href='\#body_#{qnum}' onclick='setVideoFocused(false)'>#{question.title}</a>)</h3>"
-      insertBefore qnum, (insertVideo vidinfo.name, vidinfo.part, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)</h3>")
+      insertBefore qnum, (insertVideo vidinfo.name, vidinfo.part, "<span>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)</span>")
       addVideoDependsOnQuestion qnum, counterCurrent(\qnum)
       body.data \video, counterCurrent(\qnum)
 
@@ -1122,11 +1145,21 @@ childVideoAlreadyInserted = (qnum) ->
 getChildVideoQnum = (qnum) ->
   return $("\#body_#qnum").data \video
 
+scrollWindowBy = (offset) ->
+  scrollWindow $(window).scrollTop() + offset
+
+scrollWindow = (offset-top) ->
+  #$(window).scrollTop offset-top
+  $('html, body').animate {
+    scrollTop: offset-top
+  }, '1000', 'swing'
+
 gotoQuestionNum = (qnum) ->
   pauseVideo()
   $(\.activevideo).removeClass \activevideo
   body = getBody qnum
-  $(window).scrollTop body.offset().top
+  scrollWindow body.offset().top
+  #$(window).scrollTop body.offset().top
   #throw 'gotoQuestionNum unimplemented'
 
 gotoVideoNum = (qnum) ->
@@ -1727,14 +1760,20 @@ setInsertionReasonAs = (vidname, vidpart, reason) ->
 setInsertionReasonAsQuestion = (vidname, vidpart, qnum) ->
   qidx = getQidx qnum
   question = root.questions[qidx]
-  setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)"
+  lqnum = getCurrentQuestionQnum()
+  setInsertionReasonAs vidname, vidpart, "<span class='linklike' onclick='gotoNum(#{lqnum})'><span class='glyphicon glyphicon-share-alt'></span> go to current question</span>"
+  #setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)"
 
 setInsertionReasonAsVideo = (vidname, vidpart, pvidname, pvidpart) ->
   pqnum = getVideo(pvidname, pvidpart).data(\qnum)
+  lqnum = getCurrentQuestionQnum()
+  setInsertionReasonAs vidname, vidpart,  "<span class='linklike' onclick='gotoNum(#{lqnum})'><span class='glyphicon glyphicon-share-alt'></span> go to current question</span>"
+  /*
   if pvidpart?
     setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#pqnum)'>#{pvidname} part #{pvidpart + 1}</span>)"
   else
     setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#pqnum)'>#{pvidname}</span>)"
+  */
 
 showVideo = (vidname, vidpart) ->
   curvid = getVideo(vidname, vidpart)
@@ -1761,10 +1800,12 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
     else
       target-body = $('#prebody_' + qnum)
       curvid.detach()
-      target-body.prepend curvid
+      target-body.append curvid
       curvid.data(\prebody, qnum)
   else
-    $('#prebody_' + qnum).prepend (insertVideo vidname, vidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</h3>")
+    newvideo = insertVideo vidname, vidpart, "<span>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</span>"
+    #$('#prebody_' + qnum).append newvideo
+    newvideo.appendTo($('#prebody_' + qnum)).hide().slideDown(1000)
     getVideo(vidname, vidpart).data(\prebody, qnum)
 
 insertQuestion = root.insertQuestion = (question, options) ->
@@ -1777,13 +1818,14 @@ insertQuestion = root.insertQuestion = (question, options) ->
   root.currentQuestionQnum = qnum
   turnOffAllDefaultbuttons()
   removeAllVideos()
-  body = J('.panel-body').attr('id', "body_#qnum").data('qidx', question.idx).data(\type, \question)
-  body.append J('h3').text question.title
-  body.append J('span').text question.text
-  body.append J('br')
+  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).data('qidx', question.idx).data(\type, \question)
   vidname = getVidnameForQuestion(question)
   vidpart = getVidpartForQuestion(question)
   vidnamepart = getVidnamePartForQuestion(question)
+  question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
+  body.append J('h3').text question-title
+  body.append J('span').text question.text
+  body.append J('br')
   optionsdiv = J("\#options_#qnum")
   for option,idx in question.options
     createWidget(question.type, qnum, idx, option, optionsdiv)
@@ -1807,7 +1849,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qnum: qnum
       }
   insertCheckAnswerButton = ->
-    body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.text('check answer').click (evt) ->
+    body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
       answers = getAnswerValue question.type, qnum
       console.log answers
       if isAnswerCorrect question, answers
@@ -1870,7 +1912,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qnum: qnum
       }
       resetIfNeeded getCurrentQuestionQnum()
-      if not root.mock-insert-video
+      if not root.replaying-logs
         placeVideoBefore(vidname, vidpart, qnum)
         setInsertionReasonAsQuestion(vidname, vidpart, qnum)
         showVideo(vidname, vidpart)
@@ -1923,20 +1965,31 @@ insertQuestion = root.insertQuestion = (question, options) ->
   #  insertSkipButton()
   insertShowAnswerButton()
   insertNextQuestionButton()
-  $('#quizstream').append J('#prebody_' + qnum)
-  $('#quizstream').append /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/ body
+  $('#quizstream').prepend J('#prebody_' + qnum)
+  body.prependTo($('#quizstream')).hide()
+  setTimeout ->
+    body.slideDown(1000) /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/
+  , 1000
   scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
-  if root.question_progress[question.idx].correct.length > 0
-    showButton qnum, \show
-    setDefaultButton qnum, \show
+  #heightinserted = $(window).height() - origheight
+  /*
+  if not root.replaying-logs
+    heightinserted = $('#prebody_' + qnum).offset().top
+    console.log 'heightinserted is: ' + heightinserted
+    $(window).scrollTop(heightinserted)
+    scrollWindow 0
+  */
+  #if root.question_progress[question.idx].correct.length > 0
+  #  showButton qnum, \show
+  #  setDefaultButton qnum, \show
 
 isMouseInVideo = (evt) ->
   video = $ \.activevideo
   if video.length < 1
     return false
-  if timeSinceVideoFocus() < 1.0
-    return true
+  #if timeSinceVideoFocus() < 1.0
+  #  return true
   video-top = video.offset().top
   video-bottom = video-top + video.height()
   return video-top <= parseFloat(evt.pageY) <= video-bottom
@@ -1944,9 +1997,10 @@ isMouseInVideo = (evt) ->
 isScrollAtBottom = ->
   return $(window).scrollTop() + $(window).height() == $(document).height()
 
-root.mock-insert-video = false
+root.replaying-logs = false
 
 replayLogs = (logs) ->
+  root.replaying-logs = true
   for log in logs
     console.log 'replaying: ' + JSON.stringify(log)
     switch log.event
@@ -1954,13 +2008,14 @@ replayLogs = (logs) ->
       if log.qnum != 0 #if bodyExists(log.qnum)
         continue
       insertQuestion root.questions[log.qidx], {qnum: log.qnum}
-    | \watch => root.mock-insert-video = true; (getButton log.qnum, \watch).click(); root.mock-insert-video = false
+    | \watch => (getButton log.qnum, \watch).click()
     | \check => (getButton log.qnum, \check).click()
     | \show => (getButton log.qnum, \show).click()
     | \next => (getButton log.qnum, \next).click()
     | \checkbox => setOption \checkbox, log.qnum, log.optionidx, log.value
     | \radio => setOption \radio, log.qnum, log.optionidx, log.value
     | _ => console.log(log)
+  root.replaying-logs = false
 
 videoHeightFractionVisible = ->
   video = $('.activevideo')
@@ -1995,6 +2050,7 @@ $(document).ready ->
     console.log 'document mousedown'
     resetButtonFill()
     if isVideoFocused()
+      console.log 'docuemtn mousedown video is focused'
       if not isMouseInVideo(evt)
         console.log 'document mousedown setvideofocused false'
         setVideoFocused(false)
@@ -2006,16 +2062,25 @@ $(document).ready ->
   $(document).mousewheel (evt) ->
     try
       #console.log evt
-      if isVideoPlaying() and videoHeightFractionVisible() < 0.85
-        pauseVideo()
-      else if not isVideoPlaying() and videoHeightFractionVisible() > 0.85
-        playVideo()
-      if $('.activevideo').length > 0 and false #and isVideoPlaying()
+      scrolling-towards-video = false
+      if $('.activevideo').length > 0
         window-top = $(window).scrollTop()
         video-top = $('.activevideo').offset().top
         window-bottom = window-top + $(window).height()
         video-bottom = video-top + $('.activevideo').height()
         #if Math.abs(window-bottom - video-bottom) < 50
+        window-center = (window-top + window-bottom) / 2
+        video-center = (video-top + video-bottom) / 2
+      console.log evt.deltaY
+      if evt.deltaY < 0 and window-center < video-center # scrolling downwards, towards video
+        scrolling-towards-video = true
+      if evt.deltaY > 0 and window-center > video-center # scrolling upwards, towards video
+        scrolling-towards-video = true
+      if isVideoPlaying() and videoHeightFractionVisible() < 0.85 and not scrolling-towards-video
+        pauseVideo()
+      else if not isVideoPlaying() and videoHeightFractionVisible() > 0.85 and scrolling-towards-video
+        playVideo()
+      if $('.activevideo').length > 0 and false #and isVideoPlaying()
         invideo = false
         if isVideoFocused()
           if evt.deltaY < 0 and videoAtEnd()
