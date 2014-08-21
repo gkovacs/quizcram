@@ -920,6 +920,12 @@ timeSinceVideoFocus = root.timeSinceVideoFocus = ->
     return 0
   return (Date.now() - video.data('timeVideoFocused')) / 1000
 
+getVideoPanel = (elem) ->
+  while elem? and elem.parent?
+    if elem.hasClass(\videopanel)
+      return elem
+    elem = elem.parent()
+
 setVideoFocused = root.setVideoFocused = (isFocused) ->
   video = $(\.activevideo)
   if not video? or not video.length? or video.length < 1
@@ -929,7 +935,7 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
     #video-top = video.offset().top
     #$(window).scrollTop(video-top)
     #scrollWindow video-top
-    scrollToElement video
+    scrollToElement video #getVideoPanel(video)
   else
     pauseVideo()
   video.data('focused', isFocused)
@@ -948,11 +954,30 @@ getQnumOfPanelAbove = root.getQnumOfPanelAbove = (qnum) ->
 removeAllVideos = root.removeAllVideos = ->
   $('.videopanel').remove()
 
+fixVideoHeight = (video) ->
+  if video.length < 1
+    return
+  height = video[0].videoHeight
+  width = video[0].videoWidth
+  max-height = $(window).height()
+  max-width = $(window).width()
+  max-width = Math.min max-width, max-height * width / height
+  max-height = Math.min max-height, max-width * height / width
+  video.height max-height
+  /*
+  if video.height() >= height # is either correct size or have to shrink
+    if height > $(window).height() # video is too large doesn't fit vertically
+      video.height $(window).height() #- 20
+  else # is either correct size or can expand
+    if $(window).height() >= height and $(video).height() < height # can stretch video vertically
+      video.height height
+  */
+
 insertVideo = (vidname, vidpart, reasonForInsertion) ->
   [start,end] = getVideoStartEnd vidname, vidpart
   qnum = counterNext 'qnum'
   vidnamepart = toVidnamePart(vidname, vidpart)
-  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, vidpart)
+  body = J('.panel-body').css(\padding-top, \0px).css(\padding-left, \0px).css(\padding-right, \0px).attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, vidpart)
   console.log vidname
   basefilename = root.video_info[vidname].filename
   fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: start, end: end}
@@ -973,6 +998,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .addClass('activevideo')
     #.data('focused', true)
     .click (evt) ->
+      fixVideoHeight $(this)
       console.log 'mousedown video ' + qnum
       gotoNum qnum
       if not isVideoPlaying()
@@ -986,6 +1012,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
         $(this).addClass \activevideo
       setVideoFocused(true)
       */
+    .on 'loadedmetadata', (evt) ->
+      fixVideoHeight $(this)
     .append J('source')
       .attr('src', fileurl)
   #setInterval ->
@@ -1881,6 +1909,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
       }
   insertCheckAnswerButton = ->
     body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
+      gotoNum qnum
       answers = getAnswerValue question.type, qnum
       console.log answers
       if isAnswerCorrect question, answers
@@ -1949,6 +1978,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         showVideo(vidname, vidpart)
         #showChildVideo qnum
         playVideo()
+        setVideoFocused(true)
       #playVideoFromStart()
     if autotrigger
       setDefaultButton watch-video-button
@@ -2002,6 +2032,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
     body.hide()
     setTimeout ->
       body.slideDown(1000) /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/
+      removeAllVideos()
       scrollToElement body
     , 1000
   scrambleAnswerOptions qnum
