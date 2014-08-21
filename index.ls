@@ -926,9 +926,10 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
     return false
   if isFocused
     video.data('timeVideoFocused', Date.now())
-    video-top = video.offset().top
+    #video-top = video.offset().top
     #$(window).scrollTop(video-top)
-    scrollWindow video-top
+    #scrollWindow video-top
+    scrollToElement video
   else
     pauseVideo()
   video.data('focused', isFocused)
@@ -997,8 +998,11 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     #.css \height, \100px
     .css \position, \absolute
     .css \top, \0px
+    .css \padding-left, \10px
+    .css \padding-top, \2px
+    .css \padding-bottom, \2px
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
-  video-header.append J('span').css(\color, \white).css(\margin-left, \15px).css(\font-size, \24px).text fulltitle
+  video-header.append J('span').css(\color, \white).css(\font-size, \24px).text fulltitle
   video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \30px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
   if reasonForInsertion?
     video-header.append $(reasonForInsertion).addClass('insertionreason').css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
@@ -1027,7 +1031,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
         gotoNum counterCurrent(\qnum)
         break
       */
-  close-button = J(\span.glyphicon.glyphicon-remove-circle).css(\font-size, \24px).css(\float, \right).css(\color, \white).css(\display, \block)
+  close-button = J(\span.glyphicon.glyphicon-remove-circle).css(\font-size, \24px).css(\position, \absolute).css(\top, \5px).css(\right, \5px).css(\color, \white).css(\display, \block)
     ..hover ->
       $(this).css \cursor, \pointer
     ..click ->
@@ -1145,6 +1149,26 @@ childVideoAlreadyInserted = (qnum) ->
 getChildVideoQnum = (qnum) ->
   return $("\#body_#qnum").data \video
 
+isParentAnimated = (elem) ->
+  while not (elem.hasClass(\.panel-body) or elem.attr(\id) == \#quizstream)
+    if elem.is(\:animated)
+      return true
+    elem = elem.parent()
+  return false
+
+scrollToElement = (elem) ->
+  offset = elem.offset().top
+  scrollWindow offset
+  if isParentAnimated(elem)
+    console.log 'animated!'
+    setTimeout ->
+      newoffset = elem.offset().top
+      if Math.abs(newoffset - offset) > 30
+        console.log 'have new offset!'
+        scrollWindow newoffset
+    , 350
+
+
 scrollWindowBy = (offset) ->
   scrollWindow $(window).scrollTop() + offset
 
@@ -1158,7 +1182,8 @@ gotoQuestionNum = (qnum) ->
   pauseVideo()
   $(\.activevideo).removeClass \activevideo
   body = getBody qnum
-  scrollWindow body.offset().top
+  scrollToElement body
+  #scrollWindow body.offset().top
   #$(window).scrollTop body.offset().top
   #throw 'gotoQuestionNum unimplemented'
 
@@ -1791,6 +1816,11 @@ viewPreviousClip = (vidname, vidpart) ->
   showVideo dvidname, dvidpart
   playVideo()
 
+appendWithSlideDown = (elem, parent, time) ->
+  if not time?
+    time = 300
+  elem.appendTo(parent).hide().slideDown(time)
+
 placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
   vidnamepart = toVidnamePart vidname, vidpart
   curvid = getVideo(vidname, vidpart)
@@ -1800,12 +1830,13 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
     else
       target-body = $('#prebody_' + qnum)
       curvid.detach()
-      target-body.append curvid
+      #target-body.append curvid
+      appendWithSlideDown curvid, target-body
       curvid.data(\prebody, qnum)
   else
     newvideo = insertVideo vidname, vidpart, "<span>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</span>"
     #$('#prebody_' + qnum).append newvideo
-    newvideo.appendTo($('#prebody_' + qnum)).hide().slideDown(1000)
+    appendWithSlideDown newvideo, $('#prebody_' + qnum)
     getVideo(vidname, vidpart).data(\prebody, qnum)
 
 insertQuestion = root.insertQuestion = (question, options) ->
@@ -1966,10 +1997,13 @@ insertQuestion = root.insertQuestion = (question, options) ->
   insertShowAnswerButton()
   insertNextQuestionButton()
   $('#quizstream').prepend J('#prebody_' + qnum)
-  body.prependTo($('#quizstream')).hide()
-  setTimeout ->
-    body.slideDown(1000) /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/
-  , 1000
+  body.prependTo($('#quizstream'))
+  if not options.immediate?
+    body.hide()
+    setTimeout ->
+      body.slideDown(1000) /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/
+      scrollToElement body
+    , 1000
   scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
   #heightinserted = $(window).height() - origheight
@@ -2043,6 +2077,7 @@ videoHeightFractionVisible = ->
   fraction-shown = video-shown / Math.min(window-height, video-height)
   return fraction-shown
 
+root.skip-load-logs = true
 
 $(document).ready ->
   console.log 'ready'
@@ -2135,15 +2170,18 @@ $(document).ready ->
     finally
       evt.preventDefault()
       return false
-  getlog (logs) ->
-    if logs.length > 0
-      root.logging-disabled = true
-      console.log 'replaying logs!'
-      root.logged-data = logs
-      replayLogs(logs)
-      root.logging-disabled = false
-    else
-      insertQuestion getNextQuestion()
+  if not root.skip-load-logs
+    getlog (logs) ->
+      if logs.length > 0
+        root.logging-disabled = true
+        console.log 'replaying logs!'
+        root.logged-data = logs
+        replayLogs(logs)
+        root.logging-disabled = false
+      else
+        insertQuestion getNextQuestion(), {immediate: true}
+  else
+    insertQuestion getNextQuestion(), {immediate: true}
     ensureLoggedToServer(root.logged-data, 'logged-data')
   #insertQuestion questions[0]
   #for question in root.questions.slice 0,1
