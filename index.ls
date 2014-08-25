@@ -221,6 +221,11 @@ root.video_dependencies = {
   '1-3-4': [ '1-3-3' ]
 }
 
+listVideos = root.listVideos = ->
+  video-names = [vidname for vidname,vidinfo of root.video_info]
+  video-names.sort()
+  return video-names
+
 getAllDependencies = root.getAllDependencies = (videoname) ->
   if not root.video_dependencies[videoname]?
     return []
@@ -300,29 +305,27 @@ root.questions = [
         part: 2
       }
     ]
-    /*
-    text: 'Which of the following are not influenced by homeostatic brain functions?'
-    title: '1-1-1 Question 3'
-    type: 'checkbox'
+  }
+  {
+    text: 'How well did you understand this video?'
+    title: 'some question'
+    type: 'radio'
+    autoshowvideo: true
+    nocheckanswer: true
     options: [
-      'Digestion'
-      'Breathing'
-      'Sleeping'
-      'Eating'
-      'Blood pressure'
+      'perfectly understand'
+      'somewhat understand'
+      'do not understand'
     ]
-    correct: [
-      # none checked
-    ]
-    explanation: 'Homeostasis is the process of maintaining healthy internal conditions, such as body temperature, pH, and blood oxygen levels. All of the functions listed as answer options are influenced by homeostatic brain functions.'
+    correct: 0
+    explanation: 'some explanation'
     videos: [
       {
         name: '1-1-1'
         degree: 1.0
-        part: 2
+        part: 3
       }
     ]
-    */
   }
   {
     text: 'Which of the following are true of the brainstem?'
@@ -1222,21 +1225,40 @@ isParentAnimated = (elem) ->
     elem = elem.parent()
   return false
 
+printStack = ->
+  e = new Error('dummy')
+  stack = e.stack.replace(/^[^\(]+?[\n$]/gm, '')
+    .replace(/^\s+at\s+/gm, '')
+    .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
+    .split('\n')
+  console.log stack
+
+root.scroll-elem-idx = 0
+
 scrollToElement = (elem) ->
+  root.scroll-elem-idx += 1
+  cur-elem-idx = root.scroll-elem-idx
   offset = elem.offset().top
   scrollWindow offset
+  console.log 'scrollToElement'
+  console.log elem
+  printStack()
   if isParentAnimated(elem)
     console.log 'animated!'
     setTimeout ->
+      if cur-elem-idx != root.scroll-elem-idx
+        return
       newoffset = elem.offset().top
       if Math.abs(newoffset - offset) > 30
         console.log 'have new offset!'
+        console.log 'going to element:'
+        console.log elem
         scrollWindow newoffset
     , 350
 
 
-scrollWindowBy = (offset) ->
-  scrollWindow $(window).scrollTop() + offset
+#scrollWindowBy = (offset) ->
+#  scrollWindow $(window).scrollTop() + offset
 
 scrollWindow = (offset-top) ->
   #$(window).scrollTop offset-top
@@ -1491,9 +1513,10 @@ createWidget = (type, qnum, idx, option, body) ->
   | \checkbox => createCheckbox(qnum, idx, option, body)
   | _ => throw 'nonexistant question type ' + type
 
-getRadioValue = root.getRadioValue = (radioname) ->
-  throw 'getRadioValue not implemented'
-  #return parseInt $("input[type=radio][name=#radioname]:checked").val()
+getRadioValue = root.getRadioValue = (qnum) ->
+  #throw 'getRadioValue not implemented'
+  radioname = 'radiogroup_' + qnum
+  return parseInt $("input[type=radio][name=#radioname]:checked").val()
 
 getCheckboxes = root.getCheckboxes = (qnum) ->
   numoptions = $('.checkboxgroup_' + qnum).length
@@ -1646,7 +1669,7 @@ hideAnswer = root.hideAnswer = (qnum) ->
   if question.type == \checkbox
     $(".checkboxgroup_#{qnum}").prop \checked, false
   else if question.type == \radio
-    throw 'radio show answer not yet implemented'
+    $(".radiogroup_#{qnum}").prop \checked, false
   feedback-display = $("\#iscorrect_#qnum")
   feedback-display.html ''
   explanation-display = $("\#explanation_#qnum")
@@ -1668,7 +1691,8 @@ showAnswer = root.showAnswer = (qnum) ->
     for answeridx in question.correct
       $("\#checkbox_#{qnum}_#{answeridx}").prop \checked, true
   else if question.type == \radio
-    throw 'radio show answer not yet implemented'
+    $(".radiogroup_#{qnum}").prop \checked, false
+    $("\#radio_#{qnum}_#{question.correct}").prop \checked, true
   feedback-display = $("\#iscorrect_#qnum")
   feedback-display.html '<b style="color: red">Incorrect - see correct answer above</b>'
   explanation-display = $("\#explanation_#qnum")
@@ -1745,7 +1769,7 @@ disableButtonAutotrigger = ->
     button.removeClass \btn-primary
     button.addClass \btn-default
 
-getButton = (qnum, buttontype) ->
+getButton = root.getButton = (qnum, buttontype) ->
   switch buttontype
   | \show => $("\#show_#qnum")
   | \check => $("\#check_#qnum")
@@ -2026,13 +2050,15 @@ insertQuestion = root.insertQuestion = (question, options) ->
       (getButton qnum, \watch).click()
     body.append review-video-button
   insertNextQuestionButton = ->
-    body.append J('button.btn.btn-default.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.text('next question').click (evt) ->
+    body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next question').click (evt) ->
       addlog {
         event: 'next'
         type: 'button'
         qidx: question.idx
         qnum: qnum
       }
+      questionCorrect question
+      hideButton qnum, \next
       #disableQuestion qnum
       insertQuestion getNextQuestion()
   /*
@@ -2066,15 +2092,27 @@ insertQuestion = root.insertQuestion = (question, options) ->
   insertNextQuestionButton()
   $('#quizstream').prepend J('#prebody_' + qnum)
   body.prependTo($('#quizstream'))
-  if not options.immediate?
+  autoShowVideo = ->
+    console.log 'autoshowvideo for question ' + qnum
+    (getButton qnum, \watch).click()
+  if not options.immediate? #and not question.autoshowvideo
     body.hide()
     setTimeout ->
-      body.slideDown(1000) /*J('.panel.panel-default')*/ /*J('div').attr('id', "panel_#qnum").append*/
       removeAllVideos()
-      scrollToElement body
+      if question.autoshowvideo
+        body.slideDown(800)
+        setTimeout autoShowVideo, 1100
+      else
+        body.slideDown(800)
+        scrollToElement body
     , 1000
   scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
+  if options.immediate and question.autoshowvideo
+    autoShowVideo()
+  if question.nocheckanswer
+    (getButton qnum, \check).hide()
+    (getButton qnum, \next).show()
   #heightinserted = $(window).height() - origheight
   /*
   if not root.replaying-logs
