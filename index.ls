@@ -1424,9 +1424,14 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       gotoNum target-qnum
       (getButton target-qnum, \watch).show()
   video-header.append close-button
-  for part-idx in [0 to vidpart]
-    start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
-    addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", (part-idx == vidpart)
+  if vidpart?
+    for part-idx in [0 to vidpart]
+      start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
+      addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", (part-idx == vidpart)
+  else
+    for part-idx in [0 til root.video_info[vidname].parts.length]
+      start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
+      addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", false
   return body
 
 root.question-to-video-dependencies = {}
