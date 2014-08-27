@@ -865,6 +865,7 @@ markVideoSecondWatched = root.markVideoSecondWatched = (vidname, vidpart, second
   viewing-history[Math.round(second + start)] = 1
 
 setWatchButtonProgress = root.setWatchButtonProgress = (vidname, vidpart, percent-viewed) ->
+  $('.videoprogress_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).text(toPercent(percent-viewed) + '% seen')
   $('.watch_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> watch video (' + toPercent(percent-viewed) + '% seen)')
   $('.review_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> review video before answering again (' + toPercent(percent-viewed) + '% seen)')
 
@@ -989,20 +990,30 @@ fixVideoHeight = root.fixVideoHeight = (video) ->
     return
   height = video[0].videoHeight
   width = video[0].videoWidth
+  max-height = $(window).height() #* 0.5
+  max-width = $(window).width() * 0.7
+  max-width = Math.min max-width, max-height * width / height
+  max-height = Math.min max-height, max-width * height / width
+  if video.height != max-height
+    video.height max-height
+
+fixVideoHeightFull = root.fixVideoHeightFull = (video) ->
+  if video.length < 1
+    return
+  height = video[0].videoHeight
+  width = video[0].videoWidth
   max-height = $(window).height()
   max-width = $(window).width()
   max-width = Math.min max-width, max-height * width / height
   max-height = Math.min max-height, max-width * height / width
   if video.height != max-height
     video.height max-height
-  /*
-  if video.height() >= height # is either correct size or have to shrink
-    if height > $(window).height() # video is too large doesn't fit vertically
-      video.height $(window).height() #- 20
-  else # is either correct size or can expand
-    if $(window).height() >= height and $(video).height() < height # can stretch video vertically
-      video.height height
-  */
+
+getLastVideoForQuestion = root.getLastVideoForQuestion = (qnum) ->
+  child-videos = $('#prebody_' + qnum).find(\.videopanel)
+  child-videos.sort (a,b) ->
+    $(a).offset().top - $(b).offset().top
+  return child-videos[*-1]
 
 insertVideo = (vidname, vidpart, reasonForInsertion) ->
   [start,end] = getVideoStartEnd vidname, vidpart
@@ -1011,7 +1022,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   body = J('.panel-body').css(\padding-top, \0px).css(\padding-left, \0px).css(\padding-right, \0px).attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, vidpart)
   console.log vidname
   basefilename = root.video_info[vidname].filename
-  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: start, end: end}
+  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: start, end: end, randpart: randomString(10)}
   title = root.video_info[vidname].title
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title
@@ -1072,9 +1083,9 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .css \margin-bottom, \0px
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).text fulltitle
-  video-header.append J('h3#progress_' + qnum).css(\color, \white).css(\float, \left).css(\margin-left, \30px).css(\margin-top, \10px).css(\display, \none).text 'foobar'
+  video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css(\color, \white).css(\margin-left, \30px).css(\font-size, \24px).text '0% seen'
   if reasonForInsertion?
-    video-header.append $(reasonForInsertion).addClass('insertionreason').css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
+    video-header.append $(reasonForInsertion).addClass('insertionreason').css(\display, \none).css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
   videodiv.append video
   videodiv.append video-header
   body.append videodiv
@@ -1105,10 +1116,12 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       $(this).css \cursor, \pointer
     ..click ->
       amount-to-scroll-up = $('#body_' + qnum).height()
-      target-qnum = getQnumOfPanelAbove qnum
+      #target-qnum = getQnumOfPanelAbove qnum
+      target-qnum = (getVideo vidname, vidpart).data \prebody
       $('#body_' + qnum).remove()
       #scrollWindowBy -amount-to-scroll-up
       gotoNum target-qnum
+      (getButton target-qnum, \watch).show()
   video-header.append close-button
   return body
 
@@ -1677,7 +1690,7 @@ hideAnswer = root.hideAnswer = (qnum) ->
   hideButton qnum, \show
   hideButton qnum, \next
   showButton qnum, \check
-  showButton qnum, \watch
+  #showButton qnum, \watch
   hideButton qnum, \review
   enableAnswerOptions qnum
   scrambleAnswerOptions qnum
@@ -1919,6 +1932,7 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
       return # already inserted in the correct location
     else
       target-body = $('#prebody_' + qnum)
+      (getButton curvid.data(\prebody), \watch).show()
       curvid.detach()
       #target-body.append curvid
       appendWithSlideDown curvid, target-body
@@ -1938,8 +1952,8 @@ insertQuestion = root.insertQuestion = (question, options) ->
     qnum = counterNext 'qnum'
   root.currentQuestionQnum = qnum
   turnOffAllDefaultbuttons()
-  removeAllVideos()
-  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).data('qidx', question.idx).data(\type, \question)
+  #removeAllVideos()
+  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).data('qidx', question.idx).data(\type, \question).css(\padding-top, \0px)
   vidname = getVidnameForQuestion(question)
   vidpart = getVidpartForQuestion(question)
   vidnamepart = getVidnamePartForQuestion(question)
@@ -1970,7 +1984,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qnum: qnum
       }
   insertCheckAnswerButton = ->
-    body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px')/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
+    body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
       gotoNum qnum
       answers = getAnswerValue question.type, qnum
       console.log answers
@@ -1987,15 +2001,15 @@ insertQuestion = root.insertQuestion = (question, options) ->
         questionCorrect question
         #insertQuestion getNextQuestion()
         #disableQuestion qnum
-        showButton qnum, \watch
+        #showButton qnum, \watch
         hideButton qnum, \review
         hideButton qnum, \check
         hideButton qnum, \show
         showButton qnum, \next
-        setDefaultButton qnum, \next
+        #setDefaultButton qnum, \next
         disableAnswerOptions qnum
-        insertQuestion getNextQuestion()
-        (getButton qnum, \next).hide()
+        #insertQuestion getNextQuestion()
+        #(getButton qnum, \next).hide()
         (getBody qnum).data(\answered, true)
         (getBody qnum).data(\correct, true)
       else
@@ -2009,7 +2023,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         }
         showIsCorrect qnum, false
         questionIncorrect question
-        setDefaultButton qnum, \watch
+        #setDefaultButton qnum, \watch
         showAnswer qnum
         (getBody qnum).data(\answered, true)
         (getBody qnum).data(\correct, false)
@@ -2025,8 +2039,13 @@ insertQuestion = root.insertQuestion = (question, options) ->
         #  disableQuestion qnum
         #  insertReview question
         #  reviewInserted (counterCurrent \qnum)
+  insertVideoHere = ->
+    placeVideoBefore(vidname, vidpart, qnum)
+    setInsertionReasonAsQuestion(vidname, vidpart, qnum)
+    showVideo(vidname, vidpart)
+    setVideoFocused(true)
   insertWatchVideoButton = (autotrigger) ->
-    watch-video-button = J('button.btn.btn-primary.btn-lg#watch_' + qnum).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px')/*.text("watch video (0% seen)")*/.click (evt) ->
+    watch-video-button = J('button.btn.btn-primary.btn-lg#watch_' + qnum).css(\display, \none).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px').css(\width, \100%)/*.text("watch video (0% seen)")*/.click (evt) ->
       addlog {
         event: 'watch'
         type: 'button'
@@ -2035,31 +2054,30 @@ insertQuestion = root.insertQuestion = (question, options) ->
       }
       resetIfNeeded getCurrentQuestionQnum()
       if not root.replaying-logs
-        placeVideoBefore(vidname, vidpart, qnum)
-        setInsertionReasonAsQuestion(vidname, vidpart, qnum)
-        showVideo(vidname, vidpart)
-        #showChildVideo qnum
+        insertVideoHere()
         playVideo()
-        setVideoFocused(true)
-      #playVideoFromStart()
+      (getButton qnum, \watch).hide()
     if autotrigger
       setDefaultButton watch-video-button
     body.append watch-video-button
   insertReviewVideoButton = ->
-    review-video-button = J('button.btn.btn-primary.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').text('review video before answering again (0% seen)').click (evt) ->
+    review-video-button = J('button.btn.btn-primary.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').css(\width, \100%).text('review video before answering again (0% seen)').click (evt) ->
       (getButton qnum, \watch).click()
     body.append review-video-button
   insertNextQuestionButton = ->
-    body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next question').click (evt) ->
+    body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next question').click (evt) ->
       addlog {
         event: 'next'
         type: 'button'
         qidx: question.idx
         qnum: qnum
       }
+      body.css \padding-top, \0px
+      pauseVideo()
       questionCorrect question
       hideButton qnum, \next
       #disableQuestion qnum
+      #showButton qnum, \watch
       insertQuestion getNextQuestion()
   /*
   insertSkipButton = ->
@@ -2090,26 +2108,39 @@ insertQuestion = root.insertQuestion = (question, options) ->
   #  insertSkipButton()
   insertShowAnswerButton()
   insertNextQuestionButton()
-  $('#quizstream').prepend J('#prebody_' + qnum)
-  body.prependTo($('#quizstream'))
+  #body.append J('.endquestion#endquestion_' + qnum).data(\qnum, qnum)
+  containerdiv = J(\div).css({width: \100%}).append [
+    J(\div).css({width: \30%, float: \left}).append(body),
+    J(\div).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
+    J(\div).css({clear: \both})
+  ]
+  containerdiv.prependTo $(\#quizstream)
+  #$('#quizstream').prepend J('#prebody_' + qnum)
+  #body.prependTo($('#quizstream'))
   autoShowVideo = ->
     console.log 'autoshowvideo for question ' + qnum
     (getButton qnum, \watch).click()
   if not options.immediate? #and not question.autoshowvideo
     body.hide()
     setTimeout ->
-      removeAllVideos()
+      #removeAllVideos()
       if question.autoshowvideo
-        body.slideDown(800)
-        setTimeout autoShowVideo, 1100
+        body.slideDown(300)
+        setTimeout ->
+          playVideo()
+        , 500
       else
-        body.slideDown(800)
+        body.slideDown(300)
         scrollToElement body
-    , 1000
+    , 0
   scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
-  if options.immediate and question.autoshowvideo
-    autoShowVideo()
+  setTimeout ->
+    insertVideoHere()
+    if options.immediate and question.autoshowvideo
+      #autoShowVideo()
+      playVideo()
+  , 0
   if question.nocheckanswer
     (getButton qnum, \check).hide()
     (getButton qnum, \next).show()
@@ -2208,6 +2239,7 @@ $(document).ready ->
       | _ => console.log key; return true
       evt.preventDefault()
       return false
+  /*
   $(document).mousewheel (evt) ->
     try
       #console.log evt
@@ -2244,12 +2276,6 @@ $(document).ready ->
           console.log 'video-bottom is:' + video-bottom
           console.log 'video-top is:' + video-top
           setVideoFocused(false)
-        /*
-        if evt.deltaY < 0 and (Math.abs(window-top - video-top) <= 20) and not videoAtEnd() # scrolling downwards
-          invideo = true
-        if evt.deltaY > 0 and (Math.abs(window-top - video-top) <= 20) and not videoAtFront()
-          invideo = true
-        */
         if invideo
           $(window).scrollTop(video-top)
           if not isVideoPlaying() and not videoAtEnd()
@@ -2268,13 +2294,6 @@ $(document).ready ->
         else
           pauseVideo()
         return
-      /*
-      if evt.deltaY < 0 and isScrollAtBottom()
-        increaseButtonFill()
-        return
-      else
-        resetButtonFill()
-      */
       if evt.deltaY < 0
         $(window).scrollTop $(window).scrollTop() + 30
       else if evt.deltaY > 0
@@ -2284,6 +2303,7 @@ $(document).ready ->
     finally
       evt.preventDefault()
       return false
+  */
   if not root.skip-load-logs
     getlog (logs) ->
       if logs.length > 0
@@ -2295,8 +2315,30 @@ $(document).ready ->
       else
         insertQuestion getNextQuestion(), {immediate: true}
   else
-    insertQuestion getNextQuestion(), {immediate: true}
+    #insertQuestion getNextQuestion(), {immediate: true}
+    insertQuestion getNextQuestion()
     ensureLoggedToServer(root.logged-data, 'logged-data')
+  root.prev-scroll-top = 0
+  setInterval ->
+    scroll-top = $(window).scrollTop()
+    if scroll-top == root.prev-scroll-top
+      return
+    root.prev-scroll-top = scroll-top
+    qnum = getCurrentQuestionQnum()
+    body = getBody qnum
+    body-bottom = body.parent().parent().height()
+    #last-video = getLastVideoForQuestion qnum
+    #if not last-video?
+    #  return
+    #last-video-top = $(last-video).offset().top
+    body-height = (getBody qnum).height()
+    if scroll-top > body-bottom - body-height - 40
+      scroll-top = body-bottom - body-height - 40
+    if 0 <= scroll-top <= body-bottom - body-height
+      body.animate {
+        padding-top: scroll-top
+      }, 200
+  , 500
   #insertQuestion questions[0]
   #for question in root.questions.slice 0,1
   #  insertQuestion question
