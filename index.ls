@@ -2331,13 +2331,11 @@ $(document).ready ->
     #if not last-video?
     #  return
     #last-video-top = $(last-video).offset().top
-    body-height = (getBody qnum).height()
-    if scroll-top > body-bottom - body-height - 40
-      scroll-top = body-bottom - body-height - 40
-    if 0 <= scroll-top <= body-bottom - body-height
-      body.animate {
-        padding-top: scroll-top
-      }, 200
+    body-height = body.height()
+    scroll-top = Math.min scroll-top, body-bottom - body-height - 40
+    body.animate {
+      padding-top: scroll-top
+    }, 200
   , 500
   #insertQuestion questions[0]
   #for question in root.questions.slice 0,1
