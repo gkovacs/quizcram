@@ -1307,8 +1307,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .css \margin-top, \0px
     .css \margin-bottom, \0px
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
-  video-header.append J('span').css(\color, \white).css(\font-size, \24px).text fulltitle
-  video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css(\color, \white).css(\margin-left, \30px).css(\font-size, \24px).text '0% seen'
+  video-header.append J('span').css(\color, \white).css(\font-size, \24px).css(\pointer-events, \none).text fulltitle
+  video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css(\pointer-events, \none).css(\color, \white).css(\margin-left, \30px).css(\font-size, \24px).text '0% seen'
   if reasonForInsertion?
     video-header.append $(reasonForInsertion).addClass('insertionreason').css(\display, \none).css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
   video-footer = J(\.videofooter)
@@ -1379,8 +1379,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .css \border-radius, \15px
     .css \color, \white
     .css \font-size, \20px
-    .css \top, \60px
-    .css \left, \20px
+    .css \bottom, \70px
+    .css \left, \30px
     .css \text-align, \center
     .css \display, \none
     #.css \height, \50px
