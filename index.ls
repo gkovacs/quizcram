@@ -816,6 +816,9 @@ toPercent = (num) ->
   #return (num * 100).toFixed(2)
   return (num * 100).toFixed(0)
 
+toPercentCss = (num) ->
+  return (num * 100).toString() + '%'
+
 toSeconds = (time) ->
   if not time?
     return null
@@ -860,7 +863,39 @@ getVideoProgress = root.getVideoProgress = (vidname, vidpart) ->
   relevant-section = viewing-history[Math.round(start) to Math.round(end)]
   return sum(relevant-section) / relevant-section.length
 
-getVideoSeenIntervals = root.getVideoSeenIntervals = (vidname, vidpart) ->
+isCurrentPortionPreviouslySeen = root.isCurrentPortionPreviouslySeen = (qnum) ->
+  curtime = Math.round $('#video_' + qnum)[0].currentTime
+  vidname = getVidname qnum
+  vidpart = getVidpart qnum
+  [start,end] = getVideoStartEnd vidname, vidpart
+  start = 0
+  length = end - start
+  viewing-history = root.video-parts-seen[vidname]
+  relevant-section = viewing-history[Math.round(start) to Math.round(end)]
+  console.log 'curtmie is:'
+  console.log curtime
+  console.log 'relevant-section'
+  console.log relevant-section
+  console.log 'slice of curtime'
+  console.log relevant-section[curtime to curtime + 3]
+  if sum(relevant-section[curtime to curtime + 3]) >= 3
+    return true
+  return false
+
+skipToEndOfSeenPortion = root.skipToEndOfSeenPortion = (qnum) ->
+  #if not isCurrentPortionPreviouslySeen qnum
+  #  return
+  curtime = Math.round $('#video_' + qnum)[0].currentTime
+  vidname = getVidname qnum
+  vidpart = getVidpart qnum
+  seen-intervals = getVideoSeenIntervalsRaw vidname, vidpart
+  for [start,end] in seen-intervals
+    if start <= curtime < end - 1
+      seekVideoTo end - 1
+      (getVideo vidname, vidpart).find(\.skipseen).hide()
+      return
+
+getVideoSeenIntervalsRaw = root.getVideoSeenIntervalsRaw = (vidname, vidpart) ->
   [start,end] = getVideoStartEnd vidname, vidpart
   start = 0
   length = end - start
@@ -872,12 +907,19 @@ getVideoSeenIntervals = root.getVideoSeenIntervals = (vidname, vidpart) ->
   for val,i in relevant-section
     if val == 0
       if interval-start?
-        seen-intervals.push [interval-start / length, i / length]
+        seen-intervals.push [interval-start, i]
         interval-start = null
     else
       if not interval-start?
         interval-start = i
   return seen-intervals
+
+getVideoSeenIntervals = root.getVideoSeenIntervals = (vidname, vidpart) ->
+  [start,end] = getVideoStartEnd vidname, vidpart
+  start = 0
+  length = end - start
+  seen-intervals = getVideoSeenIntervalsRaw vidname, vidpart
+  return [[start / length, end / length] for [start,end] in seen-intervals]
 
 markVideoSecondWatched = root.markVideoSecondWatched = (vidname, vidpart, second) ->
   [start,end] = getVideoStartEnd vidname, vidpart
@@ -937,6 +979,10 @@ timeUpdatedReal = (qnum) ->
   console.log 'seen intervals are:'
   console.log seen-intervals
   updateTickLocation qnum
+  if isCurrentPortionPreviouslySeen qnum
+    (getVideo vidname, vidpart).find(\.skipseen).show()
+  else
+    (getVideo vidname, vidpart).find(\.skipseen).hide()
 
 timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 1000
 
@@ -1116,8 +1162,8 @@ addStartMarker = root.addStartMarker = (vidname, vidpart, percentage, label-text
     tick-label-text.css(\font-weight, \bold)
   tick-label.append tick-label-text
   progress-bar.append [tick, tick-label]
-  tick.css \left, ((percentage*100).toString() + \%)
-  tick-label.css \left, ((percentage*100).toString() + \%)
+  tick.css \left, toPercentCss(percentage)
+  tick-label.css \left, toPercentCss(percentage)
 
 setTickPercentage = root.setTickPercentage = (vidname, vidpart, percentage) ->
   video = getVideo vidname, vidpart
@@ -1135,7 +1181,7 @@ setTickPercentage = root.setTickPercentage = (vidname, vidpart, percentage) ->
       .css \background-color, \white
       .css \pointer-events, \none
     progress-bar.append tick
-  tick.css \left, ((percentage*100).toString() + \%)
+  tick.css \left, toPercentCss(percentage)
 
 setHoverTickPercentage = root.setHoverTickPercentage = (vidname, vidpart, percentage) ->
   video = getVideo vidname, vidpart
@@ -1153,7 +1199,7 @@ setHoverTickPercentage = root.setHoverTickPercentage = (vidname, vidpart, percen
       .css \background-color, \yellow
       .css \pointer-events, \none
     progress-bar.append tick
-  tick.css \left, ((percentage*100).toString() + \%)
+  tick.css \left, toPercentCss(percentage)
   tick.show()
 
 setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
@@ -1172,8 +1218,8 @@ setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
   for [start,end] in new-intervals
     watched-portion = J(\div)
       .css \position, \absolute
-      .css \left, ((start*100).toString() + \%)
-      .css \width, (((end - start)*100).toString() + \%)
+      .css \left, toPercentCss(start)
+      .css \width, toPercentCss(end - start)
       .css \height, \50%
       .css \top, \25%
       .css \background-color, 'rgba(50, 255, 50, 0.7)'
@@ -1214,6 +1260,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     #.css('position', 'absolute')
     #.css('top', '0px')
     .addClass('activevideo')
+    .data(\qnum, qnum)
     #.data('focused', true)
     .click (evt) ->
       fixVideoHeight $(this)
@@ -1321,7 +1368,28 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .css \float, \left
   progress-bar.append unwatched-portion
   video-footer.append [play-button, progress-bar]
-  videodiv.append [video-header, video, video-footer]
+  video-skip = J(\.skipseen)
+    .css \position, \absolute
+    .css \background-color, 'rgba(0, 0, 0, 0.5)'
+    .css \padding-left, \10px
+    .css \padding-right, \10px
+    .css \padding-top, \10px
+    .css \padding-bottom, \10px
+    .css \border, \15px
+    .css \border-radius, \15px
+    .css \color, \white
+    .css \font-size, \20px
+    .css \top, \60px
+    .css \left, \20px
+    .css \text-align, \center
+    .css \display, \none
+    #.css \height, \50px
+    #.css \width, \100px
+    .css \cursor, \pointer
+    .html 'skip to unseen portion<br><span style="font-size: 14px; text-align: center">shortcut: Enter/Return</span>'
+    .click (evt) ->
+      skipToEndOfSeenPortion(qnum)
+  videodiv.append [video-header, video-skip, video, video-footer]
   body.append [videodiv, J(\br)]
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
@@ -2484,7 +2552,7 @@ $(document).ready ->
       #| 27 => setVideoFocused(false) # esc
       | 37 => seekVideoByOffset(-5) # left
       | 39 => seekVideoByOffset(5) # right
-      | 13 => seekVideoByOffset(5) # enter, should actually be used for skipping over unseen part
+      | 13 => skipToEndOfSeenPortion $(\.activevideo).data(\qnum) # enter, should actually be used for skipping over unseen part
       | 32 => playPauseVideo() # space
       | _ => console.log key; return true
       evt.preventDefault()
