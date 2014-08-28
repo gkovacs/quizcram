@@ -70,10 +70,12 @@ getLogIdxForUsernameReal = (username, callback) ->
   getLogsCollection (logs) ->
     logs.find({username: username}).sort({logidx: 1}).toArray (err, results) ->
       topidx = -1
-      for val in results
-        if val.logidx == topidx + 1
-          topidx = val.logidx
-      user-to-logidx[username] = topidx
+      if results?
+        for val in results
+          if val.logidx == topidx + 1
+            topidx = val.logidx
+      if topidx >= 0
+        user-to-logidx[username] = topidx
       callback topidx
 
 getLogIdxForUsername = (username, callback) ->

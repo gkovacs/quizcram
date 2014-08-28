@@ -204,6 +204,156 @@ root.video_info = {
       }
     ]
   }
+  '2-1-1': {
+    filename: '2-1-1.webm'
+    title: 'Electrical Language'
+    parts: [
+      {
+        start: '0:00'
+        end: '3:44'
+      }
+      {
+        start: '3:44'
+        end: '6:56'
+      }
+      {
+        start: '6:56' # noquiz
+        end: '7:36'
+      }
+    ]
+  }
+  '2-1-2': {
+    filename: '2-1-2.webm'
+    title: 'Electricity Review'
+    parts: [
+      {
+        start: '0:00'
+        end: '2:35'
+      }
+      {
+        start: '2:35'
+        end: '3:59'
+      }
+      {
+        start: '3:59' # noquiz
+        end: '4:26'
+      }
+    ]
+  }
+  '2-1-3': {
+    filename: '2-1-3.webm'
+    title: 'Action Potential'
+    parts: [
+      {
+        start: '0:00'
+        end: '4:02'
+      }
+      {
+        start: '4:02'
+        end: '4:35'
+      }
+      {
+        start: '4:35' # noquiz
+        end: '5:13'
+      }
+    ]
+  }
+  '2-2-1': {
+    filename: '2-2-1.webm'
+    title: 'Neurotransmitter Synthesis'
+    parts: [
+      {
+        start: '0:00'
+        end: '1:20'
+      }
+      {
+        start: '1:20'
+        end: '4:56'
+      }
+      {
+        start: '4:56' # noquiz
+        end: '5:21'
+      }
+    ]
+  }
+  '2-2-2': {
+    filename: '2-2-2.webm'
+    title: 'Neurotransmitter Release'
+    parts: [
+      {
+        start: '0:00'
+        end: '5:34'
+      }
+      {
+        start: '5:34' # noquiz
+        end: '5:46'
+      }
+    ]
+  }
+  '2-2-3': {
+    filename: '2-2-3.webm'
+    title: 'Clostridial Toxins: Botox'
+    parts: [
+      {
+        start: '0:00'
+        end: '2:35'
+      }
+      {
+        start: '2:35'
+        end: '5:43'
+      }
+      {
+        start: '5:43' # noquiz
+        end: '6:09'
+      }
+    ]
+  }
+  '2-2-4': {
+    filename: '2-2-4.webm'
+    title: 'Signal Termination'
+    parts: [
+      {
+        start: '0:00'
+        end: '4:04'
+      }
+      {
+        start: '4:04'
+        end: '6:48'
+      }
+      {
+        start: '6:48' # noquiz
+        end: '7:02'
+      }
+    ]
+  }
+  '2-2-5': {
+    filename: '2-2-5.webm'
+    title: 'Receptors'
+    parts: [
+      {
+        start: '0:00'
+        end: '4:46'
+      }
+      {
+        start: '4:46'
+        end: '7:26'
+      }
+      {
+        start: '7:26' # noquiz
+        end: '7:56'
+      }
+    ]
+  }
+  '2-2-6': {
+    filename: '2-2-6.webm'
+    title: 'Wrap-up: Neurocommunication'
+    parts: [
+      {
+        start: '0:00' # noquiz
+        end: '2:11'
+      }
+    ]
+  }
 }
 
 root.video_dependencies = {
@@ -645,6 +795,347 @@ root.questions = [
       }
     ]
   }
+  {
+    text: 'Which of the following are true of cell membranes?'
+    title: '2-1-1 Question 1'
+    type: 'checkbox'
+    options: [
+      'Membranes are made up of mostly fat' #
+      'Ions pass freely through membranes'
+      'Cell membranes seperate the inside of cells from the "extracellular spare" that is outside of the cell' #
+      'Ion channels are "doors" through which small charged molecules can pass' #
+      'Cells are entirely contained within their cell membrane' #
+    ]
+    correct: [
+      0, 2, 3, 4
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-1-1'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'Cells have a resting membrane potential at which they "sit" under baseline conditions. Which of the following are true at this resting membrane potential?'
+    title: '2-1-1 Question 2'
+    type: 'checkbox'
+    options: [
+      'The chemical and electrical forces trying to move potassium ions are perfectly balanced' #
+      'Chemical forces "push" potassium ions from the outside of the cell toward the inside of the cell where they are more concentrated'
+      'Electrical forces "push" potassium ions from the outside of the cell toward the inside of the cell' #
+      'The resting membrane potential is negative with respect to ground (the outside of the cell)' #
+      'The ions that are involved in "making" the membrane potential are potassium, hydrogen and calcium ions'
+    ]
+    correct: [
+      0, 2, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-1-1'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'Which of the following will lead to an increase in current flow?'
+    title: '2-1-2 Question 1'
+    type: 'checkbox'
+    options: [
+      'An increase in potential' #
+      'A decrease in potential'
+      'An increase in resistance'
+      'A decrease in resistance' #
+      'None of the above; current is constant'
+    ]
+    correct: [
+      0, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-1-2'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'Which of the following is true of a neuron?'
+    title: '2-1-2 Question 2'
+    type: 'checkbox'
+    options: [
+      'A neuron\'s potential is the difference between the potentials inside and outside of the cell membrane' #
+      'Neuronal current is carried by ions that can travel across any part of the plasma membrane'
+      'Resistance increases as more and more ion channels open'
+    ]
+    correct: [
+      0
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-1-2'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'Which of the following are true?'
+    title: '2-1-3 Question 1'
+    type: 'checkbox'
+    options: [
+      'The membrane potential is steady and does not vary'
+      'Action potentials carry information within a neuron' #
+      'Membrane potential changes of under 1 millivolt would die out before making it from the toe to the brain' #
+      'Action potentials carry information between neurons'
+      'Action potentials are critical for carrying signals over long distances' #
+    ]
+    correct: [
+      1, 2, 4
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-1-3'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'Action potentials are critical for carrying signals over long distances.'
+    title: '2-1-3 Question 2'
+    type: 'checkbox'
+    options: [
+      'More concentrated inside the cell than outside'
+      'Travel through ion channels in the cell membrane' #
+      'More concentrated outside the cell than inside' #
+      'Contribute to the resting membrane potential' #
+      'Responsible for the large positive change in the membrane potential during an action potential' #
+    ]
+    correct: [
+      1, 2, 3, 4
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-1-3'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'Which of the following are true of neurotransmitters?'
+    title: '2-2-1 Question 1'
+    type: 'checkbox'
+    options: [
+      'They are the chemical messengers that support communication between neurons' #
+      'Molecules that serve as neurotransmitters also serve other functions in the body' #
+      'Neurotransmitters are important for communication across the synapse' #
+      'Neurotransmitters are important but not critical to nervous system function'
+    ]
+    correct: [
+      0, 1, 2
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-1'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'Which of the following are true of Parkinson’s disease?'
+    title: '2-2-1 Question 2'
+    type: 'checkbox'
+    options: [
+      'Neurons can no longer make dopamine'
+      'Some of the neurons that make dopamine die' #
+      'Providing the substrate for dopamine leads to production of dopamine above normal levels'
+      'The substrate for dopamine is provided and serves as a therapeutic' #
+    ]
+    correct: [
+      1, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-1'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'Neurons convey a meaningful message by releasing neurotransmitters only when intended. To make this connection, which of the following occurs?'
+    title: '2-2-2 Question 1'
+    type: 'checkbox'
+    options: [
+      'Constitutive (always active) neurotransmitter release is suppressed in the synaptic terminal' #
+      'When an action potential arrives, the membrane potential of the synaptic terminal becomes more positive' #
+      'Fusion of the vesicular and cell membranes is triggered by the arrival of an action potential' #
+      'The arrival of the action potential leads to opening of ion channels that allow calcium ions to flood into the cell' #
+      'Calcium ions trigger membrane fusion and therefore neurotransmitter is released' #
+    ]
+    correct: [
+      0, 1, 2, 3, 4
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-2'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'Which of the following are true of Clostridial toxins?'
+    title: '2-2-3 Question 1'
+    type: 'checkbox'
+    options: [
+      'Clostridial toxins block neurotransmitter synthesis'
+      'Clostridial toxins prevent neurotransmitter release' #
+      'Clostridial toxins prevent synaptic vesicle fusion to the cell membrane' #
+      'Clostridial toxins include Botulinum toxin' #
+      'Clostridial toxins such as Botox cut the Snare pin proteins' #
+    ]
+    correct: [
+      1, 2, 3, 4
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-3'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'Clostridial toxins such as Botox cut the Snare pin proteins'
+    title: '2-2-3 Question 2'
+    type: 'checkbox'
+    options: [
+      'Botox can be lethal' #
+      'Botox is used cosmetically' #
+      'Botox is used therapeutically for a variety of disorders including focal dystonia' #
+      'Botox\'s effects stem from its blocking neurotransmitter release from motoneurons' #
+      'None of the above'
+    ]
+    correct: [
+      0, 1, 2, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-3'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'When an action potential arrives in a synaptic terminal, neurotransmitter:'
+    title: '2-2-4 Question 1'
+    type: 'checkbox'
+    options: [
+      'Is released into the synaptic cleft' #
+      'Diffuses out of the synaptic cleft' #
+      'Diffuses across the synaptic cleft to the post-synaptic terminal' #
+      'Is taken up into the pre-synaptic terminal' #
+      'Is taken up into the post-synaptic terminal'
+    ]
+    correct: [
+      0, 1, 2, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-4'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'In the case of acetylcholine, which is the neurotransmitter of motoneurons:'
+    title: '2-2-4 Question 2'
+    type: 'checkbox'
+    options: [
+      'Degradation is accomplished by acetylcholinesterase (AChE)' #
+      'Degradation is critical to terminating the motoneuron’s message to muscle' #
+      'Enzymatic degradation is the only mechanism by which acetylcholine signaling is terminated'
+      'Blocking acetylcholinesterase (AChE) can be therapeutic as in the case of myasthenia gravis' #
+      'Blocking acetylcholinesterase (AChE) can be lethal by preventing contraction of the breathing muscle, the diaphragm'
+    ]
+    correct: [
+      0, 1, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-4'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
+  {
+    text: 'Which of the following are true of receptors?'
+    title: '2-2-5 Question 1'
+    type: 'checkbox'
+    options: [
+      'They are single proteins that span the cell membrane'
+      'Opening a receptor through which chloride ions (Cl-) enter the cell will have an excitatory effect'
+      'When neurotransmitter binds, they open a pore through which ions can travel' #
+      'Opening a receptor that makes the membrane potential more positive will have an inhibitory effect'
+      'They are located on the postsynaptic membrane' #
+    ]
+    correct: [
+      2, 4
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-5'
+        degree: 1.0
+        part: 0
+      }
+    ]
+  }
+  {
+    text: 'Regarding myasthenia gravis, which of the following is true?'
+    title: '2-2-5 Question 2'
+    type: 'checkbox'
+    options: [
+      'The patient’s own immune system destroys acetylcholine receptors or leads to their dispersal in the muscle membrane' #
+      'The muscle does not contract or contracts weakly' #
+      'Acetylcholine is released normally from the motoneuron' #
+      'Treatment aimed at relieving symptoms is geared toward increasing acetylcholine in the synaptic cleft by blocking acetylcholinesterase' #
+      'Treatment aimed at the underlying cause is geared toward boosting the immune system'
+    ]
+    correct: [
+      0, 1, 2, 3
+    ]
+    explanation: '(see correct answers above)'
+    videos: [
+      {
+        name: '2-2-5'
+        degree: 1.0
+        part: 1
+      }
+    ]
+  }
 ]
 
 
@@ -984,7 +1475,7 @@ timeUpdatedReal = (qnum) ->
   else
     (getVideo vidname, vidpart).find(\.skipseen).hide()
 
-timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 1000
+timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 500
 
 setStartTime = root.setStartTime = (time, qnum) ->
   video = $("\#video_#qnum")
@@ -2147,7 +2638,7 @@ getVideoDependencies = (vidname, vidpart) ->
   #if vidpart?
   #  for prevpart in [0 til vidpart]
   #    dependencies.push [vidname, prevpart]
-  dependencies = dependencies ++ [[x,null] for x in root.video_dependencies[vidname]]
+  dependencies = dependencies ++ [[x,root.video_info[x].parts.length - 1] for x in root.video_dependencies[vidname]]
   return dependencies
 
 showChildVideoForVideo = (qnum) ->
