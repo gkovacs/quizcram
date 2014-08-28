@@ -1308,7 +1308,7 @@ toPercent = (num) ->
   return (num * 100).toFixed(0)
 
 toPercentCss = (num) ->
-  return (num * 100).toString() + '%'
+  return (Math.min(1, num) * 100).toString() + '%'
 
 toSeconds = (time) ->
   if not time?
@@ -1403,6 +1403,8 @@ getVideoSeenIntervalsRaw = root.getVideoSeenIntervalsRaw = (vidname, vidpart) ->
     else
       if not interval-start?
         interval-start = i
+  if interval-start?
+    seen-intervals.push [interval-start, relevant-section.length - 1]
   return seen-intervals
 
 getVideoSeenIntervals = root.getVideoSeenIntervals = (vidname, vidpart) ->
@@ -1609,35 +1611,37 @@ addStartMarker = root.addStartMarker = (vidname, vidpart, percentage, label-text
   if active
     label-text = label-text + ' (current)'
   tick = J(\.videostarttick.tick)
-    .css \position, \absolute
-    .css \z-index, \4
-    .css \height, 'calc(100% + 1px)'
-    .css \width, \5px
-    .css \bottom, \0%
-    .css \border-radius, \5px
-    .css \border, "2px #{color}"
-    .css \background-color, color
-    .css \pointer-events, \none
+    .css {
+      position: \absolute
+      z-index: \4
+      height: 'calc(100% + 1px)'
+      width: \5px
+      bottom: \0%
+      border-radius: \5px
+      border: "2px #{color}"
+      background-color: color
+      pointer-events: \none
+    }
   tick-label = J(\.videostartlabel.tick)
-    .css \position, \absolute
-    .css \display, \table
-    .css \overflow, \hidden
-    .css \z-index, \4
-    .css \height, \20px
-    .css \margin-left, \-15px
-    .css \padding-left, \3px
-    .css \padding-right, \3px
-    .css \padding-bottom, \3px
-    .css \padding-top, \3px
-    #.css \width, \30px
-    .css \bottom, '100%'
-    .css \background-color, color
-    #.css \border-radius, \5px
-    .css \color, \white
-    .css \border, "5px #{color}"
-    .css \border-radius, \5px
-    .css \font-size, \16px
-    .css \cursor, \pointer'
+    .css {
+      position: \absolute
+      display: \table
+      overflow: \hidden
+      z-index: \4
+      height: \20px
+      margin-left: \-15px
+      padding-left: \3px
+      padding-right: \3px
+      padding-bottom: \3px
+      padding-top: \3px
+      bottom: '100%'
+      background-color: color
+      color: \white
+      border: "5px #{color}"
+      border-radius: \5px
+      font-size: \16px
+      cursor: \pointer'
+    }
     .mousemove (evt) ->
       $(\.videohovertick).hide()
       evt.preventDefault()
@@ -1662,15 +1666,17 @@ setTickPercentage = root.setTickPercentage = (vidname, vidpart, percentage) ->
   tick = progress-bar.find \.videotick
   if not tick? or tick.length == 0
     tick = J(\.videotick.tick)
-      .css \position, \absolute
-      .css \z-index, \5
-      .css \height, \90%
-      .css \width, \5px
-      .css \top, \5%
-      .css \border-radius, \5px
-      .css \border, '2px white'
-      .css \background-color, \white
-      .css \pointer-events, \none
+      .css {
+        position: \absolute
+        z-index: \5
+        height: \90%
+        width: \5px
+        top: \5%
+        border-radius: \5px
+        border: '2px white'
+        background-color: \white
+        pointer-events: \none
+      }
     progress-bar.append tick
   tick.css \left, toPercentCss(percentage)
 
@@ -1680,15 +1686,17 @@ setHoverTickPercentage = root.setHoverTickPercentage = (vidname, vidpart, percen
   tick = progress-bar.find \.videohovertick
   if not tick? or tick.length == 0
     tick = J(\.videohovertick.tick)
-      .css \position, \absolute
-      .css \z-index, \6
-      .css \height, \90%
-      .css \width, \5px
-      .css \top, \5%
-      .css \border-radius, \5px
-      .css \border, '2px yellow'
-      .css \background-color, \yellow
-      .css \pointer-events, \none
+      .css {
+        position: \absolute
+        z-index: \6
+        height: \90%
+        width: \5px
+        top: \5%
+        border-radius: \5px
+        border: '2px yellow'
+        background-color: \yellow
+        pointer-events: \none
+      }
     progress-bar.append tick
   tick.css \left, toPercentCss(percentage)
   tick.show()
@@ -1708,16 +1716,18 @@ setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
       new-intervals.push [start, end]
   for [start,end] in new-intervals
     watched-portion = J(\div)
-      .css \position, \absolute
-      .css \left, toPercentCss(start)
-      .css \width, toPercentCss(end - start)
-      .css \height, \50%
-      .css \top, \25%
-      .css \background-color, 'rgba(50, 255, 50, 0.7)'
-      .css \float, \left
-      .css \border-radius, \5px
-      .css \border, '2px rgba(50, 255, 50, 0.7)'
-      .css \pointer-events, \none
+      .css {
+        position: \absolute
+        left: toPercentCss(start)
+        width: toPercentCss(end - start)
+        height: \50%
+        top: \25%
+        background-color: 'rgba(50, 255, 50, 0.7)'
+        float: \left
+        border-radius: \5px
+        border: '2px rgba(50, 255, 50, 0.7)'
+        pointer-events: \none
+      }
     if start < videostartfraction
       watched-portion.css {background-color: 'rgba(50, 255, 255, 0.7)', border: '2px rgba(50, 255, 255, 0.7)'}
     progress-bar.append watched-portion
@@ -1771,7 +1781,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .on 'ended', (evt) ->
       this.pause()
       this.currentTime = start
-      gotoNum getCurrentQuestionQnum()
+      #gotoNum getCurrentQuestionQnum()
     .append J('source')
       .attr('src', fileurl)
     .on \play, (evt) ->
@@ -1787,31 +1797,40 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   #, 1000
   console.log video
   video-header = J(\div)
-    .css \width, \100%
-    .css \background-color, 'rgba(0, 0, 0, 0.5)'
-    #.css \height, \100px
-    .css \position, \absolute
-    .css \top, \0px
-    .css \padding-left, \10px
-    .css \padding-top, \2px
-    .css \padding-bottom, \2px
-    .css \margin-top, \0px
-    .css \margin-bottom, \0px
+    .css {
+      width: \100%
+      background-color: 'rgba(0, 0, 0, 0.5)'
+      position: \absolute
+      top: \0px
+      padding-left: \10px
+      padding-top: \2px
+      padding-bottom: \2px
+      margin-top: \0px
+      margin-bottom: \0px
+    }
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).css(\pointer-events, \none).text fulltitle
   video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css(\pointer-events, \none).css(\color, \white).css(\margin-left, \30px).css(\font-size, \24px).text '0% seen'
   if reasonForInsertion?
     video-header.append $(reasonForInsertion).addClass('insertionreason').css(\display, \none).css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
   video-footer = J(\.videofooter)
-    .css \width, \100%
-    .css \background-color, 'rgba(0, 0, 0, 0.5)'
-    .css \position, \absolute
-    .css \bottom, \0px
-    .css \margin-left, \0px
-    .css \margin-bottom, \0px
-    .css \height, \38px
+    .css {
+      width: \100%
+      background-color: 'rgba(0, 0, 0, 0.5)'
+      position: \absolute
+      bottom: \0px
+      margin-left: \0px
+      margin-bottom: \0px
+      height: \38px
+    }
   play-button = J('span.playbutton.glyphicon.glyphicon-play')
-    .css({color: \white, font-size: \24px, margin-left: \10px, margin-top: \3px, cursor: \pointer})
+    .css {
+      color: \white
+      font-size: \24px
+      margin-left: \10px
+      margin-top: \3px
+      cursor: \pointer
+    }
     .click (evt) ->
       console.log 'play button clicked'
       makeVideoActive qnum
@@ -1819,14 +1838,15 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       #evt.preventDefault()
       #return false
   progress-bar = J(\.videoprogressbar)
-    .css \width, 'calc(100% - 55px)'
-    .css \height, \100%
-    .css \left, \45px
-    .css \color, \black
-    .css \position, \absolute
-    .css \top, \0px
-    .css \background-color, 'rgba(0, 0, 0, 0.0)'
-    #.css \cursor, \pointer
+    .css {
+      width: 'calc(100% - 55px)'
+      height: \100%
+      left: \45px
+      color: \black
+      position: \absolute
+      top: \0px
+      background-color: 'rgba(0, 0, 0, 0.0)'
+    }
     .mouseleave (evt) ->
       $('.videohovertick').hide()
     .mousemove (evt) ->
@@ -1850,41 +1870,59 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       setTickPercentage vidname, vidpart, percent
       seekVideoToPercent percent
   unwatched-portion = J(\.unwatched)
-    .css \position, \absolute
-    .css \width, \100%
-    .css \height, \10%
-    .css \left, \0%
-    .css \top, \45%
-    .css \background-color, \white
-    .css \float, \left
+    .css {
+      position: \absolute
+      width: \100%
+      height: \10%
+      left: \0%
+      top: \45%
+      background-color: \white
+      float: \left
+    }
   progress-bar.append unwatched-portion
   video-footer.append [play-button, progress-bar]
   video-skip = J(\.skipseen)
-    .css \position, \absolute
+    .css {
+      position: \absolute
+      background-color: 'rgba(0, 0, 0, 0.5)'
+      padding-left: \10px
+      padding-right: \10px
+      padding-top: \10px
+      padding-bottom: \10px
+      border: \15px
+      border-radius: \15px
+      color: \white
+      font-size: \20px
+      bottom: \70px
+      left: \30px
+      text-align: \center
+      display: \none
+      cursor: \pointer
+    }
+    .html 'skip to unseen portion<br><span style="font-size: 14px; text-align: center">shortcut: Enter/Return</span>'
+    .click (evt) ->
+      skipToEndOfSeenPortion(qnum)
+  /*
+  subtitles = J(\.subtitles)
+    .css({
+      position: \absolute
+      background-color: 'rgba(0, 0, 0, 0.5)'
+      padding-left: \10px
+      padding-right: \10px
+    })
     .css \background-color, 'rgba(0, 0, 0, 0.5)'
     .css \padding-left, \10px
     .css \padding-right, \10px
     .css \padding-top, \10px
     .css \padding-bottom, \10px
     .css \border, \15px
-    .css \border-radius, \15px
-    .css \color, \white
-    .css \font-size, \20px
-    .css \bottom, \70px
-    .css \left, \30px
-    .css \text-align, \center
-    .css \display, \none
-    #.css \height, \50px
-    #.css \width, \100px
-    .css \cursor, \pointer
-    .html 'skip to unseen portion<br><span style="font-size: 14px; text-align: center">shortcut: Enter/Return</span>'
-    .click (evt) ->
-      skipToEndOfSeenPortion(qnum)
+    .css \
+  */
   videodiv.append [video-header, video-skip, video, video-footer]
   body.append [videodiv, J(\br)]
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
-    video-header.append J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css(\margin-left, \30px).css(\font-size, \24px).html('<span class="glyphicon glyphicon-step-backward"></span> view previous video').click (evt) ->
+    view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> view previous video').click (evt) ->
       console.log 'do not understand video'
       console.log vidname
       viewPreviousClip vidname, vidpart
@@ -1903,10 +1941,19 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
         gotoNum counterCurrent(\qnum)
         break
       */
-  close-button = J(\span.glyphicon.glyphicon-remove-circle).css(\font-size, \24px).css(\position, \absolute).css(\top, \5px).css(\right, \5px).css(\color, \white).css(\display, \block)
-    ..hover ->
+    video-header.append view-previous-video-button
+  close-button = J(\span.glyphicon.glyphicon-remove-circle)
+    .css {
+      font-size: \24px
+      position: \absolute
+      top: \5px
+      right: \5px
+      color: \white
+      display: \block
+    }
+    .hover ->
       $(this).css \cursor, \pointer
-    ..click ->
+    .click ->
       amount-to-scroll-up = $('#body_' + qnum).height()
       #target-qnum = getQnumOfPanelAbove qnum
       target-qnum = (getVideo vidname, vidpart).data \prebody
