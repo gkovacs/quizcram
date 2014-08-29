@@ -1363,7 +1363,7 @@ isCurrentPortionPreviouslySeen = root.isCurrentPortionPreviouslySeen = (qnum) ->
   length = end - start
   viewing-history = root.video-parts-seen[vidname]
   relevant-section = viewing-history[Math.round(start) to Math.round(end)]
-  if sum(relevant-section[curtime to curtime + 3]) >= 3
+  if sum(relevant-section[curtime to curtime + 3]) >= 4
     return true
   return false
 
@@ -1437,6 +1437,14 @@ updateTickLocation = root.updateTickLocation = (qnum) ->
   curpercent = curtime / length
   setTickPercentage vidname, vidpart, curpercent
 
+updateSeenIntervals = (vidname, vidpart) ->
+  percent-viewed = getVideoProgress vidname, vidpart
+  vidnamepart = getVidnamePart vidname, vidpart
+  #$('.videoprogress_' + vidnamepart).text(toPercent(percent-viewed) + '% seen')
+  setWatchButtonProgress vidname, vidpart, percent-viewed
+  seen-intervals = getVideoSeenIntervals vidname, vidpart
+  setSeenIntervals vidname, vidpart, seen-intervals
+
 timeUpdatedReal = (qnum) ->
   video = $("\#video_#qnum")
   #body = getBody qnum
@@ -1457,16 +1465,14 @@ timeUpdatedReal = (qnum) ->
   if video.length > 0
     curtime = video[0].currentTime
     markVideoSecondWatched vidname, vidpart, curtime
-  percent-viewed = getVideoProgress vidname, vidpart
-  $('#progress_' + qnum).text(toPercent(percent-viewed) + '% seen')
-  setWatchButtonProgress vidname, vidpart, percent-viewed
-  seen-intervals = getVideoSeenIntervals vidname, vidpart
-  setSeenIntervals vidname, vidpart, seen-intervals
   updateTickLocation qnum
   if isCurrentPortionPreviouslySeen qnum
     (getVideo vidname, vidpart).find(\.skipseen).show()
   else
     (getVideo vidname, vidpart).find(\.skipseen).hide()
+  for curvidpart in [0 til root.video_info[vidname].parts.length]
+    if getVideo(vidname, curvidpart).length > 0
+      updateSeenIntervals vidname, curvidpart
 
 timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 300
 
@@ -1726,6 +1732,7 @@ setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
   videostart = video.data(\start)
   videostartfraction = videostart / video.data(\end)
   progress-bar = video.find \.videoprogressbar
+  bar-width = progress-bar.width()
   progress-bar.children().not('.unwatched').not('.tick').remove()
   new-intervals = []
   for [start,end] in intervals
@@ -1738,8 +1745,8 @@ setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
     watched-portion = J(\div)
       .css {
         position: \absolute
-        left: toPercentCss(start)
-        width: toPercentCss(end - start)
+        left: (start * bar-width) + 'px' #toPercentCss(start)
+        width: ((end - start) * bar-width) + 'px' #toPercentCss(end - start)
         height: \50%
         top: \25%
         background-color: 'rgba(50, 255, 50, 0.7)'
@@ -1912,6 +1919,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       vertical-align: \middle
       cursor: \pointer
     }
+    .attr 'title', 'play / pause video [shortcut: space key]'
     .click (evt) ->
       console.log 'play button clicked'
       makeVideoActive qnum
@@ -1929,7 +1937,9 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       vertical-align: \middle
       cursor: \pointer
     }
+    .attr 'title', 'slow down playback speed [shortcut: -/_ key]'
     .click (evt) ->
+      makeVideoActive qnum
       console.log 'slower button clicked'
       decreasePlaybackSpeed video
   faster-button = J('span.fasterbutton.glyphicon.glyphicon-plus-sign')
@@ -1943,7 +1953,9 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       vertical-align: \middle
       cursor: \pointer
     }
+    .attr 'title', 'speed up playback speed [shortcut: =/+ key]'
     .click (evt) ->
+      makeVideoActive qnum
       console.log 'faster button clicked'
       increasePlaybackSpeed video
   current-speed = J('span.currentspeed')
@@ -1990,6 +2002,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .click (evt) ->
       console.log 'click on progress bar:'
       console.log evt
+      makeVideoActive qnum
       percent = evt.offsetX / progress-bar.width()
       console.log percent
       setTickPercentage vidname, vidpart, percent
@@ -2023,8 +2036,10 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       display: \none
       cursor: \pointer
     }
-    .html 'skip to unseen portion<br><span style="font-size: 14px; text-align: center">shortcut: Enter/Return</span>'
+    .html 'skip to unseen portion<br><span style="font-size: 14px; text-align: center">shortcut: Enter/Return key</span>'
     .click (evt) ->
+      makeVideoActive qnum
+      playVideo()
       skipToEndOfSeenPortion(qnum)
   subtitle-display-container = J(\.subtitlecontainer)
     .css {
@@ -2074,9 +2089,13 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       height: \50%
       text-align: \center
       vertical-align: \center
-      pointer-events: \none
+      cursor: \pointer
       color: \white
     }
+    .attr 'title', 'play video [shortcut: space key]'
+    .click (evt) ->
+      makeVideoActive qnum
+      playVideo()
     #.text 'play button is here'
   body.append [video-header, video-skip, subtitle-display-container, playbutton-overlay, video, video-footer]
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
@@ -2109,9 +2128,10 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       right: \5px
       color: \white
       display: \block
+      cursor: \pointer
     }
-    .hover ->
-      $(this).css \cursor, \pointer
+    #.hover ->
+    #  $(this).css \cursor, \pointer
     .click ->
       amount-to-scroll-up = $('#body_' + qnum).height()
       #target-qnum = getQnumOfPanelAbove qnum
@@ -3377,10 +3397,16 @@ $(document).ready ->
     key = evt.which
     if $('.activevideo').length > 0 # in video
       switch key
-      #| 27 => setVideoFocused(false) # esc
+      | 27 => pauseVideo() # esc
       | 37 => seekVideoByOffset(-5) # left
       | 39 => seekVideoByOffset(5) # right
-      | 13 => skipToEndOfSeenPortion $(\.activevideo).data(\qnum) # enter, should actually be used for skipping over unseen part
+      | 8 => pauseVideo() # backspace
+      | 46 => pauseVideo() # delete
+      | 187 => increasePlaybackSpeed() # + key
+      | 189 => decreasePlaybackSpeed() # - key
+      | 13 => # enter
+        skipToEndOfSeenPortion $(\.activevideo).data(\qnum)
+        playVideo()
       | 32 => playPauseVideo() # space
       | _ => console.log key; return true
       evt.preventDefault()
