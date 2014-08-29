@@ -1363,12 +1363,6 @@ isCurrentPortionPreviouslySeen = root.isCurrentPortionPreviouslySeen = (qnum) ->
   length = end - start
   viewing-history = root.video-parts-seen[vidname]
   relevant-section = viewing-history[Math.round(start) to Math.round(end)]
-  console.log 'curtmie is:'
-  console.log curtime
-  console.log 'relevant-section'
-  console.log relevant-section
-  console.log 'slice of curtime'
-  console.log relevant-section[curtime to curtime + 3]
   if sum(relevant-section[curtime to curtime + 3]) >= 3
     return true
   return false
@@ -1394,7 +1388,6 @@ getVideoSeenIntervalsRaw = root.getVideoSeenIntervalsRaw = (vidname, vidpart) ->
   relevant-section = viewing-history[Math.round(start) to Math.round(end)]
   seen-intervals = []
   interval-start = null
-  console.log 'foo1'
   for val,i in relevant-section
     if val == 0
       if interval-start?
@@ -1469,8 +1462,6 @@ timeUpdatedReal = (qnum) ->
   setWatchButtonProgress vidname, vidpart, percent-viewed
   seen-intervals = getVideoSeenIntervals vidname, vidpart
   setSeenIntervals vidname, vidpart, seen-intervals
-  console.log 'seen intervals are:'
-  console.log seen-intervals
   updateTickLocation qnum
   if isCurrentPortionPreviouslySeen qnum
     (getVideo vidname, vidpart).find(\.skipseen).show()
@@ -1536,6 +1527,12 @@ getVideoPanel = (elem) ->
       return elem
     elem = elem.parent()
 
+getOuterBody = (elem) ->
+  while elem? and elem.length? and elem.length > 0 and elem.parent?
+    if elem.hasClass(\outerbody)
+      return elem
+    elem = elem.parent()
+
 getRightbar = (elem) ->
   while elem? and elem.length? and elem.length > 0 and elem.parent?
     if elem.hasClass(\rightbar)
@@ -1571,7 +1568,6 @@ getQnumOfPanelAbove = root.getQnumOfPanelAbove = (qnum) ->
     return panel-qnums[0]
   return panel-qnums[target-idx - 1]
 
-
 removeAllVideos = root.removeAllVideos = ->
   $('.videopanel').remove()
 
@@ -1586,9 +1582,24 @@ fixVideoHeight = root.fixVideoHeight = (video) ->
   max-height = Math.min max-height, max-width * height / width
   if video.height != max-height
     video.height max-height
+  if video.width != max-width
+    video.width max-width
   panel = getVideoPanel video
   if panel.height() != max-height
     panel.height max-height
+  if panel.width() != max-width
+    panel.width max-width
+  outerbody = getOuterBody video
+  real-height = max-height
+  #real-width = max-width
+  if not video.hasClass(\activevideo)
+    real-height = max-height / 2
+    applyTransform outerbody, 'scale(0.5) translateY(-50%) translateX(-50%)'
+  #  real-width = max-width / 2
+  if outerbody.height() != real-height
+    outerbody.height real-height
+  #if outerbody.width() != real-width
+  #  outerbody.width real-width
 
 fixVideoHeightFull = root.fixVideoHeightFull = (video) ->
   if video.length < 1
@@ -1649,7 +1660,7 @@ addStartMarker = root.addStartMarker = (vidname, vidpart, percentage, label-text
       border: "5px #{color}"
       border-radius: \5px
       font-size: \16px
-      cursor: \pointer'
+      cursor: \pointer
     }
     .mousemove (evt) ->
       $(\.videohovertick).hide()
@@ -1750,6 +1761,19 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   [start,end] = getVideoStartEnd vidname, vidpart
   qnum = counterNext 'qnum'
   vidnamepart = toVidnamePart(vidname, vidpart)
+  outer-body = J('.outerbody')
+    .attr('id', "outerbody_#qnum")
+    .css {
+      padding-top: \0px
+      padding-left: \0px
+      padding-right: \0px
+      padding-bottom: \0px
+      margin-top: \0px
+      margin-bottom: \0px
+      margin-left: \0px
+      margin-right: \0px
+      position: \relative
+    }
   body = J('.panel-body-new')
     .attr('id', "body_#qnum")
     .addClass(\videopanel)
@@ -1827,11 +1851,12 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       this.pause()
       this.currentTime = start
       #gotoNum getCurrentQuestionQnum()
-    .append J('source')
-      .attr('src', fileurl)
+    .append(J('source').attr('src', fileurl))
     .on \play, (evt) ->
+      (getVideo vidname, vidpart).find(\.playbuttonoverlay).hide()
       (getVideo vidname, vidpart).find(\.playbutton).removeClass(\glyphicon-play).addClass(\glyphicon-pause)
     .on \pause, (evt) ->
+      (getVideo vidname, vidpart).find(\.playbuttonoverlay).show()
       (getVideo vidname, vidpart).find(\.playbutton).removeClass(\glyphicon-pause).addClass(\glyphicon-play)
     .on \timeupdate, (evt) ->
       updateTickLocation qnum
@@ -1926,7 +1951,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       display: \table-cell
       width: \30px
       color: \white
-      font-size: \24px
+      font-size: \18px
       padding-left: \0px
       padding-right: \0px
       vertical-align: \middle
@@ -2035,7 +2060,25 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   #videodiv.append [video-header, video-skip, subtitle-display-container, video, video-footer]
   #body.append [videodiv, J(\br)]
   #body.append videodiv
-  body.append [video-header, video-skip, subtitle-display-container, video, video-footer]
+  playbutton-overlay = J(\img.playbuttonoverlay)
+    .attr 'src', 'play.svg'
+    .css {
+      position: \absolute
+      left: 0
+      right: 0
+      top: \25%
+      #bottom: \300px
+      opacity: 0.5
+      margin: '0 auto'
+      width: \50%
+      height: \50%
+      text-align: \center
+      vertical-align: \center
+      pointer-events: \none
+      color: \white
+    }
+    #.text 'play button is here'
+  body.append [video-header, video-skip, subtitle-display-container, playbutton-overlay, video, video-footer]
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
     view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> view previous video').click (evt) ->
@@ -2074,6 +2117,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       #target-qnum = getQnumOfPanelAbove qnum
       target-qnum = (getVideo vidname, vidpart).data \prebody
       $('#body_' + qnum).remove()
+      $('#outerbody_' + qnum).remove()
       resetVideoBody vidname, vidpart
       #scrollWindowBy -amount-to-scroll-up
       gotoNum target-qnum
@@ -2087,7 +2131,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     for part-idx in [0 til root.video_info[vidname].parts.length]
       start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
       addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", false
-  return body
+  outer-body.append body
+  return outer-body #body
 
 root.question-to-video-dependencies = {}
 
@@ -2127,6 +2172,14 @@ getBody = root.getBody = (qnum) ->
 
 getQidx = (qnum) ->
   return $("\#body_#qnum").data \qidx
+
+getVidnameForQidx = (qidx) ->
+  question = root.questions[qidx]
+  return getVidnameForQuestion question
+
+getVidpartForQidx = (qidx) ->
+  question = root.questions[qidx]
+  return getVidpartForQuestion question
 
 getVidnameForQuestion = (question) ->
   vidinfo = question.videos[0]
@@ -2244,6 +2297,9 @@ scrollWindow = (offset-top) ->
   }, '1000', 'swing'
 
 applyTransform = (elem, transform) ->
+  if elem.data('transform') == transform
+    return
+  elem.data 'transform', transform
   elem.css {
     webkit-transform: transform
     moz-transform: transform
@@ -2253,33 +2309,45 @@ applyTransform = (elem, transform) ->
 
 removeActiveVideoAndShrink = root.removeActiveVideoAndShrink = ->
   video = $(\.activevideo)
-  rightbar = getRightbar video
-  if rightbar?
-    applyTransform rightbar, 'scale(0.5) translateY(-50%) translateX(-50%)'
+  #outerbody = getOuterBody video
+  #if outerbody?
+  #  applyTransform outerbody, 'scale(0.5) translateY(-50%) translateX(-50%)'
   video.removeClass \activevideo
 
 gotoQuestionNum = (qnum) ->
   pauseVideo()
-  if qnum != $(\.activevideo).data(\prebody)
+  panel = getVideoPanel($(\.activevideo))
+  if panel? and qnum != panel.data(\prebody)
     #$(\.activevideo).removeClass \activevideo
     removeActiveVideoAndShrink()
+    #qidx = getQidx qnum
+    #vidname = getVidnameForQidx qidx
+    #vidpart = getVidpartForQidx qidx
+    #makeVideoActiveByVideoPanel getVideo(vidname, vidpart) 
   body = getBody qnum
   scrollToElement body
   #scrollWindow body.offset().top
   #$(window).scrollTop body.offset().top
   #throw 'gotoQuestionNum unimplemented'
 
-makeVideoActive = root.makeVideoActive = (qnum) ->
-  body = $("\#body_#qnum")
-  video = body.find \video
+makeVideoActiveByVideoPanel = (videopanel) ->
+  video = videopanel.find \video
+  makeVideoActiveByVideoTag video
+
+makeVideoActiveByVideoTag = (video) ->
   if not video.hasClass \activevideo
     pauseVideo()
     #$(\.activevideo).removeClass \activevideo
     removeActiveVideoAndShrink()
-    rightbar = getRightbar video
-    if rightbar?
-      applyTransform rightbar, ''
+    outerbody = getOuterBody video
+    if outerbody?
+      applyTransform outerbody, ''
     video.addClass \activevideo
+
+makeVideoActive = root.makeVideoActive = (qnum) ->
+  body = $("\#body_#qnum")
+  video = body.find \video
+  makeVideoActiveByVideoTag video
 
 gotoVideoNum = (qnum) ->
   makeVideoActive qnum
@@ -2969,9 +3037,10 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
       target-body = $('#prebody_' + qnum)
       (getButton curvid.data(\prebody), \watch).show()
       #curvid-data = curvid.data()
-      curvid.detach()
+      outerbody = getOuterBody curvid
+      outerbody.detach()
       #target-body.append curvid
-      appendWithSlideDown curvid, target-body
+      appendWithSlideDown outerbody, target-body
       #curvid.data(curvid-data)
       curvid.data(\prebody, qnum)
   else
@@ -3293,7 +3362,7 @@ root.skip-load-logs = true
 $(document).ready ->
   console.log 'ready'
   fixVideoHeightProcess()
-  questionAlwaysShownProcess()
+  #questionAlwaysShownProcess()
   /*
   $(document).mousedown (evt) ->
     console.log 'document mousedown'
