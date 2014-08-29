@@ -1449,7 +1449,7 @@ timeUpdatedReal = (qnum) ->
   #body = getBody qnum
   vidname = getVidname qnum
   vidpart = getVidpart qnum
-  fixVideoHeight video
+  #fixVideoHeight video
   /*
   if not video.data('duration')?
     video.data 'duration', video[0].duration
@@ -1477,7 +1477,7 @@ timeUpdatedReal = (qnum) ->
   else
     (getVideo vidname, vidpart).find(\.skipseen).hide()
 
-timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 500
+timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 300
 
 setStartTime = root.setStartTime = (time, qnum) ->
   video = $("\#video_#qnum")
@@ -1531,8 +1531,14 @@ timeSinceVideoFocus = root.timeSinceVideoFocus = ->
   return (Date.now() - video.data('timeVideoFocused')) / 1000
 
 getVideoPanel = (elem) ->
-  while elem? and elem.parent?
+  while elem? and elem.length? and elem.length > 0 and elem.parent?
     if elem.hasClass(\videopanel)
+      return elem
+    elem = elem.parent()
+
+getRightbar = (elem) ->
+  while elem? and elem.length? and elem.length > 0 and elem.parent?
+    if elem.hasClass(\rightbar)
       return elem
     elem = elem.parent()
 
@@ -1556,7 +1562,7 @@ setVideoFocused = root.setVideoFocused = (isFocused) ->
   video.data('focused', isFocused)
 
 getQnumOfPanelAbove = root.getQnumOfPanelAbove = (qnum) ->
-  panels = $(\.panel-body).filter (idx, elem) -> $(elem).data(\qnum)?
+  panels = $(\.panel-body-new).filter (idx, elem) -> $(elem).data(\qnum)?
   panels.sort (a,b) ->
     $(a).offset().top - $(b).offset().top
   panel-qnums = $.map panels, (elem) -> $(elem).data(\qnum)
@@ -1580,6 +1586,9 @@ fixVideoHeight = root.fixVideoHeight = (video) ->
   max-height = Math.min max-height, max-width * height / width
   if video.height != max-height
     video.height max-height
+  panel = getVideoPanel video
+  if panel.height() != max-height
+    panel.height max-height
 
 fixVideoHeightFull = root.fixVideoHeightFull = (video) ->
   if video.length < 1
@@ -1732,11 +1741,36 @@ setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
       watched-portion.css {background-color: 'rgba(50, 255, 255, 0.7)', border: '2px rgba(50, 255, 255, 0.7)'}
     progress-bar.append watched-portion
 
+getbot = root.getbot = (elem) ->
+  if typeof elem == typeof ''
+    elem = $(elem)
+  return elem.offset().top + elem.height()
+
 insertVideo = (vidname, vidpart, reasonForInsertion) ->
   [start,end] = getVideoStartEnd vidname, vidpart
   qnum = counterNext 'qnum'
   vidnamepart = toVidnamePart(vidname, vidpart)
-  body = J('.panel-body').css(\padding-top, \0px).css(\padding-left, \0px).css(\padding-right, \0px).attr('id', "body_#qnum").data(\qnum, qnum).addClass(\videopanel).addClass("video_#vidnamepart").data(\type, \video).data(\vidname, vidname).data(\vidpart, vidpart).data(\start, start).data(\end, end)
+  body = J('.panel-body-new')
+    .attr('id', "body_#qnum")
+    .addClass(\videopanel)
+    .addClass("video_#vidnamepart")
+    .css {
+      padding-top: \0px
+      padding-left: \0px
+      padding-right: \0px
+      padding-bottom: \0px
+      margin-top: \0px
+      margin-bottom: \0px
+      margin-left: \0px
+      margin-right: \0px
+      position: \relative
+    }
+    .data(\qnum, qnum)
+    .data(\type, \video)
+    .data(\vidname, vidname)
+    .data(\vidpart, vidpart)
+    .data(\start, start)
+    .data(\end, end)
   setVideoBody vidname, vidpart, body
   console.log vidname
   basefilename = root.video_info[vidname].filename
@@ -1749,17 +1783,28 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       fulltitle = fulltitle + ' part 1'
     else
       fulltitle = fulltitle + ' parts 1-' + (vidpart+1)
-  $('.activevideo').removeClass 'activevideo'
+  #$('.activevideo').removeClass 'activevideo'
+  removeActiveVideoAndShrink()
   videodiv = J(\div)
-    .css \position, \relative
-    .css \width, \100%
+    .css {
+      position: \relative
+      width: \100%
+      padding-bottom: \0px
+      margin-bottom: \0px
+      border-bottom: \0px
+    }
   video = J('video')
     .attr('id', "video_#qnum")
     #.attr('controls', 'controls')
     .attr('ontimeupdate', 'timeUpdated(' + qnum + ')')
-    .css('width', '100%')
-    #.css('position', 'absolute')
-    #.css('top', '0px')
+    .prop('playbackRate', parseFloat(root.playback-speed))
+    .prop('defaultPlaybackRate', parseFloat(root.playback-speed))
+    .css {
+      width: \100%
+      padding-bottom: \0px
+      margin-bottom: \0px
+      border-bottom: \0px
+    }
     .addClass('activevideo')
     .data(\qnum, qnum)
     #.data('focused', true)
@@ -1801,6 +1846,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       width: \100%
       background-color: 'rgba(0, 0, 0, 0.5)'
       position: \absolute
+      z-index: \2
       top: \0px
       padding-left: \10px
       padding-top: \2px
@@ -1818,17 +1864,27 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       width: \100%
       background-color: 'rgba(0, 0, 0, 0.5)'
       position: \absolute
+      display: \table
       bottom: \0px
+      padding-top: \0px
+      padding-left: \0px
+      padding-right: \0px
+      padding-bottom: \0px
       margin-left: \0px
+      margin-right: \0px
+      margin-top: \0px
       margin-bottom: \0px
       height: \38px
     }
   play-button = J('span.playbutton.glyphicon.glyphicon-play')
     .css {
+      display: \table-cell
+      width: \30px
       color: \white
       font-size: \24px
-      margin-left: \10px
-      margin-top: \3px
+      padding-left: \5px
+      padding-right: \10px
+      vertical-align: \middle
       cursor: \pointer
     }
     .click (evt) ->
@@ -1837,14 +1893,58 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       playPauseVideo()
       #evt.preventDefault()
       #return false
+  slower-button = J('span.slowerbutton.glyphicon.glyphicon-minus-sign')
+    .css {
+      display: \table-cell
+      width: \30px
+      color: \white
+      font-size: \24px
+      padding-left: \5px
+      padding-right: \5px
+      vertical-align: \middle
+      cursor: \pointer
+    }
+    .click (evt) ->
+      console.log 'slower button clicked'
+      decreasePlaybackSpeed video
+  faster-button = J('span.fasterbutton.glyphicon.glyphicon-plus-sign')
+    .css {
+      display: \table-cell
+      width: \30px
+      color: \white
+      font-size: \24px
+      padding-left: \5px
+      padding-right: \10px
+      vertical-align: \middle
+      cursor: \pointer
+    }
+    .click (evt) ->
+      console.log 'faster button clicked'
+      increasePlaybackSpeed video
+  current-speed = J('span.currentspeed')
+    .css {
+      display: \table-cell
+      width: \30px
+      color: \white
+      font-size: \24px
+      padding-left: \0px
+      padding-right: \0px
+      vertical-align: \middle
+      pointer-events: \none
+    }
+    .text(root.playback-speed + 'x')
   progress-bar = J(\.videoprogressbar)
     .css {
-      width: 'calc(100% - 55px)'
+      #position: \relative
+      #width: 'calc(100% - 55px)'
       height: \100%
-      left: \45px
+      display: \table-cell
+      width: \auto
+      #left: \45px
       color: \black
-      position: \absolute
-      top: \0px
+      position: \relative
+      #position: \absolute
+      #top: \0px
       background-color: 'rgba(0, 0, 0, 0.0)'
     }
     .mouseleave (evt) ->
@@ -1877,10 +1977,9 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       left: \0%
       top: \45%
       background-color: \white
-      float: \left
     }
   progress-bar.append unwatched-portion
-  video-footer.append [play-button, progress-bar]
+  video-footer.append [play-button, slower-button, current-speed, faster-button, progress-bar]
   video-skip = J(\.skipseen)
     .css {
       position: \absolute
@@ -1902,24 +2001,41 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .html 'skip to unseen portion<br><span style="font-size: 14px; text-align: center">shortcut: Enter/Return</span>'
     .click (evt) ->
       skipToEndOfSeenPortion(qnum)
-  /*
-  subtitles = J(\.subtitles)
-    .css({
+  subtitle-display-container = J(\.subtitlecontainer)
+    .css {
       position: \absolute
+      left: 0
+      right: 0
+      bottom: \70px
+      margin: '0 auto'
+      width: '100%'
+      text-align: \center
+      pointer-events: \none
+    }
+  subtitle-display = J(\.subtitles)
+    .attr \align, \center
+    .css {
       background-color: 'rgba(0, 0, 0, 0.5)'
       padding-left: \10px
       padding-right: \10px
-    })
-    .css \background-color, 'rgba(0, 0, 0, 0.5)'
-    .css \padding-left, \10px
-    .css \padding-right, \10px
-    .css \padding-top, \10px
-    .css \padding-bottom, \10px
-    .css \border, \15px
-    .css \
-  */
-  videodiv.append [video-header, video-skip, video, video-footer]
-  body.append [videodiv, J(\br)]
+      padding-top: \10px
+      padding-bottom: \10px
+      border: \15px
+      border-radius: \15px
+      color: \white
+      font-size: \20px
+      #float: \left
+      display: \inline-block
+      text-align: \center
+      pointer-events: \none
+    }
+    .text 'here is the current subtitle text'
+  subtitle-display-container.append subtitle-display
+  #video.append subtitle-display
+  #videodiv.append [video-header, video-skip, subtitle-display-container, video, video-footer]
+  #body.append [videodiv, J(\br)]
+  #body.append videodiv
+  body.append [video-header, video-skip, subtitle-display-container, video, video-footer]
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
     view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> view previous video').click (evt) ->
@@ -1958,6 +2074,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       #target-qnum = getQnumOfPanelAbove qnum
       target-qnum = (getVideo vidname, vidpart).data \prebody
       $('#body_' + qnum).remove()
+      resetVideoBody vidname, vidpart
       #scrollWindowBy -amount-to-scroll-up
       gotoNum target-qnum
       (getButton target-qnum, \watch).show()
@@ -2079,7 +2196,7 @@ getChildVideoQnum = (qnum) ->
   return $("\#body_#qnum").data \video
 
 isParentAnimated = (elem) ->
-  while not (elem.hasClass(\.panel-body) or elem.attr(\id) == \#quizstream)
+  while not (elem.hasClass(\.panel-body-new) or elem.attr(\id) == \#quizstream)
     if elem.is(\:animated)
       return true
     elem = elem.parent()
@@ -2126,22 +2243,42 @@ scrollWindow = (offset-top) ->
     scrollTop: offset-top
   }, '1000', 'swing'
 
+applyTransform = (elem, transform) ->
+  elem.css {
+    webkit-transform: transform
+    moz-transform: transform
+    ms-transform: transform
+    transform: transform
+  }
+
+removeActiveVideoAndShrink = root.removeActiveVideoAndShrink = ->
+  video = $(\.activevideo)
+  rightbar = getRightbar video
+  if rightbar?
+    applyTransform rightbar, 'scale(0.5) translateY(-50%) translateX(-50%)'
+  video.removeClass \activevideo
+
 gotoQuestionNum = (qnum) ->
   pauseVideo()
   if qnum != $(\.activevideo).data(\prebody)
-    $(\.activevideo).removeClass \activevideo
+    #$(\.activevideo).removeClass \activevideo
+    removeActiveVideoAndShrink()
   body = getBody qnum
   scrollToElement body
   #scrollWindow body.offset().top
   #$(window).scrollTop body.offset().top
   #throw 'gotoQuestionNum unimplemented'
 
-makeVideoActive = (qnum) ->
+makeVideoActive = root.makeVideoActive = (qnum) ->
   body = $("\#body_#qnum")
   video = body.find \video
   if not video.hasClass \activevideo
     pauseVideo()
-    $(\.activevideo).removeClass \activevideo
+    #$(\.activevideo).removeClass \activevideo
+    removeActiveVideoAndShrink()
+    rightbar = getRightbar video
+    if rightbar?
+      applyTransform rightbar, ''
     video.addClass \activevideo
 
 gotoVideoNum = (qnum) ->
@@ -2153,7 +2290,7 @@ gotoNum = root.gotoNum = (qnum) ->
   switch body.data(\type)
   | \video => gotoVideoNum qnum
   | \question => gotoQuestionNum qnum
-  | _ => throw 'unexpected body type: ' + body.data(\type)
+  | _ => throw 'unexpected body type: ' + body.data(\type) + ' for qnum: ' + qnum
 
 disableAnswerOptions = (qnum) ->
   $("input[type=radio][name=radiogroup_#qnum]").attr('disabled', true)
@@ -2616,6 +2753,41 @@ playVideo = ->
     if video[0].paused
       video[0].play()
 
+root.playback-speed = '1.00'
+
+setPlaybackSpeed = (new-speed) ->
+  if not new-speed?
+    return
+  root.playback-speed = new-speed
+  $('.currentspeed').text(new-speed + 'x')
+  $('video').prop('playbackRate', parseFloat(new-speed))
+  #for x in $('video')
+  #  x.playbackRate = parseFloat new-speed
+
+increasePlaybackSpeed = root.increasePlaybackSpeed = ->
+  speed-map = {
+    '0.75': \1.00
+    '1.00': \1.25
+    '1.25': \1.50
+    '1.50': \1.75
+    '1.75': \2.00
+    '2.00': \2.00
+  }
+  new-speed = speed-map[root.playback-speed]
+  setPlaybackSpeed new-speed
+
+decreasePlaybackSpeed = root.decreasePlaybackSpeed = ->
+  speed-map = {
+    '0.75': \0.75
+    '1.00': \0.75
+    '1.25': \1.00
+    '1.50': \1.25
+    '1.75': \1.50
+    '2.00': \1.75
+  }
+  new-speed = speed-map[root.playback-speed]
+  setPlaybackSpeed new-speed
+
 pauseVideo = ->
   video = $('.activevideo')
   for vid in video
@@ -2730,6 +2902,10 @@ resetIfNeeded = root.resetIfNeeded = (qnum) ->
 
 root.vidnamepart-to-videos = {}
 
+resetVideoBody = (vidname, vidpart) ->
+  vidnamepart = toVidnamePart vidname, vidpart
+  delete root.vidnamepart-to-videos[vidnamepart]
+
 setVideoBody = (vidname, vidpart, body) ->
   vidnamepart = toVidnamePart vidname, vidpart
   root.vidnamepart-to-videos[vidnamepart] = body
@@ -2792,9 +2968,11 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
     else
       target-body = $('#prebody_' + qnum)
       (getButton curvid.data(\prebody), \watch).show()
+      #curvid-data = curvid.data()
       curvid.detach()
       #target-body.append curvid
       appendWithSlideDown curvid, target-body
+      #curvid.data(curvid-data)
       curvid.data(\prebody, qnum)
   else
     newvideo = insertVideo vidname, vidpart, "<span>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</span>"
@@ -2812,14 +2990,23 @@ insertQuestion = root.insertQuestion = (question, options) ->
   root.currentQuestionQnum = qnum
   turnOffAllDefaultbuttons()
   #removeAllVideos()
-  body = J('.panel-body').attr('id', "body_#qnum").data(\qnum, qnum).data('qidx', question.idx).data(\type, \question).css(\padding-top, \0px)
+  body = J('.panel-body-new')
+    .attr('id', "body_#qnum")
+    .data(\qnum, qnum)
+    .data('qidx', question.idx)
+    .data(\type, \question)
+    .css {
+      padding-top: \0px
+      padding-left: \10px
+      padding-right: \10px
+      padding-bottom: \10px
+    }
   vidname = getVidnameForQuestion(question)
   vidpart = getVidpartForQuestion(question)
   vidnamepart = getVidnamePartForQuestion(question)
   question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
-  body.append J('h3').text question-title
-  body.append J('span').text question.text
-  body.append J('br')
+  body.append J('div').css({font-size: \24px, padding-top: \10px}).text question-title
+  body.append J('div').text question.text
   optionsdiv = J("\#options_#qnum")
   for option,idx in question.options
     createWidget(question.type, qnum, idx, option, optionsdiv)
@@ -2968,9 +3155,9 @@ insertQuestion = root.insertQuestion = (question, options) ->
   insertShowAnswerButton()
   insertNextQuestionButton()
   #body.append J('.endquestion#endquestion_' + qnum).data(\qnum, qnum)
-  containerdiv = J(\div).css({width: \100%}).append [
-    J(\div).css({width: \30%, float: \left}).append(body),
-    J(\div).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
+  containerdiv = J(\.container_ + qnum).css({width: \100%}).append [
+    J(\.leftbar.leftbar_ + qnum).css({width: \30%, float: \left}).append(body),
+    J(\.rightbar.rightbar_ + qnum).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
     J(\div).css({clear: \both})
   ]
   containerdiv.prependTo $(\#quizstream)
@@ -3074,10 +3261,39 @@ videoHeightFractionVisible = ->
   fraction-shown = video-shown / Math.min(window-height, video-height)
   return fraction-shown
 
+fixVideoHeightProcess = ->
+  setInterval ->
+    for x in $('video')
+      fixVideoHeight $(x)
+  , 250
+
+questionAlwaysShownProcess = ->
+  root.prev-scroll-top = 0
+  setInterval ->
+    scroll-top = $(window).scrollTop()
+    if scroll-top == root.prev-scroll-top
+      return
+    root.prev-scroll-top = scroll-top
+    qnum = getCurrentQuestionQnum()
+    body = getBody qnum
+    body-bottom = body.parent().parent().height()
+    #last-video = getLastVideoForQuestion qnum
+    #if not last-video?
+    #  return
+    #last-video-top = $(last-video).offset().top
+    body-height = body.height()
+    scroll-top = Math.min scroll-top, body-bottom - body-height - 10
+    body.animate {
+      padding-top: scroll-top
+    }, 200
+  , 500
+
 root.skip-load-logs = true
 
 $(document).ready ->
   console.log 'ready'
+  fixVideoHeightProcess()
+  questionAlwaysShownProcess()
   /*
   $(document).mousedown (evt) ->
     console.log 'document mousedown'
@@ -3179,25 +3395,6 @@ $(document).ready ->
     #insertQuestion getNextQuestion(), {immediate: true}
     insertQuestion getNextQuestion()
     ensureLoggedToServer(root.logged-data, 'logged-data')
-  root.prev-scroll-top = 0
-  setInterval ->
-    scroll-top = $(window).scrollTop()
-    if scroll-top == root.prev-scroll-top
-      return
-    root.prev-scroll-top = scroll-top
-    qnum = getCurrentQuestionQnum()
-    body = getBody qnum
-    body-bottom = body.parent().parent().height()
-    #last-video = getLastVideoForQuestion qnum
-    #if not last-video?
-    #  return
-    #last-video-top = $(last-video).offset().top
-    body-height = body.height()
-    scroll-top = Math.min scroll-top, body-bottom - body-height - 40
-    body.animate {
-      padding-top: scroll-top
-    }, 200
-  , 500
   #insertQuestion questions[0]
   #for question in root.questions.slice 0,1
   #  insertQuestion question
