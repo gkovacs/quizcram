@@ -4,6 +4,9 @@ fs = require 'fs'
 app = express()
 exec = require('child_process').exec
 
+{toSeconds} = require './common_lib'
+{makeSegment, callCommand} = require './transcode_lib'
+
 bodyParser = require 'body-parser'
 
 MongoClient = require(\mongodb).MongoClient
@@ -152,51 +155,7 @@ app.get '/index.html', get_index
 
 #app.get '/'
 
-
-toSeconds = (time) ->
-  if not time?
-    return null
-  if typeof time == 'number'
-    return time
-  if typeof time == 'string'
-    timeParts = [parseInt(x) for x in time.split(':')]
-    if timeParts.length == 0
-      return null
-    if timeParts.length == 1
-      return timeParts[0]
-    if timeParts.length == 2
-      return timeParts[0]*60 + timeParts[1]
-    if timeParts.legnth == 3
-      return timeParts[0]*3600 + timeParts[1]*60 + timeParts[2]
-  return null
-
 spawn = require('child_process').spawn
-fs = require 'fs'
-
-callCommand = (command, options, callback) ->
-  ffmpeg = spawn command, options
-  ffmpeg.stdout.on 'data', (data) ->
-    console.log 'stdout:' + data
-  ffmpeg.stderr.on 'data', (data) ->
-    console.log 'stderr:' + data
-  ffmpeg.on 'exit', (code) ->
-    console.log 'exited with code:' + code
-    callback() if callback?
-
-makeSegment = (video, start, end, output, callback) ->
-  extra_options = []
-  if output.indexOf('.webm') != -1
-    extra_options = <[ -c:v libvpx -b:v 1M -c:a libvorbis -cpu-used -5 -deadline realtime ]>
-  if output.indexOf('.mp4') != -1
-    extra_options = <[ -codec:v libx264 -profile:v high -preset ultrafast -threads 0 -strict -2 -codec:a aac ]>
-  #  #extra_options = <[ -strict experimental ]>
-  #  #extra_options = <[ -codec:v libx264 -profile:v high -preset ultrafast -b:v 500k -maxrate 500k -bufsize 1000k -vf scale=-1:480 -threads 0 -codec:a aac ]>
-  command = './ffmpeg'
-  #command = 'avconv'
-  options = ['-ss', start, '-t', (end - start), '-i', video] ++ extra_options ++ ['-y', output]
-  callCommand command, options, callback
-  #callCommand command, options, ->
-  #  callCommand 'qtfaststart', [output], callback
 
 serverRootStatic = 'http://10.172.99.36:80/'
 
@@ -207,7 +166,7 @@ segmentVideo = (req, res) ->
   end = req.query.end
   video_base = video.split('.')[0]
   video_path = video
-  output_file = video_base + '_' + start + '_' + end + '.webm' #'.mp4'
+  output_file = video_base + '_' + start + '_' + end + '.webm'
   if not fs.existsSync('static')
     fs.mkdirSync('static')
   output_path = 'static/' + output_file
