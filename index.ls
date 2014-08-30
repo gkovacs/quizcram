@@ -878,14 +878,15 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .mouseleave (evt) ->
       $('.videohovertick').hide()
     .mousemove (evt) ->
-      #console.log 'hover on progress bar:'
-      #console.log evt
-      if evt.offsetX == 0
+      console.log 'hover on progress bar:'
+      console.log evt
+      if not evt.pageX
         return
+      offsetX = evt.pageX - progress-bar.offset().left
       progress-bar-width = progress-bar.width()
       if progress-bar-width == 0
         return
-      percent = evt.offsetX / progress-bar.width()
+      percent = offsetX / progress-bar.width()
       if not 0 < percent <= 1
         return
       #console.log percent
@@ -894,7 +895,10 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       console.log 'click on progress bar:'
       console.log evt
       makeVideoActive qnum
-      percent = evt.offsetX / progress-bar.width()
+      if not evt.pageX
+        return
+      offsetX = evt.pageX - progress-bar.offset().left
+      percent = offsetX / progress-bar.width()
       console.log 'percent:'
       console.log percent
       setTickPercentage vidname, vidpart, percent

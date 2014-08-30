@@ -5,7 +5,7 @@ app = express()
 exec = require('child_process').exec
 
 {toSeconds} = require './common_lib'
-{makeSegment, callCommand} = require './transcode_lib'
+{transcodeIfNeeded} = require './transcode_lib'
 
 bodyParser = require 'body-parser'
 
@@ -164,20 +164,11 @@ segmentVideo = (req, res) ->
   video = req.query.video
   start = req.query.start
   end = req.query.end
-  video_base = video.split('.')[0]
-  video_path = video
-  output_file = video_base + '_' + start + '_' + end + '.webm'
-  if not fs.existsSync('static')
-    fs.mkdirSync('static')
-  output_path = 'static/' + output_file
-  if fs.existsSync(output_path)
-    #console.log serverRootStatic + output_path
-    res.redirect serverRootStatic + output_path #+ '?' + Math.floor(Math.random() * 2**32)
-    #res.sendfile output_path
-  else
-    makeSegment video_path, start, end, output_path, ->
-      #res.sendfile output_path
-      res.redirect serverRootStatic + output_path #+ '?' + Math.floor(Math.random() * 2**32)
+  start = toSeconds start
+  end = toSeconds end
+  transcodeIfNeeded video, start, end, (output_path) ->
+    res.redirect serverRootStatic + output_path
+    # res.sendfile output_path
 
 app.get '/segmentvideo', segmentVideo
 #app.get '/segmentvideo*', segmentVideo
