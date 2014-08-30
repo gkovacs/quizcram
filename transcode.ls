@@ -8,7 +8,7 @@ tasks = []
 for let vidname,vidinfo of video_info
   {filename, parts} = vidinfo
   for let {start, end} in parts
-    start = toSeconds start
+    start = 0 # toSeconds start
     end = toSeconds end
     tasks.push (callback) ->
       console.log '============================================='

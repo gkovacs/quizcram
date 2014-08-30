@@ -2,7 +2,17 @@ root = exports ? this
 
 root.video_info = {
   '1-1-1': {
-    filename: '1-1-1.webm'
+    filename: '1-1-1.mp4'
+    title: 'Introduction: The Bauby Story'
+    parts: [
+      {
+        start: '0:00' # noquiz
+        end: '6:20'
+      }
+    ]
+  }
+  '1-2-1': {
+    filename: '1-2-1.mp4'
     title: 'The Four Functions'
     parts: [
       {
@@ -23,8 +33,8 @@ root.video_info = {
       }
     ]
   }
-  '1-1-2': {
-    filename: '1-1-2.webm'
+  '1-2-2': {
+    filename: '1-2-2.mp4'
     title: 'Central Anatomy'
     parts: [
       {
@@ -41,8 +51,8 @@ root.video_info = {
       }
     ]
   }
-  '1-2-1': {
-    filename: '1-2-1.webm'
+  '1-3-1': {
+    filename: '1-3-1.mp4'
     title: 'Meet the Stars: Neurons'
     parts: [
       {
@@ -55,8 +65,8 @@ root.video_info = {
       }
     ]
   }
-  '1-2-2': {
-    filename: '1-2-2.webm'
+  '1-3-2': {
+    filename: '1-3-2.mp4'
     title: 'Parts of the Neuron'
     parts: [
       {
@@ -73,8 +83,8 @@ root.video_info = {
       }
     ]
   }
-  '1-2-3': {
-    filename: '1-2-3.webm'
+  '1-3-3': {
+    filename: '1-3-3.mp4'
     title: 'Neuronal Uniqueness: Stars of the Sky'
     parts: [
       {
@@ -87,9 +97,9 @@ root.video_info = {
       }
     ]
   }
-  '1-2-4': {
-    filename: '1-2-4.webm'
-    title: 'Meet the Support Staff: Glial Cells'
+  '1-3-4': {
+    filename: '1-3-4.mp4'
+    title: 'Glial Cells'
     parts: [
       {
         start: '0:00'
@@ -101,8 +111,8 @@ root.video_info = {
       }
     ]
   }
-  '1-2-5': {
-    filename: '1-2-5.webm'
+  '1-3-5': {
+    filename: '1-3-5.mp4'
     title: 'Myelin'
     parts: [
       {
@@ -119,8 +129,8 @@ root.video_info = {
       }
     ]
   }
-  '1-2-6': {
-    filename: '1-2-6.webm'
+  '1-3-6': {
+    filename: '1-3-6.mp4'
     title: 'Demyelinating Diseases'
     parts: [
       {
@@ -133,8 +143,8 @@ root.video_info = {
       }
     ]
   }
-  '1-3-1': {
-    filename: '1-3-1.webm'
+  '1-4-1': {
+    filename: '1-4-1.mp4'
     title: 'Meninges'
     parts: [
       {
@@ -151,8 +161,8 @@ root.video_info = {
       }
     ]
   }
-  '1-3-2': {
-    filename: '1-3-2.webm'
+  '1-4-2': {
+    filename: '1-4-2.mp4'
     title: 'Peripheral Diseases'
     parts: [
       {
@@ -165,8 +175,8 @@ root.video_info = {
       }
     ]
   }
-  '1-3-3': {
-    filename: '1-3-3.webm'
+  '1-4-3': {
+    filename: '1-4-3.mp4'
     title: 'Brain Tumors'
     parts: [
       {
@@ -179,8 +189,8 @@ root.video_info = {
       }
     ]
   }
-  '1-3-4': {
-    filename: '1-3-4.webm'
+  '1-4-4': {
+    filename: '1-4-4.mp4'
     title: 'Looking Ahead: Course Preview'
     parts: [
       {
@@ -190,7 +200,7 @@ root.video_info = {
     ]
   }
   '2-1-1': {
-    filename: '2-1-1.webm'
+    filename: '2-1-1.mp4'
     title: 'Electrical Language'
     parts: [
       {
@@ -208,7 +218,7 @@ root.video_info = {
     ]
   }
   '2-1-2': {
-    filename: '2-1-2.webm'
+    filename: '2-1-2.mp4'
     title: 'Electricity Review'
     parts: [
       {
@@ -226,7 +236,7 @@ root.video_info = {
     ]
   }
   '2-1-3': {
-    filename: '2-1-3.webm'
+    filename: '2-1-3.mp4'
     title: 'Action Potential'
     parts: [
       {
@@ -244,7 +254,7 @@ root.video_info = {
     ]
   }
   '2-2-1': {
-    filename: '2-2-1.webm'
+    filename: '2-2-1.mp4'
     title: 'Neurotransmitter Synthesis'
     parts: [
       {
@@ -262,7 +272,7 @@ root.video_info = {
     ]
   }
   '2-2-2': {
-    filename: '2-2-2.webm'
+    filename: '2-2-2.mp4'
     title: 'Neurotransmitter Release'
     parts: [
       {
@@ -276,7 +286,7 @@ root.video_info = {
     ]
   }
   '2-2-3': {
-    filename: '2-2-3.webm'
+    filename: '2-2-3.mp4'
     title: 'Clostridial Toxins: Botox'
     parts: [
       {
@@ -294,7 +304,7 @@ root.video_info = {
     ]
   }
   '2-2-4': {
-    filename: '2-2-4.webm'
+    filename: '2-2-4.mp4'
     title: 'Signal Termination'
     parts: [
       {
@@ -312,7 +322,7 @@ root.video_info = {
     ]
   }
   '2-2-5': {
-    filename: '2-2-5.webm'
+    filename: '2-2-5.mp4'
     title: 'Receptors'
     parts: [
       {
@@ -330,7 +340,7 @@ root.video_info = {
     ]
   }
   '2-2-6': {
-    filename: '2-2-6.webm'
+    filename: '2-2-6.mp4'
     title: 'Wrap-up: Neurocommunication'
     parts: [
       {

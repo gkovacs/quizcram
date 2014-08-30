@@ -44,8 +44,44 @@ getAllDependencies = root.getAllDependencies = (videoname) ->
       output = output ++ getAllDependencies(x)
     return output
 
+getQuestionsForVideoPart = (vidname, vidpart) ->
+  output = []
+  for question in root.questions
+    for video in question.videos
+      if video.name == vidname and video.part == vidpart
+        output.push question
+  return output
 
 do ->
+  new-questions = []
+  for vidname,vidinfo of root.video_info
+    for partinfo,vidpart in vidinfo.parts
+      video-questions = getQuestionsForVideoPart vidname, vidpart
+      for question in video-questions
+        new-questions.push question
+      if video-questions.length == 0
+        new-questions.push {
+          text: 'How well did you understand this video?'
+          title: 'some question'
+          type: 'radio'
+          autoshowvideo: true
+          nocheckanswer: true
+          options: [
+            'perfectly understand'
+            'somewhat understand'
+            'do not understand'
+          ]
+          correct: 0
+          explanation: 'some explanation'
+          videos: [
+            {
+              name: vidname
+              degree: 1.0
+              part: vidpart
+            }
+          ]
+        }
+  root.questions = new-questions
   for question,idx in root.questions
     question.idx = idx
 
@@ -1624,7 +1660,7 @@ showIsCorrect = (qnum, isCorrect) ->
   if isCorrect
     feedback.append J('b').css('color', 'green').text 'Correct'
     if not question.explanation? or question.explanation == '(see correct answers above)'
-      $("\#explanation_#qnum").text 'Move on to the next question!'
+      $("\#explanation_#qnum").text 'Move on to the next video!'
     else
       $("\#explanation_#qnum").text question.explanation
   else
@@ -2096,7 +2132,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
       (getButton qnum, \watch).click()
     body.append review-video-button
   insertNextQuestionButton = ->
-    body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next question').click (evt) ->
+    body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next video').click (evt) ->
       addlog {
         event: 'next'
         type: 'button'

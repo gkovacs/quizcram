@@ -3,7 +3,7 @@ root = exports ? this
 root.questions = [
   {
     text: 'Which of the following are voluntary movements?'
-    title: '1-1-1 Question 1'
+    title: '1-2-1 Question 1'
     type: 'checkbox'
     options: [
       'Laughing at a joke' #
@@ -18,7 +18,7 @@ root.questions = [
     explanation: 'Voluntary movements are self-generated actions driven by the brain. These can be deliberate movements or emotional reactions.'
     videos: [
       {
-        name: '1-1-1'
+        name: '1-2-1'
         degree: 1.0
         part: 0
       }
@@ -26,7 +26,7 @@ root.questions = [
   }
   {
     text: 'Which of the following stimuli are sensed but not perceived?'
-    title: '1-1-1 Question 2'
+    title: '1-2-1 Question 2'
     type: 'checkbox'
     options: [
       'Vibration'
@@ -41,7 +41,7 @@ root.questions = [
     explanation: 'Our bodies are able to detect things (like carbon dioxide concentration in the blood) that we are not able to perceive. Perceivable stimuli are those we are capable of being aware of.'
     videos: [
       {
-        name: '1-1-1'
+        name: '1-2-1'
         degree: 1.0
         part: 1
       }
@@ -49,7 +49,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are influenced by homeostatic brain functions?'
-    title: '1-1-1 Question 3'
+    title: '1-2-1 Question 3'
     type: 'checkbox'
     options: [
       'Digestion'
@@ -65,36 +65,15 @@ root.questions = [
     explanation: 'Homeostasis is the process of maintaining healthy internal conditions, such as body temperature, pH, and blood oxygen levels. All of the functions listed as answer options are influenced by homeostatic brain functions.'
     videos: [
       {
-        name: '1-1-1'
+        name: '1-2-1'
         degree: 1.0
         part: 2
       }
     ]
   }
   {
-    text: 'How well did you understand this video?'
-    title: 'some question'
-    type: 'radio'
-    autoshowvideo: true
-    nocheckanswer: true
-    options: [
-      'perfectly understand'
-      'somewhat understand'
-      'do not understand'
-    ]
-    correct: 0
-    explanation: 'some explanation'
-    videos: [
-      {
-        name: '1-1-1'
-        degree: 1.0
-        part: 3
-      }
-    ]
-  }
-  {
     text: 'Which of the following are true of the brainstem?'
-    title: '1-1-2 Question 1'
+    title: '1-2-2 Question 1'
     type: 'checkbox'
     options: [
       'Contained in the skull' #
@@ -109,7 +88,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-1-2'
+        name: '1-2-2'
         degree: 1.0
         part: 0
       }
@@ -117,7 +96,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true of the forebrain?'
-    title: '1-1-2 Question 2'
+    title: '1-2-2 Question 2'
     type: 'checkbox'
     options: [
       'Contained in the skull' #
@@ -132,7 +111,7 @@ root.questions = [
     explanation: 'The forebrain includes the cerebral cortex and is the "seat of consciousness." All perception and abstract cognitive functions like memory are contained in the forebrain.'
     videos: [
       {
-        name: '1-1-2'
+        name: '1-2-2'
         degree: 1.0
         part: 1
       }
@@ -140,7 +119,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true about neurons?'
-    title: '1-2-1 Question 1'
+    title: '1-3-1 Question 1'
     type: 'checkbox'
     options: [
       'There are far more different types of neurons than there are types of bone or pancreatic cells' #
@@ -154,7 +133,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-1'
+        name: '1-3-1'
         degree: 1.0
         part: 0
       }
@@ -162,7 +141,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true about neurons?'
-    title: '1-2-2 Question 1'
+    title: '1-3-2 Question 1'
     type: 'checkbox'
     options: [
       'Dendrites receive information' #
@@ -177,7 +156,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-2'
+        name: '1-3-2'
         degree: 1.0
         part: 0
       }
@@ -185,7 +164,7 @@ root.questions = [
   }
   {
     text: 'Which of the following could be on the receiving end of a synapse?'
-    title: '1-2-2 Question 2'
+    title: '1-3-2 Question 2'
     type: 'checkbox'
     options: [
       'Neuronal dendrites' #
@@ -200,7 +179,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-2'
+        name: '1-3-2'
         degree: 1.0
         part: 1
       }
@@ -208,7 +187,7 @@ root.questions = [
   }
   {
     text: 'Neurons can differ in which of the following features?'
-    title: '1-2-3 Question 1'
+    title: '1-3-3 Question 1'
     type: 'checkbox'
     options: [
       'Connectivity' #
@@ -223,7 +202,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-3'
+        name: '1-3-3'
         degree: 1.0
         part: 0
       }
@@ -231,7 +210,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true of glial cells?'
-    title: '1-2-4 Question 1'
+    title: '1-3-4 Question 1'
     type: 'checkbox'
     options: [
       'There are more types of glial cells than there are types of neurons'
@@ -246,7 +225,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-4'
+        name: '1-3-4'
         degree: 1.0
         part: 0
       }
@@ -254,7 +233,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true of myelin?'
-    title: '1-2-5 Question 1'
+    title: '1-3-5 Question 1'
     type: 'checkbox'
     options: [
       'Myelin reduces the time needed for the brain to send messages.' #
@@ -268,7 +247,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-5'
+        name: '1-3-5'
         degree: 1.0
         part: 0
       }
@@ -276,7 +255,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true?'
-    title: '1-2-5 Question 2'
+    title: '1-3-5 Question 2'
     type: 'checkbox'
     options: [
       'The neural code consists of a temporal pattern of action potentials.' #
@@ -291,7 +270,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-5'
+        name: '1-3-5'
         degree: 1.0
         part: 1
       }
@@ -299,7 +278,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true?'
-    title: '1-2-6 Question 1'
+    title: '1-3-6 Question 1'
     type: 'checkbox'
     options: [
       'Mutliple sclerosis, a central demyelinating disease, is a disorder of Schwann cells.'
@@ -314,7 +293,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-2-6'
+        name: '1-3-6'
         degree: 1.0
         part: 0
       }
@@ -322,7 +301,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true about the meninges?'
-    title: '1-3-1 Question 1'
+    title: '1-4-1 Question 1'
     type: 'checkbox'
     options: [
       'The outermost meningeal layer, the dura, is the toughest' #
@@ -337,7 +316,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-3-1'
+        name: '1-4-1'
         degree: 1.0
         part: 0
       }
@@ -345,7 +324,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are central neurons?'
-    title: '1-3-1 Question 2'
+    title: '1-4-1 Question 2'
     type: 'checkbox'
     options: [
       'Forebrain neurons' #
@@ -359,7 +338,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-3-1'
+        name: '1-4-1'
         degree: 1.0
         part: 1
       }
@@ -367,7 +346,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true of viruses and large molecues such as toxins?'
-    title: '1-3-2 Question 1'
+    title: '1-4-2 Question 1'
     type: 'checkbox'
     options: [
       'They can affect peripheral neurons including sensory neurons' #
@@ -382,7 +361,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-3-2'
+        name: '1-4-2'
         degree: 1.0
         part: 0
       }
@@ -390,7 +369,7 @@ root.questions = [
   }
   {
     text: 'Which of the following are true of brain tumors?'
-    title: '1-3-3 Question 1'
+    title: '1-4-3 Question 1'
     type: 'checkbox'
     options: [
       'Tumors that start outside the brain can spread to the brain'
@@ -404,7 +383,7 @@ root.questions = [
     explanation: '(see correct answers above)'
     videos: [
       {
-        name: '1-3-3'
+        name: '1-4-3'
         degree: 1.0
         part: 0
       }

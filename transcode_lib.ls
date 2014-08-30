@@ -25,9 +25,10 @@ toFolderAndFileName = (filepath) ->
 makeSegment = root.makeSegment = (video, start, end, output, callback) ->
   extra_options = []
   if output.indexOf('.webm') != -1
-    #extra_options = <[ -c:v libvpx -b:v 1M -c:a libvorbis -cpu-used -5 ]>
+    extra_options = <[ -c:v libvpx -b:v 500K -c:a libvorbis -cpu-used -5 -deadline realtime ]>
+    #extra_options = <[ -c:v libvpx -b:v 500K -c:a libvorbis -cpu-used -5 ]>
     #extra_options = <[ -codec:video vp9 ]>
-    extra_options = <[ -c:v libvpx -b:v 1M -c:a libvorbis -cpu-used -5 -deadline realtime ]>
+    #extra_options = <[ -c:v libvpx -b:v 1M -c:a libvorbis -cpu-used -5 -deadline realtime ]>
   if output.indexOf('.mp4') != -1
     extra_options = <[ -codec:v libx264 -profile:v high -preset ultrafast -threads 0 -strict -2 -codec:a aac ]>
   #  #extra_options = <[ -strict experimental ]>
