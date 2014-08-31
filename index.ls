@@ -184,6 +184,7 @@ clearlog = root.clearlog = ->
   }
 
 root.logged-data = []
+root.logging-disabled-globally = true
 root.logging-disabled = false
 
 ensureLoggedToServer = (list, name) ->
@@ -214,7 +215,7 @@ addlogReal = root.addlogReal = (data) ->
   #postJSON '/addlog', data
 
 addlog = root.addlog = (logdata) ->
-  if root.logging-disabled
+  if root.logging-disabled or root.logging-disabled-globally
     return
   data = $.extend {}, logdata
   if not data.username?

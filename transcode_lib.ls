@@ -1,7 +1,19 @@
 root = exports ? this
 
-{existsSync, mkdirSync, unlinkSync, renameSync} = require 'fs'
+{existsSync, readFileSync, mkdirSync, unlinkSync, renameSync} = require 'fs'
 {spawn} = require 'child_process'
+
+root.platform-name = null
+
+getPlatform = root.getPlatform = ->
+  if root.platform-name?
+    return root.platform-name
+  if existsSync('platform.json')
+    platform = JSON.parse readFileSync('platform.json', 'utf-8')
+    root.platform-name = platform.name
+  else
+    root.platform-name = 'default'
+  return root.platform-name
 
 callCommand = (command, options, callback) ->
   ffmpeg = spawn command, options
@@ -33,7 +45,9 @@ makeSegment = root.makeSegment = (video, start, end, output, callback) ->
     extra_options = <[ -codec:v libx264 -profile:v high -preset ultrafast -threads 0 -strict -2 -codec:a aac ]>
   #  #extra_options = <[ -strict experimental ]>
   #  #extra_options = <[ -codec:v libx264 -profile:v high -preset ultrafast -b:v 500k -maxrate 500k -bufsize 1000k -vf scale=-1:480 -threads 0 -codec:a aac ]>
-  command = './ffmpeg'
+  command = switch getPlatform()
+  | 'osx' => 'ffmpeg'
+  | _ => './ffmpeg'
   #command = 'avconv'
   [output_folder, output_filename] = toFolderAndFileName output
   output_tmp = output_folder + 'tmp_' + output_filename
@@ -54,6 +68,10 @@ transcodeIfNeeded = root.transcodeIfNeeded = (video, start, end, callback) ->
   if not existsSync('static')
     mkdirSync('static')
   output_path = 'static/' + output_file
+  console.log 'existsSync'
+  console.log existsSync
+  console.log 'callback'
+  console.log callback
   if existsSync(output_path)
     callback(output_path)
   else

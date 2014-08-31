@@ -5,7 +5,7 @@ app = express()
 exec = require('child_process').exec
 
 {toSeconds} = require './common_lib'
-{transcodeIfNeeded} = require './transcode_lib'
+{transcodeIfNeeded, getPlatform} = require './transcode_lib'
 
 bodyParser = require 'body-parser'
 
@@ -167,8 +167,9 @@ segmentVideo = (req, res) ->
   start = toSeconds start
   end = toSeconds end
   transcodeIfNeeded video, start, end, (output_path) ->
-    res.redirect serverRootStatic + output_path
-    # res.sendfile output_path
+    switch getPlatform()
+    | 'osx' => res.sendfile(output_path)
+    | _ => res.redirect(serverRootStatic + output_path)
 
 app.get '/segmentvideo', segmentVideo
 #app.get '/segmentvideo*', segmentVideo
