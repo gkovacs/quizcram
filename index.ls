@@ -733,7 +733,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   setVideoBody vidname, vidpart, body
   console.log vidname
   basefilename = root.video_info[vidname].filename
-  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: 0, end: end, randpart: randomString(10)}
+  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: 0, end: end + 1, randpart: randomString(10)}
   title = root.video_info[vidname].title
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title

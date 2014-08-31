@@ -14,7 +14,7 @@ for let vidname,vidinfo of video_info
       console.log '============================================='
       console.log filename + ' start: ' + start + ' end: ' + end
       console.log '============================================='
-      transcodeIfNeeded(filename, start, end, -> callback(null))
+      transcodeIfNeeded(filename, start, end + 1, -> callback(null))
 
 async.series tasks, (err, results) ->
   console.log 'all complete!'
