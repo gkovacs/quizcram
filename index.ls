@@ -16,7 +16,7 @@ stringEach = (l) ->
   return output
 
 root.video_dependencies = {
-  '1-1-1': [ '' ]
+  '1-1-1': []
   '1-2-1': [ '1-1-1' ]
   '1-2-2': [ '1-2-1' ]
   '1-3-1': [ '1-2-2' ]
@@ -29,6 +29,15 @@ root.video_dependencies = {
   '1-4-2': [ '1-4-1' ]
   '1-4-3': [ '1-4-2' ]
   '1-4-4': [ '1-4-3' ]
+  '2-1-1': []
+  '2-1-2': [ '2-1-1' ]
+  '2-1-3': [ '2-1-2' ]
+  '2-2-1': [ '2-1-3' ]
+  '2-2-2': [ '2-2-1' ]
+  '2-2-3': [ '2-2-2' ]
+  '2-2-4': [ '2-2-3' ]
+  '2-2-5': [ '2-2-4' ]
+  '2-2-6': [ '2-2-5' ]
 }
 
 listVideos = root.listVideos = ->
@@ -53,7 +62,7 @@ getQuestionsForVideoPart = (vidname, vidpart) ->
         output.push question
   return output
 
-updateQuestions = ->
+createQuestionsForVideosWithoutQuizzes = ->
   new-questions = []
   for vidname,vidinfo of root.video_info
     for partinfo,vidpart in vidinfo.parts
@@ -62,9 +71,10 @@ updateQuestions = ->
         new-questions.push question
       if video-questions.length == 0
         new-questions.push {
-          text: 'How well did you understand this video?'
+          text: 'How well do you understand this video?'
           title: 'some question'
           type: 'radio'
+          course: vidinfo.course
           autoshowvideo: true
           nocheckanswer: true
           options: [
@@ -83,8 +93,6 @@ updateQuestions = ->
           ]
         }
   root.questions = new-questions
-  for question,idx in root.questions
-    question.idx = idx
 
 #root.questions = root.questions[0 to 3] # TEMPORARY # TODO remove this
 
@@ -2377,11 +2385,13 @@ millisecToDisplayable = (millisec) ->
   return "#hours:#minutes:#seconds"
 
 updateUrlBar = ->
-  history.replaceState {}, '', '?' + $.param {
-    username: root.username
-    course: root.coursename
-    started: root.time-started
-  }
+  elapsed = millisecToDisplayable(Date.now() - root.time-started)
+  history.replaceState {}, '', "?username=#{root.username}&course=#{root.coursename}&started=#{root.time-started}\#elapsed=#{elapsed}"
+  #history.replaceState {}, '', '?' + ($.param {
+  #  username: root.username
+  #  course: root.coursename
+  #  started: root.time-started
+  #}) + '#elapsed=' + elapsed
 
 updateUrlHash = root.updateUrlHash = ->
   elapsed = millisecToDisplayable(Date.now() - root.time-started)
@@ -2413,8 +2423,8 @@ updateTimeStarted = ->
 
 root.coursename = null
 
-updateCourseName = ->
-  root.coursename = getUrlParameters().coursename
+updateCourseName = root.updateCourseName = ->
+  root.coursename = getUrlParameters().course
   if not root.coursename?
     root.coursename = 'neuro_1'
   if root.coursename == '1'
@@ -2422,7 +2432,7 @@ updateCourseName = ->
   if root.coursename == '2'
     root.coursename = 'neuro_2'
 
-filterQuestions = ->
+filterQuestions = root.filterQuestions = ->
   root.questions = switch root.coursename
   | 'neuro_1' =>
     [x for x in root.questions when x.course.indexOf('1') != -1]
@@ -2431,15 +2441,50 @@ filterQuestions = ->
   | _ =>
     throw 'unknown course: ' + root.coursename
 
+filterVideos = root.filterVideos = ->
+  root.video_info = {[vidname, vidinfo] for vidname,vidinfo of root.video_info when vidinfo.course == root.coursename}
+
+updateVideos = root.updateVideos = ->
+  for vidname,vidinfo of root.video_info
+    if not vidinfo.course?
+      if vidname.indexOf('1-') == 0
+        vidinfo.course = 'neuro_1'
+      else if vidname.indexOf('2-') == 0
+        vidinfo.course = 'neuro_2'
+    if not vidinfo.srtfile?
+      vidinfo.srtfile = vidname + '.srt'
+
+downloadAndParseSubtitle = root.downloadAndParseSubtitle = (srtfile, callback) ->
+  $.get srtfile, (data) ->
+    subs = parser.fromSrt(data)
+    callback(subs)
+
+#downloadAndParseAllSubtitles = root.downloadAndParseAllSubtitles = ->
+#  for vidname,vidinfo of root.video_info
+
+
+updateQuestions = root.updateQuestions = ->
+  for question,idx in root.questions
+    question.idx = idx
+    if not question.course?
+      vidname = question.videos[0].name
+      vidinfo = root.video_info[vidname]
+      question.course = vidinfo.course
+
 $(document).ready ->
   updateUsername()
   updateTimeStarted()
   updateCourseName()
-  updateUrlBar()
-  filterQuestions()
+  #updateUrlBar()
+  updateVideos()
+  filterVideos()
+  #downloadAndParseAllSubtitles()
+  createQuestionsForVideosWithoutQuizzes()
   updateQuestions()
+  filterQuestions()
   setInterval ->
-    updateUrlHash()
+    #updateUrlHash()
+    updateUrlBar()
   , 1000
   console.log 'ready'
   fixVideoHeightProcess()

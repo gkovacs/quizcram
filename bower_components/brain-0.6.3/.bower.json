@@ -1,0 +1,14 @@
+{
+  "name": "brain-0.6.3",
+  "_cacheHeaders": {
+    "ETag": "\"fdb67fb9dbddf5b9abb16da712331384cd0fdc9c\"",
+    "Content-Length": "171386",
+    "Content-Type": "text/plain; charset=utf-8"
+  },
+  "_release": "e-tag:fdb67fb9d",
+  "main": "index.js",
+  "_source": "https://raw.githubusercontent.com/harthur/brain/gh-pages/brain-0.6.3.js",
+  "_target": "*",
+  "_originalSource": "https://raw.githubusercontent.com/harthur/brain/gh-pages/brain-0.6.3.js",
+  "_direct": true
+}
