@@ -385,6 +385,26 @@ updateSeenIntervals = (vidname, vidpart) ->
   seen-intervals = getVideoSeenIntervals vidname, vidpart
   setSeenIntervals vidname, vidpart, seen-intervals
 
+setSubtitleText = root.setSubtitleText = (vidname, vidpart, text) ->
+  video = getVideo vidname, vidpart
+  subtitle-display = video.find \.subtitles
+  if text == ''
+    subtitle-display.hide()
+  else
+    subtitle-display.text text
+    subtitle-display.show()
+
+updateSubtitle = root.updateSubtitle = (vidname, vidpart, curtime) ->
+  vidinfo = root.video_info[vidname]
+  if vidinfo.subtitle?
+    for line in vidinfo.subtitle
+      start = toSeconds line.startTime
+      end = toSeconds line.endTime
+      if start <= curtime <= end
+        setSubtitleText vidname, vidpart, line.text
+        return
+  setSubtitleText vidname, vidpart, ''
+
 timeUpdatedReal = (qnum) ->
   video = $("\#video_#qnum")
   #body = getBody qnum
@@ -405,6 +425,7 @@ timeUpdatedReal = (qnum) ->
   if video.length > 0
     curtime = video[0].currentTime
     markVideoSecondWatched vidname, vidpart, curtime
+    updateSubtitle vidname, vidpart, curtime
     updateCurrentTimeText vidname, vidpart
   updateTickLocation qnum
   if isCurrentPortionPreviouslySeen qnum
@@ -2459,9 +2480,15 @@ downloadAndParseSubtitle = root.downloadAndParseSubtitle = (srtfile, callback) -
     subs = parser.fromSrt(data)
     callback(subs)
 
-#downloadAndParseAllSubtitles = root.downloadAndParseAllSubtitles = ->
-#  for vidname,vidinfo of root.video_info
-
+downloadAndParseAllSubtitles = root.downloadAndParseAllSubtitles = ->
+  tasks = []
+  for let vidname,vidinfo of root.video_info
+    tasks.push (callback) ->
+      downloadAndParseSubtitle vidinfo.srtfile, (subs) ->
+        vidinfo.subtitle = subs
+        callback(null)
+  async.series tasks, ->
+    console.log 'downloadAndParseAllSubtitles done!'
 
 updateQuestions = root.updateQuestions = ->
   for question,idx in root.questions
@@ -2478,7 +2505,7 @@ $(document).ready ->
   #updateUrlBar()
   updateVideos()
   filterVideos()
-  #downloadAndParseAllSubtitles()
+  downloadAndParseAllSubtitles()
   createQuestionsForVideosWithoutQuizzes()
   updateQuestions()
   filterQuestions()
