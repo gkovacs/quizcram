@@ -168,8 +168,9 @@ segmentVideo = (req, res) ->
   end = toSeconds end
   transcodeIfNeeded video, start, end, (output_path) ->
     switch getPlatform()
-    | 'osx' => res.sendfile(output_path)
-    | _ => res.redirect(serverRootStatic + output_path)
+    | 'osx' => res.sendFile(path.join(__dirname, output_path))
+    | _ => res.sendFile(path.join(__dirname, output_path))
+    #| _ => res.redirect(serverRootStatic + output_path)
 
 app.get '/segmentvideo', segmentVideo
 #app.get '/segmentvideo*', segmentVideo
@@ -194,10 +195,10 @@ app.get '/thumbnail', (req, res) ->
   thumbnail_path = 'thumbnails/' + thumbnail_file
   console.log thumbnail_path
   if fs.existsSync(thumbnail_path)
-    res.sendfile thumbnail_path
+    res.sendFile path.join(__dirname, thumbnail_path)
   else
     makeSnapshot video, time, thumbnail_path, width, height, ->
-      res.sendfile thumbnail_path
+      res.sendFile path.join(__dirname, thumbnail_path)
 
 app.get '/overlay', (req, res) ->
   video = req.query.video

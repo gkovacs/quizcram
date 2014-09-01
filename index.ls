@@ -16,18 +16,19 @@ stringEach = (l) ->
   return output
 
 root.video_dependencies = {
-  '1-1-1': []
-  '1-1-2': [ '1-1-1' ]
-  '1-2-1': [ '1-1-2' ]
+  '1-1-1': [ '' ]
+  '1-2-1': [ '1-1-1' ]
   '1-2-2': [ '1-2-1' ]
-  '1-2-3': [ '1-2-2' ]
-  '1-2-4': [ '1-2-3' ]
-  '1-2-5': [ '1-2-4' ]
-  '1-2-6': [ '1-2-5' ]
-  '1-3-1': [ '1-2-6' ]
+  '1-3-1': [ '1-2-2' ]
   '1-3-2': [ '1-3-1' ]
   '1-3-3': [ '1-3-2' ]
   '1-3-4': [ '1-3-3' ]
+  '1-3-5': [ '1-3-4' ]
+  '1-3-6': [ '1-3-5' ]
+  '1-4-1': [ '1-3-6' ]
+  '1-4-2': [ '1-4-1' ]
+  '1-4-3': [ '1-4-2' ]
+  '1-4-4': [ '1-4-3' ]
 }
 
 listVideos = root.listVideos = ->
@@ -52,7 +53,7 @@ getQuestionsForVideoPart = (vidname, vidpart) ->
         output.push question
   return output
 
-do ->
+updateQuestions = ->
   new-questions = []
   for vidname,vidinfo of root.video_info
     for partinfo,vidpart in vidinfo.parts
@@ -67,9 +68,9 @@ do ->
           autoshowvideo: true
           nocheckanswer: true
           options: [
-            'perfectly understand'
-            'somewhat understand'
-            'do not understand'
+            'Perfectly understand'
+            'Somewhat understand'
+            'Do not understand'
           ]
           correct: 0
           explanation: 'some explanation'
@@ -142,7 +143,7 @@ root.questions = [
 ]
 */
 
-root.username = 'defaultuser'
+root.username = null
 
 randomFromList = (list) ->
   return list[Math.floor(Math.random() * list.length)]
@@ -150,13 +151,6 @@ randomFromList = (list) ->
 randomString = (length) ->
   alphabet = [\a to \z] ++ [\A to \Z] ++ [\0 to \9]
   return [randomFromList(alphabet) for x in [0 til length]].join('')
-
-do ->
-  if $.cookie('username')?
-    root.username = $.cookie('username')
-  else
-    root.username = randomString(14)
-    $.cookie('username', root.username)
 
 getlog = root.getlog = (callback) ->
   $.getJSON '/viewlog?' + $.param({username: root.username}), (logs) ->
@@ -352,6 +346,16 @@ updateWatchButtonProgress = root.updateWatchButtonProgress = (vidname, vidpart) 
   console.log 'percent-viewed: ' + percent-viewed
   setWatchButtonProgress vidname, vidpart, percent-viewed
 
+updateCurrentTimeText = root.updateCurrentTimeText = (vidname, vidpart) ->
+  video = getVideo vidname, vidpart
+  time-indicator = video.find \.timeindicator
+  videoTag = video.find(\video)[0]
+  duration = videoTag.duration
+  durationDisplay = secondsToDisplayableMinutes duration
+  currentTime = videoTag.currentTime
+  currentTimeDisplay = secondsToDisplayableMinutes currentTime
+  time-indicator.text "#currentTimeDisplay / #durationDisplay"
+
 updateTickLocation = root.updateTickLocation = (qnum) ->
   video = $("\#video_#qnum")
   if video.length == 0
@@ -393,6 +397,7 @@ timeUpdatedReal = (qnum) ->
   if video.length > 0
     curtime = video[0].currentTime
     markVideoSecondWatched vidname, vidpart, curtime
+    updateCurrentTimeText vidname, vidpart
   updateTickLocation qnum
   if isCurrentPortionPreviouslySeen qnum
     (getVideo vidname, vidpart).find(\.skipseen).show()
@@ -687,6 +692,18 @@ setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
       watched-portion.css {background-color: 'rgba(50, 255, 255, 0.7)', border: '2px rgba(50, 255, 255, 0.7)'}
     progress-bar.append watched-portion
 
+getPercentageOnProgressBar = (evt, progress-bar) ->
+  if not evt.pageX
+    return
+  offsetX = evt.pageX - progress-bar.offset().left
+  progress-bar-width = progress-bar.width()
+  if progress-bar-width == 0
+    return
+  if haveTransform(getOuterBody(progress-bar))
+    progress-bar-width /= 2
+  percent = offsetX / progress-bar-width
+  return percent
+
 getbot = root.getbot = (elem) ->
   if typeof elem == typeof ''
     elem = $(elem)
@@ -704,7 +721,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       padding-right: \0px
       padding-bottom: \0px
       margin-top: \0px
-      margin-bottom: \0px
+      margin-bottom: \10px
       margin-left: \0px
       margin-right: \0px
       position: \relative
@@ -739,7 +756,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   fulltitle = title
   if vidpart?
     if vidpart == 0
-      fulltitle = fulltitle + ' part 1'
+      if root.video_info[vidname].parts.length > 1
+        fulltitle = fulltitle + ' part 1'
     else
       fulltitle = fulltitle + ' parts 1-' + (vidpart+1)
   #$('.activevideo').removeClass 'activevideo'
@@ -917,27 +935,20 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .mousemove (evt) ->
       console.log 'hover on progress bar:'
       console.log evt
-      if not evt.pageX
-        return
-      offsetX = evt.pageX - progress-bar.offset().left
-      progress-bar-width = progress-bar.width()
-      if progress-bar-width == 0
-        return
-      percent = offsetX / progress-bar.width()
-      if not 0 < percent <= 1
+      percent = getPercentageOnProgressBar(evt, progress-bar)
+      if not percent? or not isFinite(percent) or not 0 < percent <= 1
         return
       #console.log percent
       setHoverTickPercentage vidname, vidpart, percent
     .click (evt) ->
       console.log 'click on progress bar:'
       console.log evt
-      makeVideoActive qnum
-      if not evt.pageX
+      percent = getPercentageOnProgressBar(evt, progress-bar)
+      if not percent? or not isFinite(percent) or not 0 < percent <= 1
         return
-      offsetX = evt.pageX - progress-bar.offset().left
-      percent = offsetX / progress-bar.width()
       console.log 'percent:'
       console.log percent
+      makeVideoActive qnum
       setTickPercentage vidname, vidpart, percent
       seekVideoToPercent percent
   unwatched-portion = J(\.unwatched)
@@ -949,8 +960,19 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       top: \45%
       background-color: \white
     }
+  time-indicator = J(\.timeindicator)
+    .css {
+      height: \100%
+      display: \table-cell
+      width: \50px
+      position: \relative
+      color: \white
+      vertical-align: \middle
+      padding-left: \10px
+      font-size: \12px
+    }
   progress-bar.append unwatched-portion
-  video-footer.append [play-button, slower-button, current-speed, faster-button, progress-bar]
+  video-footer.append [play-button, slower-button, current-speed, faster-button, progress-bar, time-indicator]
   video-skip = J(\.skipseen)
     .css {
       position: \absolute
@@ -1076,14 +1098,15 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       gotoNum target-qnum
       (getButton target-qnum, \watch).show()
   video-header.append close-button
-  if vidpart?
-    for part-idx in [0 to vidpart]
-      start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
-      addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", (part-idx == vidpart)
-  else
-    for part-idx in [0 til root.video_info[vidname].parts.length]
-      start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
-      addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", false
+  if root.video_info[vidname].parts.length > 1
+    if vidpart?
+      for part-idx in [0 to vidpart]
+        start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
+        addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", (part-idx == vidpart)
+    else
+      for part-idx in [0 til root.video_info[vidname].parts.length]
+        start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
+        addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", false
   outer-body.append body
   return outer-body #body
 
@@ -1259,6 +1282,14 @@ applyTransform = (elem, transform) ->
     ms-transform: transform
     transform: transform
   }
+
+haveTransform = (elem) ->
+  if not elem? or not elem.data?
+    return false
+  transform = elem.data('transform')
+  if transform? and transform != ''
+    return true
+  return false
 
 removeActiveVideoAndShrink = root.removeActiveVideoAndShrink = ->
   video = $(\.activevideo)
@@ -1878,7 +1909,8 @@ getVideoDependencies = (vidname, vidpart) ->
   #if vidpart?
   #  for prevpart in [0 til vidpart]
   #    dependencies.push [vidname, prevpart]
-  dependencies = dependencies ++ [[x,root.video_info[x].parts.length - 1] for x in root.video_dependencies[vidname]]
+  if root.video_dependencies[vidname]?
+    dependencies = dependencies ++ [[x,root.video_info[x].parts.length - 1] for x in root.video_dependencies[vidname]]
   return dependencies
 
 showChildVideoForVideo = (qnum) ->
@@ -2114,6 +2146,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
     setVideoFocused(true)
   insertWatchVideoButton = (autotrigger) ->
     watch-video-button = J('button.btn.btn-primary.btn-lg#watch_' + qnum).css(\display, \none).data('vidname', vidname).data('vidpart', vidpart).addClass('watch_' + vidnamepart).css('margin-right', '15px').css(\width, \100%)/*.text("watch video (0% seen)")*/.click (evt) ->
+      pauseVideo()
       addlog {
         event: 'watch'
         type: 'button'
@@ -2177,7 +2210,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   insertShowAnswerButton()
   insertNextQuestionButton()
   #body.append J('.endquestion#endquestion_' + qnum).data(\qnum, qnum)
-  containerdiv = J(\.container_ + qnum).css({width: \100%, margin-bottom: \10px}).append [
+  containerdiv = J(\.container_ + qnum).css({width: \100%}).append [
     J(\.leftbar.leftbar_ + qnum).css({width: \30%, float: \left}).append(body),
     J(\.rightbar.rightbar_ + qnum).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
     J(\div).css({clear: \both})
@@ -2310,9 +2343,104 @@ questionAlwaysShownProcess = ->
     }, 200
   , 500
 
+getUrlParameters = root.getUrlParameters = ->
+  map = {}
+  parts = window.location.href.replace /[?&]+([^=&]+)=([^&]*)/gi, (m,key,value) ->
+    map[key] = decodeURI(value)
+  return map
+
 root.skip-load-logs = true
 
+prepadTo2 = (num) ->
+  num = num.toString()
+  if num.length == 1
+    num = '0' + num
+  return num
+
+secondsToDisplayableMinutes = (seconds) ->
+  seconds = Math.round seconds
+  minutes = Math.floor(seconds / 60)
+  seconds -= minutes * 60
+  minutes = prepadTo2 minutes
+  seconds = prepadTo2 seconds
+  return "#minutes:#seconds"
+
+millisecToDisplayable = (millisec) ->
+  seconds = Math.round(millisec / 1000)
+  hours = Math.floor(seconds / 3600)
+  seconds -= hours * 3600
+  minutes = Math.floor(seconds / 60)
+  seconds -= minutes * 60
+  hours = prepadTo2 hours
+  minutes = prepadTo2 minutes
+  seconds = prepadTo2 seconds
+  return "#hours:#minutes:#seconds"
+
+updateUrlBar = ->
+  history.replaceState {}, '', '?' + $.param {
+    username: root.username
+    course: root.coursename
+    started: root.time-started
+  }
+
+updateUrlHash = root.updateUrlHash = ->
+  elapsed = millisecToDisplayable(Date.now() - root.time-started)
+  window.location.hash = 'elapsed=' + elapsed
+
+updateUsername = ->
+  root.username = getUrlParameters().username
+  past-usernames = []
+  if $.cookie('usernames')
+    past-usernames = JSON.parse $.cookie('usernames')
+  if past-usernames.length > 0
+    most-recent-username = past-usernames[*-1].name
+    if not root.username?
+      root.username = most-recent-username
+    if most-recent-username != root.username
+      past-usernames.push {name: root.username, time: Date.now()}
+      $.cookie 'usernames', JSON.stringify(past-usernames)
+  else if not root.username?
+    root.username = randomString(14)
+    past-usernames.push {name: root.username, time: Date.now()}
+    $.cookie 'usernames', JSON.stringify(past-usernames)
+
+root.time-started = null
+
+updateTimeStarted = ->
+  root.time-started = parseInt getUrlParameters().started
+  if not root.time-started? or not isFinite(root.time-started)
+    root.time-started = Date.now()
+
+root.coursename = null
+
+updateCourseName = ->
+  root.coursename = getUrlParameters().coursename
+  if not root.coursename?
+    root.coursename = 'neuro_1'
+  if root.coursename == '1'
+    root.coursename = 'neuro_1'
+  if root.coursename == '2'
+    root.coursename = 'neuro_2'
+
+filterQuestions = ->
+  root.questions = switch root.coursename
+  | 'neuro_1' =>
+    [x for x in root.questions when x.course.indexOf('1') != -1]
+  | 'neuro_2' =>
+    [x for x in root.questions when x.course.indexOf('2') != -1]
+  | _ =>
+    throw 'unknown course: ' + root.coursename
+
 $(document).ready ->
+  updateUsername()
+  updateTimeStarted()
+  updateCourseName()
+  updateUrlBar()
+  filterQuestions()
+  updateQuestions()
+  setInterval ->
+    updateUrlHash()
+  , 1000
   console.log 'ready'
   fixVideoHeightProcess()
   #questionAlwaysShownProcess()
