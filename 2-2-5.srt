@@ -1,0 +1,478 @@
+1
+00:00:08,470 --> 00:00:09,499
+[MUSIC]
+
+2
+00:00:09,499 --> 00:00:15,379
+Okay so we've almost come full circle.
+
+3
+00:00:16,490 --> 00:00:19,990
+Now we've released a message from the
+
+4
+00:00:19,990 --> 00:00:23,210
+presynaptic terminal and the, the issue
+here,
+
+5
+00:00:23,210 --> 00:00:25,240
+the, the next hurdle is to make
+
+6
+00:00:25,240 --> 00:00:29,580
+sure that the postsynaptic cell receives
+that message.
+
+7
+00:00:29,580 --> 00:00:31,680
+And it receives it.
+
+8
+00:00:31,680 --> 00:00:34,920
+Through a type of protein.
+
+9
+00:00:34,920 --> 00:00:39,730
+These are actually multi-protein complexes
+called receptors and
+
+10
+00:00:39,730 --> 00:00:44,780
+receptors are going to populate this
+post-synaptic
+
+11
+00:00:44,780 --> 00:00:51,010
+membrane so that as the neurotransmitter
+makes its way across.
+
+12
+00:00:51,010 --> 00:00:58,270
+The synaptic cleft, some portion of it,
+that which is not either diffused away,
+
+13
+00:00:58,270 --> 00:01:05,660
+taken back up through reuptake, or
+degraded through enzymatic degradation.
+
+14
+00:01:05,660 --> 00:01:10,180
+So the, the survivors will actually make
+it over to these receptors.
+
+15
+00:01:10,180 --> 00:01:13,630
+Now let's just take a look at what the
+receptors look like.
+
+16
+00:01:13,630 --> 00:01:15,589
+Here's the cell membrane.
+
+17
+00:01:16,610 --> 00:01:21,770
+And these are trans-membrane protein
+complexes.
+
+18
+00:01:21,770 --> 00:01:24,690
+And they form an actual pore.
+
+19
+00:01:24,690 --> 00:01:28,550
+And through this pore the ions can, can
+travel.
+
+20
+00:01:28,550 --> 00:01:32,040
+So the potassium ions can go out.
+
+21
+00:01:32,040 --> 00:01:35,240
+The sodium ions can come in.
+
+22
+00:01:35,240 --> 00:01:36,870
+Chloride ions can come in.
+
+23
+00:01:36,870 --> 00:01:38,590
+Things like that.
+
+24
+00:01:38,590 --> 00:01:46,440
+So normally, these receptors are closed,
+ions can't come in.
+
+25
+00:01:46,440 --> 00:01:52,719
+But when a neurotransmitter binds to the
+receptor or a couple of neurotransmitter
+
+26
+00:01:52,719 --> 00:01:58,450
+molecules bind to the receptor, the
+receptor's now going to open.
+
+27
+00:01:58,450 --> 00:02:06,520
+And the pore becomes available for as a
+highway for the ions to travel along.
+
+28
+00:02:08,730 --> 00:02:13,310
+And which way they travel depends on the
+type of receptor.
+
+29
+00:02:13,310 --> 00:02:18,290
+And so, as it turns out, we have two basic
+classes of receptors.
+
+30
+00:02:20,610 --> 00:02:25,340
+There are receptors that we, that have an
+excitatory an, effect.
+
+31
+00:02:25,340 --> 00:02:30,870
+And so, once again, if we return to our,
+our cell,
+
+32
+00:02:30,870 --> 00:02:35,370
+which is sitting at negative 65
+millivolts.
+
+33
+00:02:37,320 --> 00:02:43,260
+We, any receptor, that takes the membrane
+potential
+
+34
+00:02:43,260 --> 00:02:48,270
+closer to zero, and closer to this magical
+
+35
+00:02:48,270 --> 00:02:53,240
+place that is the threshold for an action
+potential.
+
+36
+00:02:53,240 --> 00:02:58,480
+If you go closer to that, that's an
+excitatory receptor.
+
+37
+00:02:58,480 --> 00:03:04,030
+On the other hand, if there is a a, a
+receptor
+
+38
+00:03:04,030 --> 00:03:09,370
+that actually takes the membrane potential
+away
+
+39
+00:03:09,370 --> 00:03:15,210
+from zero, makes it even more negative.
+
+40
+00:03:15,210 --> 00:03:19,980
+Then this is taking us away from the
+threshold for the action potential.
+
+41
+00:03:19,980 --> 00:03:22,250
+And so that is an inhibitory,
+
+42
+00:03:25,060 --> 00:03:25,720
+receptor.
+
+43
+00:03:27,770 --> 00:03:31,370
+So they come in two flavors, and, the
+
+44
+00:03:31,370 --> 00:03:36,800
+most ubiquitous excitatory receptor is a
+glutamate receptor.
+
+45
+00:03:36,800 --> 00:03:41,910
+And the most ubiquitous inhibitory
+receptor is a GABA receptor.
+
+46
+00:03:43,290 --> 00:03:46,620
+The neutrotransmitter involved is the same
+thing.
+
+47
+00:03:46,620 --> 00:03:51,170
+So the neutrotransmitter involved in the,
+that binds to the
+
+48
+00:03:51,170 --> 00:03:56,100
+inhibitory GABA receptor is a GABA recept,
+is a GABA molecule.
+
+49
+00:03:56,100 --> 00:03:58,250
+And the neurotransmitter that binds to
+
+50
+00:03:58,250 --> 00:04:02,750
+the excitatory glutamate receptor is
+glutamate.
+
+51
+00:04:02,750 --> 00:04:10,770
+Okay, so that's how these, these receptors
+receive the message.
+
+52
+00:04:12,170 --> 00:04:18,240
+and, and they integrate all this incoming
+information to either.
+
+53
+00:04:18,240 --> 00:04:20,460
+Make it more likely for them to fire an
+
+54
+00:04:20,460 --> 00:04:24,440
+action potential or less likely to fire an
+action potential.
+
+55
+00:04:24,440 --> 00:04:30,150
+If they're more likely, if this cell has
+an action potential, and it results in
+
+56
+00:04:30,150 --> 00:04:35,330
+this cell also firing an action potential,
+then we've got a game of telephone.
+
+57
+00:04:36,510 --> 00:04:37,310
+A tag.
+
+58
+00:04:37,310 --> 00:04:39,190
+And that's, that's how the, the nervous
+
+59
+00:04:39,190 --> 00:04:42,940
+system, and that's how communication
+between neurons happens.
+
+60
+00:04:44,590 --> 00:04:46,950
+Throughout the, the nervous system.
+
+61
+00:04:46,950 --> 00:04:50,770
+Now let's, let's think about, what impact
+
+62
+00:04:50,770 --> 00:04:55,720
+these receptors have on disease and
+therapeutics.
+
+63
+00:04:56,900 --> 00:05:02,090
+So, one impact is there are diseases where
+we lose
+
+64
+00:05:02,090 --> 00:05:07,680
+these receptors and one such disease is
+called myasthenia gravis.
+
+65
+00:05:07,680 --> 00:05:10,130
+We mentioned this in the last segment.
+
+66
+00:05:11,150 --> 00:05:17,239
+So in myasthenia gravis, let's walk over
+here to this lovely image.
+
+67
+00:05:18,255 --> 00:05:21,580
+[COUGH] this is a, an image from a human.
+
+68
+00:05:22,920 --> 00:05:28,880
+Here is a motoneuron synaptic terminal.
+
+69
+00:05:28,880 --> 00:05:32,810
+And you can see these little synaptic
+vesicles.
+
+70
+00:05:34,030 --> 00:05:34,900
+Okay?
+
+71
+00:05:34,900 --> 00:05:38,700
+And so all those synaptic vesicles contain
+
+72
+00:05:38,700 --> 00:05:41,900
+acetyl choline, which we will abbreviate
+as ACh.
+
+73
+00:05:42,990 --> 00:05:46,690
+And over here is the muscle.
+
+74
+00:05:46,690 --> 00:05:49,130
+The muscle is a very, it, it has
+
+75
+00:05:49,130 --> 00:05:52,340
+this convoluted appearance where it has
+these folds.
+
+76
+00:05:53,420 --> 00:05:55,960
+And it, it doesn't, that doesn't
+particularly matter.
+
+77
+00:05:55,960 --> 00:06:03,650
+But what you see in black, all this black,
+these are acetylcholine receptors.
+
+78
+00:06:05,490 --> 00:06:08,880
+And the acetylcholine has to make it
+across
+
+79
+00:06:08,880 --> 00:06:13,140
+this cleft to get to the acetylcholine
+receptors.
+
+80
+00:06:13,140 --> 00:06:20,100
+In myasthenia gravis, there are antibodies
+that, that the body makes.
+
+81
+00:06:21,330 --> 00:06:28,060
+Unfortunately, by mistake, against these
+acetyl, acetyl choline receptors.
+
+82
+00:06:28,060 --> 00:06:29,219
+And so the antibodies.
+
+83
+00:06:30,220 --> 00:06:34,090
+Destroy the acetyl receptors, the muscle
+doesn't eat,
+
+84
+00:06:34,090 --> 00:06:37,750
+either has fewer or they're just not
+concentrated.
+
+85
+00:06:37,750 --> 00:06:42,460
+And therefore this this signal is sent
+
+86
+00:06:42,460 --> 00:06:44,965
+from the motor neuron terminal, but it's
+not
+
+87
+00:06:44,965 --> 00:06:52,740
+received by the muscle, and so at again,
+as we talked about in the last segment.
+
+88
+00:06:52,740 --> 00:06:54,340
+What do we do about that?
+
+89
+00:06:54,340 --> 00:07:00,060
+Well we, we rely on the fact that there
+are a few acetylcholine receptors that
+
+90
+00:07:00,060 --> 00:07:05,920
+have escaped being killed by the
+antibodies and
+
+91
+00:07:05,920 --> 00:07:08,680
+so we just try and boost this signal.
+
+92
+00:07:08,680 --> 00:07:11,830
+We know that the motor neuron terminal can
+
+93
+00:07:11,830 --> 00:07:14,940
+release acetylcholine and now we're
+going to stop degradation.
+
+94
+00:07:14,940 --> 00:07:19,060
+We're going to give an
+acetylcholinesterase inhibitor to try
+
+95
+00:07:19,060 --> 00:07:22,350
+and keep the acetylcholine around longer
+so that it
+
+96
+00:07:22,350 --> 00:07:25,170
+can find its way to the few remaining
+
+97
+00:07:25,170 --> 00:07:30,460
+acetylcholine receptors and that's a, a
+pretty effective therapeutic.
+
+98
+00:07:30,460 --> 00:07:35,040
+The other therapeutic, obviously that
+people with mycenia gravis
+
+99
+00:07:35,040 --> 00:07:39,250
+get is, let's, let's dampen down that
+immune system,
+
+100
+00:07:39,250 --> 00:07:41,230
+so that you're not making all those
+antibodies so
+
+101
+00:07:41,230 --> 00:07:47,010
+that the acetylcholine receptors won't be
+won't be degraded.
+
+102
+00:07:47,010 --> 00:07:55,560
+And so there's immuno suppressants that
+are given to these patients as well.
+
+103
+00:07:55,560 --> 00:07:56,800
+[MUSIC]
+

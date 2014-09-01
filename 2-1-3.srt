@@ -1,0 +1,308 @@
+1
+00:00:00,000 --> 00:00:10,000
+[MUSIC]
+
+2
+00:00:12,747 --> 00:00:18,447
+So what we talked about in the last
+segment was how neurons sit at, at
+
+3
+00:00:18,447 --> 00:00:24,125
+a resting membrane potential of about
+negative 65 millivolts.
+
+4
+00:00:24,125 --> 00:00:28,095
+And through mechanisms that we're going to
+come to.
+
+5
+00:00:28,095 --> 00:00:33,293
+That resting membrane potential is just
+sort of the
+
+6
+00:00:33,293 --> 00:00:39,380
+it's the potential around which the neuron
+oscillates.
+
+7
+00:00:39,380 --> 00:00:42,860
+So, at, at one point it might get an input
+that.
+
+8
+00:00:44,238 --> 00:00:48,142
+If this is 0, that brings it closer to
+
+9
+00:00:48,142 --> 00:00:53,780
+0 or takes it farther away from 0, et
+cetera.
+
+10
+00:00:53,780 --> 00:00:56,850
+And these small little potential
+differences, which are on the
+
+11
+00:00:56,850 --> 00:01:04,090
+order of less than one millivolt up to,
+say, five millivolts.
+
+12
+00:01:04,090 --> 00:01:12,420
+These small, little potential differences,
+can travel, along the neuron.
+
+13
+00:01:12,420 --> 00:01:15,650
+If this is, if these are the dendrites
+and, and here's an axon.
+
+14
+00:01:17,750 --> 00:01:21,460
+They might travel, but they're going to
+peter out pretty quickly.
+
+15
+00:01:21,460 --> 00:01:26,370
+So, it's not a a useful it's not going to
+
+16
+00:01:26,370 --> 00:01:31,980
+work to simply rely on these small
+potential changes.
+
+17
+00:01:31,980 --> 00:01:35,440
+Now if we have to go long distances.
+
+18
+00:01:35,440 --> 00:01:39,964
+Now, one of the things that is so
+different about a neuron than
+
+19
+00:01:39,964 --> 00:01:44,906
+any other cell type in the body is that we
+are, that these neurons.
+
+20
+00:01:44,906 --> 00:01:47,950
+We [LAUGH] meet a neuron.
+
+21
+00:01:49,040 --> 00:01:50,760
+Neurons are very long.
+
+22
+00:01:50,760 --> 00:01:51,410
+Okay.
+
+23
+00:01:51,410 --> 00:01:53,340
+So think about a heart cell.
+
+24
+00:01:53,340 --> 00:01:55,960
+A heart cell is so big, it's contained in
+
+25
+00:01:55,960 --> 00:01:59,080
+the heart, it ain't going anywhere,
+besides the heart.
+
+26
+00:01:59,080 --> 00:02:02,630
+A pancreatic cell is sitting in the
+pancreas, it's in the pancreas.
+
+27
+00:02:02,630 --> 00:02:03,910
+It's pretty small.
+
+28
+00:02:03,910 --> 00:02:05,930
+A lung cell, et cetera.
+
+29
+00:02:05,930 --> 00:02:10,160
+Now, let's think about the longest neuron
+that we posses.
+
+30
+00:02:10,160 --> 00:02:17,230
+The longest neuron that we possess is a
+cell that has a cell body right here.
+
+31
+00:02:17,230 --> 00:02:22,610
+And it sends one process all the way down
+to the toe, and it
+
+32
+00:02:22,610 --> 00:02:27,230
+sends another process all the way up to
+the medulla.
+
+33
+00:02:28,460 --> 00:02:31,555
+So, depending on how tall this person is.
+
+34
+00:02:31,555 --> 00:02:41,050
+In me, that's a, one and a half meters,
+say, so five feet or something like that.
+
+35
+00:02:41,050 --> 00:02:43,780
+But in a very tall person, or even in
+
+36
+00:02:43,780 --> 00:02:46,030
+a very short person, that's still a lot of
+feet.
+
+37
+00:02:46,030 --> 00:02:48,400
+That's feet long.
+
+38
+00:02:48,400 --> 00:02:54,230
+So, a small potential like one millivolt
+or five millivolts is not going to travel.
+
+39
+00:02:54,230 --> 00:02:59,260
+If that's what we had to rely on, just
+moving from here
+
+40
+00:02:59,260 --> 00:03:04,410
+to here, the message, any message that
+started here would end there.
+
+41
+00:03:04,410 --> 00:03:05,360
+It just wouldn't get there.
+
+42
+00:03:05,360 --> 00:03:07,070
+It wouldn't get to where it needs to go.
+
+43
+00:03:07,070 --> 00:03:08,840
+It needs to go here.
+
+44
+00:03:08,840 --> 00:03:14,350
+And so, in order to, to communicate within
+neurons,
+
+45
+00:03:14,350 --> 00:03:20,300
+because neurons are so long, we use
+something called the Action Potential.
+
+46
+00:03:22,570 --> 00:03:28,960
+And the Action Potential, in contrast to
+being this, this kind of small thing, is.
+
+47
+00:03:31,330 --> 00:03:36,758
+It goes really far up and comes back down,
+so it's
+
+48
+00:03:36,758 --> 00:03:41,378
+about 100 millivolts in, in height.
+
+49
+00:03:42,620 --> 00:03:46,820
+So from the resting memory potential to
+the top of the
+
+50
+00:03:46,820 --> 00:03:52,940
+Action Potential, which happens at around
+plus say, 20 millivolts or so.
+
+51
+00:03:52,940 --> 00:03:58,070
+It's, we're talking about roughly 100
+millivolts of, of difference.
+
+52
+00:03:58,070 --> 00:04:02,790
+And that can get communicated all the way
+up.
+
+53
+00:04:02,790 --> 00:04:05,030
+That's not going to get lost.
+
+54
+00:04:05,030 --> 00:04:09,190
+And what carries that Action Potential, is
+that.
+
+55
+00:04:09,190 --> 00:04:14,230
+Remember that we, we, we looked at
+potassium being very
+
+56
+00:04:14,230 --> 00:04:18,490
+high in a cell and much lower outside a
+cell.
+
+57
+00:04:18,490 --> 00:04:21,430
+Well, the reverse is true for sodium.
+
+58
+00:04:23,380 --> 00:04:29,879
+And so, the sodium comes flooding in, and
+because it's positively charged,
+
+59
+00:04:29,879 --> 00:04:36,277
+that's what takes the, the cell up to this
+very high memory potential.
+
+60
+00:04:36,277 --> 00:04:42,985
+Now the the ability for, for a neuron to
+communicate from
+
+61
+00:04:42,985 --> 00:04:49,390
+here to here using an Action Potential is,
+it can do that.
+
+62
+00:04:49,390 --> 00:04:54,394
+But that'll be a slow process unless we
+add
+
+63
+00:04:54,394 --> 00:04:59,815
+one more thing, and that is a, an
+insulator,
+
+64
+00:04:59,815 --> 00:05:05,902
+essentially a very nice insulator called
+myelin.
+
+65
+00:05:05,902 --> 00:05:08,944
+[MUSIC]
+
+66
+00:05:08,944 --> 00:05:13,150
+[MUSIC]
+

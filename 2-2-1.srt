@@ -1,0 +1,354 @@
+1
+00:00:00,000 --> 00:00:04,101
+[MUSIC]
+
+2
+00:00:04,101 --> 00:00:09,573
+Okay, so we left
+
+3
+00:00:09,573 --> 00:00:16,080
+off with action potential.
+
+4
+00:00:16,080 --> 00:00:20,340
+So we've got a message going from one end
+of a cell to another end of a
+
+5
+00:00:20,340 --> 00:00:23,190
+cell, and now we're going to get that
+message
+
+6
+00:00:23,190 --> 00:00:27,910
+across to another cell through something
+called a synapse.
+
+7
+00:00:27,910 --> 00:00:33,260
+But the this like, so, so getting the
+action potential is like
+
+8
+00:00:33,260 --> 00:00:38,280
+I have breathed out all this air, and now
+I just have to form
+
+9
+00:00:38,280 --> 00:00:44,040
+my lips to, to make sound, but in the case
+of the neuron.
+
+10
+00:00:44,040 --> 00:00:46,420
+This neuron is obviously not talking in
+sound.
+
+11
+00:00:46,420 --> 00:00:48,720
+It's talking in chemistry.
+
+12
+00:00:48,720 --> 00:00:52,970
+It's talking in things like
+neurotransmitters.
+
+13
+00:00:52,970 --> 00:01:01,080
+And neurotransmitters, are a list of, or a
+number of molecules.
+
+14
+00:01:01,080 --> 00:01:03,110
+They serve other functions in the body,
+but
+
+15
+00:01:03,110 --> 00:01:05,680
+they also serve very critical functions
+for the
+
+16
+00:01:05,680 --> 00:01:09,290
+nervous system as neurotransmitters, as
+the things that
+
+17
+00:01:09,290 --> 00:01:12,600
+that communicate from one neuron to
+another neuron.
+
+18
+00:01:12,600 --> 00:01:14,620
+And what we're going to look at right now,
+
+19
+00:01:14,620 --> 00:01:19,610
+is how neurotransmitters are made and how
+they're packaged.
+
+20
+00:01:21,700 --> 00:01:28,020
+So this is a drawing of a cell, here's the
+cell body, the nucleus
+
+21
+00:01:28,020 --> 00:01:34,190
+with the DNA, here are some mitochondria,
+this is the powerhouse of the cell.
+
+22
+00:01:34,190 --> 00:01:37,860
+The endoplasmic reticulum, which is
+essentially the
+
+23
+00:01:37,860 --> 00:01:40,320
+manufacturing centre of the cell where
+proteins
+
+24
+00:01:40,320 --> 00:01:46,270
+are made, and then we have an axon which
+leads down to a synaptic terminal.
+
+25
+00:01:46,270 --> 00:01:51,640
+And this synaptic terminal has these
+entities
+
+26
+00:01:51,640 --> 00:01:55,800
+here, which are called synaptic vesicles
+
+27
+00:01:57,400 --> 00:02:01,750
+and they're small little, organelles.
+
+28
+00:02:01,750 --> 00:02:05,230
+They're little vesicles, they, they're
+made of a
+
+29
+00:02:05,230 --> 00:02:09,140
+membrane, just like the, the cell is, has
+a,
+
+30
+00:02:09,140 --> 00:02:12,240
+has a cell membrane, these vesicles have a
+vesicular
+
+31
+00:02:12,240 --> 00:02:16,760
+membrane, and if we look at one of these.
+
+32
+00:02:16,760 --> 00:02:20,430
+So it has a membrane, remember that the
+membrane looks
+
+33
+00:02:20,430 --> 00:02:24,900
+something like this but we're not going to
+draw that all.
+
+34
+00:02:24,900 --> 00:02:29,439
+So here's the membrane, and inside here is
+neurotransmitter.
+
+35
+00:02:30,920 --> 00:02:32,220
+Is a, is a neurotransmitter.
+
+36
+00:02:32,220 --> 00:02:34,160
+And, the neurotransmitter can be any
+number
+
+37
+00:02:34,160 --> 00:02:37,530
+of of a number of different molecules.
+
+38
+00:02:37,530 --> 00:02:42,660
+Here are just a few of them Glutamate,
+GABA, Serotonin, Dopamine, Acetylcholine.
+
+39
+00:02:42,660 --> 00:02:47,740
+There's a more complete list that you can
+see and the
+
+40
+00:02:47,740 --> 00:02:51,410
+only other thing I want to add is, why is
+this important?
+
+41
+00:02:51,410 --> 00:02:52,940
+Why is it important?
+
+42
+00:02:52,940 --> 00:02:56,540
+Well, first of all, it's important that
+the neurotransmitters are packaged
+
+43
+00:02:56,540 --> 00:02:59,490
+in, is vesicles and that'll be important
+in, in a moment.
+
+44
+00:03:00,670 --> 00:03:05,080
+The second thing that's important about
+this is that we can use this.
+
+45
+00:03:05,080 --> 00:03:08,830
+We can use the synthesis of a
+neurotransmitter
+
+46
+00:03:08,830 --> 00:03:13,250
+as a, as a, as a therapeutic tool.
+
+47
+00:03:13,250 --> 00:03:18,670
+So, for instance Dopamine is missing in
+Parkinsons disease.
+
+48
+00:03:19,830 --> 00:03:25,330
+It's not that dopamine isn't made per say,
+that's there's a problem with making it.
+
+49
+00:03:25,330 --> 00:03:27,530
+It's that the cells that make it die.
+
+50
+00:03:28,850 --> 00:03:31,500
+So, or, or a group of the cells that do
+
+51
+00:03:31,500 --> 00:03:36,100
+make Dopamine die, and so what do you do
+about that?
+
+52
+00:03:36,100 --> 00:03:40,150
+Well it turns out that there's something
+called Mass
+
+53
+00:03:40,150 --> 00:03:45,370
+Effect which means, that you take the
+starting chemical.
+
+54
+00:03:45,370 --> 00:03:46,710
+The, the, the substrate.
+
+55
+00:03:46,710 --> 00:03:50,640
+What we call the substrate and then
+through a series of enzymatic
+
+56
+00:03:52,630 --> 00:03:58,820
+Processes reaction through a series of
+enzymatic reactions, we end up with a
+
+57
+00:03:58,820 --> 00:04:05,850
+neurotransmitter and in the case of
+Dopamine,
+
+58
+00:04:09,280 --> 00:04:12,410
+in Parkinson's there is lack of Dopamine
+and what happ,
+
+59
+00:04:12,410 --> 00:04:16,000
+what do we do to treat in most people
+Parkinson's.
+
+60
+00:04:16,000 --> 00:04:20,190
+We give them the substrate, and so that is
+what Sinemet
+
+61
+00:04:22,440 --> 00:04:27,996
+which is also in, in other countries
+called Parcopa.
+
+62
+00:04:27,996 --> 00:04:33,720
+so, th-, these are drugs that provide a
+lot
+
+63
+00:04:33,720 --> 00:04:39,540
+of this, and even if only a little bit of
+this gets made, much less
+
+64
+00:04:39,540 --> 00:04:43,290
+than what you start with, it's more than
+what the, the person
+
+65
+00:04:43,290 --> 00:04:49,440
+has, and it enables them, it, it
+alleviates their symptoms of Parkinson's.
+
+66
+00:04:49,440 --> 00:04:52,900
+So you flood the system with substrate,
+and the goal is
+
+67
+00:04:52,900 --> 00:04:56,780
+to get a little bit of that
+neurotransmitter out of the system.
+
+68
+00:04:56,780 --> 00:04:57,460
+Okay.
+
+69
+00:04:57,460 --> 00:05:00,990
+So that's how we're going to speak what's
+coming
+
+70
+00:05:00,990 --> 00:05:03,980
+out of the neurons mouth, so to speak.
+
+71
+00:05:03,980 --> 00:05:06,180
+Is not sound, but neurotransmitter.
+
+72
+00:05:06,180 --> 00:05:09,130
+Neurotransmitter that is packaged in
+vesicles, and in
+
+73
+00:05:09,130 --> 00:05:11,380
+the next segment we are going too see how.
+
+74
+00:05:14,840 --> 00:05:20,410
+How it actually gets out of the mouth.
+
+75
+00:05:20,410 --> 00:05:21,370
+[MUSIC]
+

@@ -1,0 +1,138 @@
+1
+00:00:00,000 --> 00:00:07,166
+[MUSIC]
+
+2
+00:00:07,166 --> 00:00:14,000
+So, in this unit,
+
+3
+00:00:14,000 --> 00:00:21,230
+what we've seen is how one neuron can
+formulate a message.
+
+4
+00:00:21,230 --> 00:00:25,689
+Formulate a message in terms of action
+potentials and send
+
+5
+00:00:25,689 --> 00:00:30,544
+that message on to another cell which can
+receive the message.
+
+6
+00:00:30,544 --> 00:00:35,830
+And if, and that is a fascinating topic.
+
+7
+00:00:35,830 --> 00:00:42,370
+And yet, if we knew all the details,
+everything that we ever could wish
+
+8
+00:00:42,370 --> 00:00:48,958
+to know about how, for instance,
+neurotransmitter release occurs.
+
+9
+00:00:48,958 --> 00:00:54,410
+If we knew every single detail, it would
+not tell us what
+
+10
+00:00:54,410 --> 00:01:00,010
+would happen if one of i, i, if the system
+failed.
+
+11
+00:01:00,010 --> 00:01:01,440
+Let's put it another way.
+
+12
+00:01:01,440 --> 00:01:04,010
+Think about a demyelinating disease.
+
+13
+00:01:04,010 --> 00:01:07,320
+If we knew everything about how myelin
+formed
+
+14
+00:01:07,320 --> 00:01:11,140
+and everything about how it, it fell
+apart,
+
+15
+00:01:11,140 --> 00:01:14,330
+it wouldn't tell us what are going to be
+
+16
+00:01:14,330 --> 00:01:18,780
+the symptoms in a person with say,
+multiple sclerosis.
+
+17
+00:01:18,780 --> 00:01:23,590
+Because the symptoms depend not on the
+particular
+
+18
+00:01:25,530 --> 00:01:29,960
+pathophysiology of how the myelin far,
+falls apart.
+
+19
+00:01:29,960 --> 00:01:33,330
+It depends on which neurons are affected.
+
+20
+00:01:33,330 --> 00:01:38,760
+And so, now we have to take our knowledge
+about neuronal communication and
+
+21
+00:01:38,760 --> 00:01:45,120
+put it within the context of the
+incredible complexity of neuroanatomy.
+
+22
+00:01:45,120 --> 00:01:48,650
+It depends on which neurons are affected.
+
+23
+00:01:48,650 --> 00:01:52,092
+And so, we're going to look at
+neuroanatomy.
+
+24
+00:01:52,092 --> 00:01:54,060
+We're going to look at what does the brain
+do.
+
+25
+00:01:54,060 --> 00:01:55,210
+What does the brain stem do?
+
+26
+00:01:55,210 --> 00:01:56,450
+What is the spinal cord?
+
+27
+00:01:56,450 --> 00:02:00,818
+How does the peripheral how does
+information come in from
+
+28
+00:02:00,818 --> 00:02:04,471
+the periphery and go out, back out to the
+muscles?
+
+29
+00:02:04,471 --> 00:02:05,986
+And that's what we'll do in the next unit.
+
+30
+00:02:05,986 --> 00:02:11,240
+[MUSIC]
+

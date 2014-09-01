@@ -1,0 +1,257 @@
+1
+00:00:00,000 --> 00:00:08,430
+[MUSIC]
+
+2
+00:00:08,430 --> 00:00:13,345
+So the approach that we're
+
+3
+00:00:13,345 --> 00:00:18,480
+going to use in this course is to use
+Bobby's story, to
+
+4
+00:00:18,480 --> 00:00:24,340
+organize our consideration of
+neurobiology.
+
+5
+00:00:24,340 --> 00:00:26,200
+So, we're going to look at perception, and
+
+6
+00:00:26,200 --> 00:00:29,290
+then we're going to look at motor
+function, and
+
+7
+00:00:29,290 --> 00:00:31,260
+then we're going to look at homeostasis,
+and
+
+8
+00:00:31,260 --> 00:00:34,390
+then we're going to look at higher
+abstract functions.
+
+9
+00:00:34,390 --> 00:00:36,990
+Before we get to that, we're going to
+spend the
+
+10
+00:00:36,990 --> 00:00:42,020
+first, the, the next three weeks, getting
+some vocabulary.
+
+11
+00:00:42,020 --> 00:00:46,820
+So, making sure that we can use the same
+words and we can understand each other.
+
+12
+00:00:46,820 --> 00:00:49,200
+So we're going to go through how do
+neurons
+
+13
+00:00:49,200 --> 00:00:53,280
+talk to each other, we're going to
+understand about neuroanatomy.
+
+14
+00:00:53,280 --> 00:00:57,870
+We're going to understand the basics, how
+the brain and spinal cord develop.
+
+15
+00:00:57,870 --> 00:01:02,350
+And then, how they actually are organized
+in the adult.
+
+16
+00:01:02,350 --> 00:01:05,410
+And then, we're going to look at what goes
+wrong in
+
+17
+00:01:05,410 --> 00:01:08,710
+the central nervous system, and we're
+going to focus on strokes.
+
+18
+00:01:09,780 --> 00:01:13,840
+After we have that vocabulary, and our
+basic understanding of how the
+
+19
+00:01:13,840 --> 00:01:18,910
+brain is structured both physiologically
+and anatomically, we are going to go into
+
+20
+00:01:18,910 --> 00:01:25,240
+topics, and the first topic is we're
+going to look at perception and
+
+21
+00:01:25,240 --> 00:01:30,720
+we are going to use two pers, perceptual
+modalities to look at this.
+
+22
+00:01:30,720 --> 00:01:34,310
+We are going to look at vision, and we are
+going to look at hearing.
+
+23
+00:01:34,310 --> 00:01:40,080
+There are other perceptions that we have,
+obviously, touch and the stimuli
+
+24
+00:01:40,080 --> 00:01:44,080
+sense, taste and smell and we are not
+going to talk about those.
+
+25
+00:01:44,080 --> 00:01:45,720
+We have to pick and choose here.
+
+26
+00:01:45,720 --> 00:01:47,750
+So we are going to look at vision and
+hearing,
+
+27
+00:01:47,750 --> 00:01:51,900
+pro, arguably the two most important
+senses for humans.
+
+28
+00:01:52,910 --> 00:01:57,950
+Then we are going to talk about how we
+control voluntary movement.
+
+29
+00:01:57,950 --> 00:02:02,030
+And we're going to divide this into two
+different units, one where we're going to
+
+30
+00:02:02,030 --> 00:02:09,020
+talk about the hierarchy that gets us from
+essentially from polio to a stroke.
+
+31
+00:02:09,020 --> 00:02:11,080
+So, how do you move a muscle?
+
+32
+00:02:11,080 --> 00:02:13,710
+How do you actually make an intentional
+movement
+
+33
+00:02:13,710 --> 00:02:16,329
+such as, raising your hand or moving your
+hand?
+
+34
+00:02:17,710 --> 00:02:24,620
+And then we're going to go into the, the
+modulatory part of, of movement.
+
+35
+00:02:24,620 --> 00:02:25,900
+How do we organize?
+
+36
+00:02:25,900 --> 00:02:27,520
+How do we coordinate movement?
+
+37
+00:02:27,520 --> 00:02:29,870
+How do we make movements go faster?
+
+38
+00:02:29,870 --> 00:02:33,280
+How do we make them habitual movements?
+
+39
+00:02:33,280 --> 00:02:36,210
+So then we'll spend a unit on that, as
+well.
+
+40
+00:02:38,010 --> 00:02:40,690
+Then we'll move on to homeostatis, we're
+going to
+
+41
+00:02:40,690 --> 00:02:45,940
+look at how mothers become bonded to their
+children.
+
+42
+00:02:45,940 --> 00:02:50,210
+How that works when they give birth, and
+when they're nursing, we'll look at
+
+43
+00:02:50,210 --> 00:02:55,610
+thermal regulation and breathing, voiding
+urine and
+
+44
+00:02:55,610 --> 00:02:57,840
+we will look at the sleep wake cycle.
+
+45
+00:02:57,840 --> 00:03:03,760
+So these are all things that we have to
+do, to stay alive, we have to do
+
+46
+00:03:03,760 --> 00:03:08,850
+and they are supported by both automatic
+and intentional movements.
+
+47
+00:03:10,440 --> 00:03:13,640
+And finally, we'll end up with executive
+function, or
+
+48
+00:03:13,640 --> 00:03:18,520
+higher abstract function, and here we'll
+focus on emotions.
+
+49
+00:03:18,520 --> 00:03:22,020
+We'll focus mostly on emotions and memory,
+and
+
+50
+00:03:22,020 --> 00:03:25,420
+we'll end up talking about how we can play
+
+51
+00:03:25,420 --> 00:03:28,520
+well with others, and the challenges that
+are
+
+52
+00:03:28,520 --> 00:03:31,160
+that playing well with others presents to
+the brain.
+
+53
+00:03:32,280 --> 00:03:38,618
+Okay, so I hope to see you next week.
+
+54
+00:03:38,618 --> 00:03:41,080
+[MUSIC]
+

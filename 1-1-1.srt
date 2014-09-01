@@ -1,0 +1,440 @@
+1
+00:00:00,000 --> 00:00:10,000
+[MUSIC]
+
+2
+00:00:12,742 --> 00:00:15,660
+Hi everyone, and welcome to Understanding
+the Brain.
+
+3
+00:00:15,660 --> 00:00:18,300
+We're going to talk about the neurobiology
+of everyday life.
+
+4
+00:00:18,300 --> 00:00:20,120
+I'm really excited about this.
+
+5
+00:00:20,120 --> 00:00:23,390
+I've learned so much by preparing for this
+class
+
+6
+00:00:23,390 --> 00:00:25,220
+and I think that we're going to learn a
+lot
+
+7
+00:00:25,220 --> 00:00:29,150
+as we, as you go along in this class and
+as we talk to each other every week.
+
+8
+00:00:30,260 --> 00:00:35,538
+Just to give you an overview of what we're
+going to concern ourselves
+
+9
+00:00:35,538 --> 00:00:40,452
+with, I want to share with you a story
+which is, really shows the
+
+10
+00:00:40,452 --> 00:00:45,408
+power and the profundity of what our
+nervous system does for us.
+
+11
+00:00:45,408 --> 00:00:48,334
+And the story is by Jean-Dominique Bauby
+and
+
+12
+00:00:48,334 --> 00:00:51,560
+it's called The Diving Bell and the
+Butterfly.
+
+13
+00:00:51,560 --> 00:00:55,588
+Jean-Dominique Bauby was the editor of
+
+14
+00:00:55,588 --> 00:00:59,977
+ELLE, the leading fashion magazine in
+France.
+
+15
+00:00:59,977 --> 00:01:04,240
+And he lived in Paris and he lived a very
+exciting cosmopolitan life.
+
+16
+00:01:04,240 --> 00:01:05,270
+He had two children.
+
+17
+00:01:06,360 --> 00:01:11,070
+And one day, he was driving and he had a
+sudden onset
+
+18
+00:01:13,080 --> 00:01:14,580
+incapacitation.
+
+19
+00:01:14,580 --> 00:01:19,540
+It turned out to be a stroke, a massive
+stroke in his brain stem.
+
+20
+00:01:19,540 --> 00:01:22,550
+He, he says in the beginning of the
+prologue before
+
+21
+00:01:22,550 --> 00:01:26,270
+this happened, he'd never even heard of
+the brain stem.
+
+22
+00:01:26,270 --> 00:01:29,390
+Well, you're going to hear about the brain
+stem.
+
+23
+00:01:29,390 --> 00:01:35,520
+So he had this massive stroke in the brain
+stem and this left him paralyzed.
+
+24
+00:01:35,520 --> 00:01:39,430
+So he couldn't move his arms or his legs.
+
+25
+00:01:39,430 --> 00:01:40,110
+He couldn't point.
+
+26
+00:01:40,110 --> 00:01:43,740
+He was on a respirator because he could
+not breathe on his own.
+
+27
+00:01:43,740 --> 00:01:45,430
+He couldn't swallow.
+
+28
+00:01:45,430 --> 00:01:50,804
+So he was they had to deal with him
+drooling.
+
+29
+00:01:50,804 --> 00:01:53,644
+At one point in, in this book, which I'll
+tell
+
+30
+00:01:53,644 --> 00:01:56,413
+you how he wrote in a minute he says, he
+was
+
+31
+00:01:56,413 --> 00:01:59,395
+very happy to get his own clothes back
+because if he
+
+32
+00:01:59,395 --> 00:02:02,530
+had to drool he at least wanted to drool
+on cashmere.
+
+33
+00:02:02,530 --> 00:02:07,510
+So so what, how did he write this book?
+
+34
+00:02:07,510 --> 00:02:09,110
+He's paralyzed.
+
+35
+00:02:09,110 --> 00:02:10,640
+He can't write.
+
+36
+00:02:10,640 --> 00:02:12,020
+He can't speak.
+
+37
+00:02:12,020 --> 00:02:13,140
+He's on a respirator.
+
+38
+00:02:13,140 --> 00:02:15,800
+He can't move his laryngeal muscles, he
+can't
+
+39
+00:02:15,800 --> 00:02:20,680
+really form his upper airway to form
+words.
+
+40
+00:02:20,680 --> 00:02:21,840
+So how did he do it?
+
+41
+00:02:21,840 --> 00:02:24,760
+Well, it turns out that people with this
+syndrome, and
+
+42
+00:02:24,760 --> 00:02:31,120
+it's called the Locked-in syndrome, often
+times can move an eyelid.
+
+43
+00:02:31,120 --> 00:02:33,930
+And indeed he could move an eyelid.
+
+44
+00:02:33,930 --> 00:02:36,345
+And they, they realized that because in
+fact,
+
+45
+00:02:36,345 --> 00:02:40,130
+Locked-in syndrome patients often are able
+to do that.
+
+46
+00:02:40,130 --> 00:02:46,290
+So, what they, what occurred was, there
+was a, a French alphabet.
+
+47
+00:02:46,290 --> 00:02:48,820
+In other words, the most common letters in
+the
+
+48
+00:02:48,820 --> 00:02:53,730
+French language were listed from most
+common to least common.
+
+49
+00:02:53,730 --> 00:02:57,545
+And when a person would point to each one
+of
+
+50
+00:02:57,545 --> 00:03:02,014
+these letters or read them aloud and when
+they got
+
+51
+00:03:02,014 --> 00:03:07,355
+to the correct letter Bauby would blink
+his working eyelid
+
+52
+00:03:07,355 --> 00:03:12,478
+and he blinked out letter by letter this
+entire story.
+
+53
+00:03:12,478 --> 00:03:21,580
+That's, that's just such an amazing
+action, such an amazing accomplishment.
+
+54
+00:03:22,630 --> 00:03:26,560
+So with the one avenue that Bauby had to
+
+55
+00:03:26,560 --> 00:03:31,420
+express himself he did, and he did so
+extremely eloquently.
+
+56
+00:03:31,420 --> 00:03:33,750
+I just reread this, I think I've read it
+five
+
+57
+00:03:33,750 --> 00:03:39,950
+or six times, and it's just a really
+interesting, moving book.
+
+58
+00:03:39,950 --> 00:03:45,140
+And what struck me when I read it this
+time was, was the craving, the
+
+59
+00:03:45,140 --> 00:03:50,580
+craving for, for expression, for life, for
+participation.
+
+60
+00:03:52,030 --> 00:03:53,710
+He unfortunately
+
+61
+00:03:55,830 --> 00:04:01,640
+he died just after this book was
+published, it,
+
+62
+00:04:03,120 --> 00:04:06,860
+it's, it's a hard thing to live, with the
+
+63
+00:04:06,860 --> 00:04:12,220
+body not, being supported by, by the
+central nervous system.
+
+64
+00:04:12,220 --> 00:04:14,680
+So the title, The Diving Bell and the
+
+65
+00:04:14,680 --> 00:04:18,970
+Butterfly, refers to his, his yin and
+yang.
+
+66
+00:04:18,970 --> 00:04:24,130
+He's in a diving bell, in the sense that
+his body is not under his control.
+
+67
+00:04:24,130 --> 00:04:25,560
+He cannot move.
+
+68
+00:04:25,560 --> 00:04:27,580
+He is paralyzed.
+
+69
+00:04:27,580 --> 00:04:31,770
+At the same time, he has all sorts of
+sensory abnormalities.
+
+70
+00:04:31,770 --> 00:04:36,870
+He's feeling, he feels pain, even though
+he can't feel touch.
+
+71
+00:04:36,870 --> 00:04:42,680
+He can not feel actual stimuli, actual
+things that are happening to his
+
+72
+00:04:42,680 --> 00:04:48,450
+body, but he feels these abnormal
+sensations akin to amputation pain.
+
+73
+00:04:48,450 --> 00:04:50,830
+There's nothing there, but a person feels
+pain.
+
+74
+00:04:50,830 --> 00:04:53,860
+Well, he feels that kind of sensation as
+well.
+
+75
+00:04:55,020 --> 00:04:57,240
+So he's stuck in this diving bell.
+
+76
+00:04:57,240 --> 00:05:02,490
+A diving bell is an iron globe that you
+can, that people
+
+77
+00:05:02,490 --> 00:05:06,920
+used to use to, as submersibles to go down
+into the ocean.
+
+78
+00:05:06,920 --> 00:05:08,910
+And he, that's all he can do is be in
+
+79
+00:05:08,910 --> 00:05:16,240
+this in this constrained existence where
+he can't actually move himself.
+
+80
+00:05:16,240 --> 00:05:19,710
+But at the same time, he can, he can soar.
+
+81
+00:05:19,710 --> 00:05:21,810
+He can soar with his brain.
+
+82
+00:05:21,810 --> 00:05:27,750
+He can soar in his thoughts and his
+emotions, his memories and his feelings.
+
+83
+00:05:27,750 --> 00:05:32,760
+And he does and he describes for instance
+one, he
+
+84
+00:05:32,760 --> 00:05:37,470
+describes his feelings about Empress
+Eugenie at the Naval Hospital.
+
+85
+00:05:37,470 --> 00:05:45,760
+And he describes this entire interaction
+with at the hall in the Naval Hospital
+
+86
+00:05:45,760 --> 00:05:51,320
+with these various pieces of art, and he
+describes it all in the present tense.
+
+87
+00:05:51,320 --> 00:05:54,020
+It's as real as, as if it's happening.
+
+88
+00:05:54,020 --> 00:05:58,191
+It's happening in his brain and in fact,
+that's our reality.
+
+89
+00:05:58,191 --> 00:06:00,877
+So, we're going to use The Diving Bell and
+
+90
+00:06:00,877 --> 00:06:05,301
+the Butterfly, and Bauby's experiences,
+his, the things that
+
+91
+00:06:05,301 --> 00:06:07,987
+he lost, the things that he retained as a
+
+92
+00:06:07,987 --> 00:06:12,087
+framework within which we can explore the
+nervous system.
+
+93
+00:06:12,087 --> 00:06:13,926
+Okay, we're going to get started now.
+
+94
+00:06:13,926 --> 00:06:20,580
+[MUSIC]
+

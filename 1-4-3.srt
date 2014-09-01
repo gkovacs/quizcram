@@ -1,0 +1,407 @@
+1
+00:00:00,050 --> 00:00:10,050
+[MUSIC]
+
+2
+00:00:12,624 --> 00:00:14,315
+So we are going to talk about brain
+tumors.
+
+3
+00:00:14,315 --> 00:00:20,080
+But before we talk about brain tumors,
+let's talk about the basics of cancer.
+
+4
+00:00:20,080 --> 00:00:23,060
+In cancer there is a primary tumor.
+
+5
+00:00:23,060 --> 00:00:28,470
+So let's say that you have a, a tumor in
+your colon.
+
+6
+00:00:28,470 --> 00:00:33,140
+That means that a colon cell is dividing,
+and dividing,
+
+7
+00:00:33,140 --> 00:00:38,750
+and dividing, and instead of stopping, it
+keeps on dividing.
+
+8
+00:00:38,750 --> 00:00:40,580
+It becomes immortal.
+
+9
+00:00:40,580 --> 00:00:44,520
+It's just going to divide without any
+limits.
+
+10
+00:00:44,520 --> 00:00:48,970
+And because it keeps on dividing, it keeps
+on growing, it gets bigger and bigger.
+
+11
+00:00:48,970 --> 00:00:52,050
+And if that's all that were going to
+happen, that would
+
+12
+00:00:52,050 --> 00:00:54,340
+be okay, because we'd go in, and we'd take
+it out.
+
+13
+00:00:54,340 --> 00:00:55,950
+But that's not all that happens.
+
+14
+00:00:55,950 --> 00:01:01,710
+What happens in cancer is that, that one
+of those cells decides to
+
+15
+00:01:01,710 --> 00:01:07,010
+go rogue, or few of those cells decide to
+go rogue and they travel some place else.
+
+16
+00:01:07,010 --> 00:01:10,600
+And then they start a new tumor elsewhere.
+
+17
+00:01:10,600 --> 00:01:12,000
+So they metastasize.
+
+18
+00:01:12,000 --> 00:01:13,370
+They spread.
+
+19
+00:01:13,370 --> 00:01:17,510
+So, the cell that or tumor starts in the
+colon, and then
+
+20
+00:01:17,510 --> 00:01:20,560
+a few cells float off to some other place,
+and now all of
+
+21
+00:01:20,560 --> 00:01:23,870
+a sudden, you've got tumors that are in
+your bones, or tumors
+
+22
+00:01:23,870 --> 00:01:28,090
+that are in your lungs, and maybe even a
+tumor in your brain.
+
+23
+00:01:28,090 --> 00:01:31,260
+Same thing with breast cancer or lung
+cancer,
+
+24
+00:01:31,260 --> 00:01:33,040
+it starts in one place, it starts in
+
+25
+00:01:33,040 --> 00:01:37,950
+the breast or it starts in the lung, but
+from there it can spread to other organs.
+
+26
+00:01:39,100 --> 00:01:44,870
+So, one source of brain tumors is
+metastasis spreads from
+
+27
+00:01:44,870 --> 00:01:49,790
+other or, from other tumors, so for
+instance lung tumors.
+
+28
+00:01:49,790 --> 00:01:54,150
+The metastasis are a problem and actually
+the brain tumors are a problem because
+
+29
+00:01:54,150 --> 00:02:00,210
+they exist within the cranium, and the
+cranium is a fixed, bony container.
+
+30
+00:02:00,210 --> 00:02:02,100
+It can't expand.
+
+31
+00:02:02,100 --> 00:02:07,140
+And as a tumor expands, the, the cranium
+is not going to expand.
+
+32
+00:02:07,140 --> 00:02:10,380
+It's going to increase the pressure and
+we're going to have a problem.
+
+33
+00:02:10,380 --> 00:02:15,302
+Okay, so besides having tumors that spread
+from other
+
+34
+00:02:15,302 --> 00:02:20,158
+organs, what are the other sources of
+brain tumors?
+
+35
+00:02:20,158 --> 00:02:25,739
+Well, one of the very consistent things
+about neurons is that they don't divide.
+
+36
+00:02:25,739 --> 00:02:29,560
+They are what's called, they are, they are
+at the end of their line.
+
+37
+00:02:29,560 --> 00:02:31,660
+They have no descendants.
+
+38
+00:02:31,660 --> 00:02:37,530
+Once a neuron is born, it lives and it
+dies and when it dies, that's the end.
+
+39
+00:02:37,530 --> 00:02:43,120
+It doesn't, it cannot replace itself, and,
+and that's the end.
+
+40
+00:02:43,120 --> 00:02:48,330
+So neurons don't make tumors because they
+don't divide
+
+41
+00:02:48,330 --> 00:02:53,140
+at all, and they don't get into this
+uncontrolled division.
+
+42
+00:02:53,140 --> 00:02:54,520
+So what makes tumors?
+
+43
+00:02:54,520 --> 00:02:58,020
+Well, it's other cell types within the
+brain.
+
+44
+00:02:58,020 --> 00:03:01,474
+And the primary one that does this are
+glial cells.
+
+45
+00:03:01,474 --> 00:03:06,262
+So glial cells don't have the limits on
+division that neurons do.
+
+46
+00:03:06,262 --> 00:03:10,450
+So, glial cells can divide and make these
+tumors.
+
+47
+00:03:10,450 --> 00:03:15,630
+And and so, glials, gliomas, tumors of
+glial
+
+48
+00:03:15,630 --> 00:03:19,150
+cells, are the most common type of brain
+tumor.
+
+49
+00:03:20,630 --> 00:03:23,110
+Another type of brain tumor are,
+
+50
+00:03:25,260 --> 00:03:29,450
+is the type that comes from a division
+
+51
+00:03:29,450 --> 00:03:33,800
+of meningeal cells, and these are called
+meningiomas.
+
+52
+00:03:33,800 --> 00:03:37,570
+Remember that we have the pia, the
+arachnoid, and the dura.
+
+53
+00:03:37,570 --> 00:03:42,190
+These are meningeal cells that cover the
+brain and if they start to divide
+
+54
+00:03:42,190 --> 00:03:46,000
+once again they're going to make a
+space-occupying
+
+55
+00:03:46,000 --> 00:03:48,570
+tumor that's going to increase pressure
+within the skull.
+
+56
+00:03:50,080 --> 00:03:54,570
+And finally, the other major type of brain
+tumor
+
+57
+00:03:54,570 --> 00:04:00,680
+is are tumors that come from glandular
+cells.
+
+58
+00:04:00,680 --> 00:04:03,230
+Now, you might think, well, the glandular
+cells, I've
+
+59
+00:04:03,230 --> 00:04:06,780
+got glands here, and I've got glands under
+my armpit.
+
+60
+00:04:06,780 --> 00:04:08,670
+I've got glands at various places.
+
+61
+00:04:08,670 --> 00:04:10,510
+But do I really have glands in my head?
+
+62
+00:04:10,510 --> 00:04:13,800
+Well, it turns out you have two glands in
+your head.
+
+63
+00:04:13,800 --> 00:04:18,370
+One is right here, and that one is called
+the pineal gland.
+
+64
+00:04:18,370 --> 00:04:22,210
+You may have heard it, heard of it,
+because it makes melatonin.
+
+65
+00:04:22,210 --> 00:04:24,290
+Melatonin might help you sleep.
+
+66
+00:04:25,450 --> 00:04:27,940
+And the pineal gland is, is important for
+
+67
+00:04:27,940 --> 00:04:30,330
+the daily rhythm of, of waking and
+sleeping.
+
+68
+00:04:31,416 --> 00:04:34,850
+And this, these glandular cells are not
+neurons.
+
+69
+00:04:34,850 --> 00:04:37,970
+They're, they're gland cells, and they can
+
+70
+00:04:37,970 --> 00:04:41,890
+become, they can divide without, without
+control.
+
+71
+00:04:41,890 --> 00:04:47,970
+The other, gland that we have in our head
+is, is one that sits right here.
+
+72
+00:04:47,970 --> 00:04:53,130
+It's not actually on this picture, but
+it's called the pituitary,
+
+73
+00:04:53,130 --> 00:04:58,480
+and these pituitary cells can also divide
+and that's called pituitary adenomas.
+
+74
+00:04:58,480 --> 00:05:01,200
+These pituitary adenomas are fairly
+common.
+
+75
+00:05:01,200 --> 00:05:06,090
+They account for about 10 to 25% of
+inter-cranial tumors.
+
+76
+00:05:07,360 --> 00:05:14,270
+Okay, so bottom line is, brain tumors are
+a problem because they take up space.
+
+77
+00:05:14,270 --> 00:05:17,650
+Brain tumors are not tumors of neurons,
+they're
+
+78
+00:05:17,650 --> 00:05:21,920
+tumors of glial cells, meningeal cells, or
+glandular
+
+79
+00:05:21,920 --> 00:05:26,110
+cells, or they are metastasis spread from
+other
+
+80
+00:05:26,110 --> 00:05:28,070
+organs such as the colon or the lung.
+
+81
+00:05:29,760 --> 00:05:31,180
+Okay.
+
+82
+00:05:31,180 --> 00:05:32,550
+That's it for this week.
+
+83
+00:05:32,550 --> 00:05:34,830
+I, I bet you've learned a lot!
+
+84
+00:05:34,830 --> 00:05:37,368
+In the next segment, I'm going to
+introduce the topics
+
+85
+00:05:37,368 --> 00:05:39,852
+that we're going to cover in the rest of
+this course.
+
+86
+00:05:39,852 --> 00:05:46,580
+[MUSIC]
+
