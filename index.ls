@@ -77,6 +77,7 @@ createQuestionsForVideosWithoutQuizzes = ->
           course: vidinfo.course
           autoshowvideo: true
           nocheckanswer: true
+          needanswer: true
           options: [
             'Perfectly understand'
             'Somewhat understand'
@@ -1124,7 +1125,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       $('#outerbody_' + qnum).remove()
       resetVideoBody vidname, vidpart
       #scrollWindowBy -amount-to-scroll-up
-      gotoNum target-qnum
+      #gotoNum target-qnum
       (getButton target-qnum, \watch).show()
   video-header.append close-button
   if root.video_info[vidname].parts.length > 1
@@ -1523,8 +1524,17 @@ getMagicNet = root.getMagicNet = ->
   , 0
 */
 
+needAnswerForQuestion = (qnum) ->
+  $("\#explanation_#qnum").text('Please answer the question before moving to the next video')
+
+clearNeedAnswerForQuestion = (qnum) ->
+  explanation-display = $("\#explanation_#qnum")
+  if explanation-display.text() == 'Please answer the question before moving to the next video'
+    explanation-display.text('')
+
 createRadio = (qnum, idx, option, body) ->
   inputbox = J("input.radiogroup_#{qnum}(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#{qnum}").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).change (evt) ->
+    clearNeedAnswerForQuestion qnum
     addlog {
       event: \radiobox
       type: \selection
@@ -1554,6 +1564,7 @@ shouldBeChecked = (qnum, idx) ->
 createCheckbox = (qnum, idx, option, body) ->
   #console.log option
   inputbox = J("input.checkboxgroup_#{qnum}(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).change (evt) ->
+    clearNeedAnswerForQuestion qnum
     value = $('#checkbox_' + qnum + '_' + idx).is(':checked')
     console.log 'value:' + value
     shouldbechecked = shouldBeChecked(qnum, idx)
@@ -2196,6 +2207,11 @@ insertQuestion = root.insertQuestion = (question, options) ->
     body.append review-video-button
   insertNextQuestionButton = ->
     body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next video').click (evt) ->
+      if question.needanswer? and question.needanswer
+        answer = getAnswerValue \radio, qnum
+        if not answer? or not isFinite(answer)
+          needAnswerForQuestion qnum
+          return
       addlog {
         event: 'next'
         type: 'button'
@@ -2206,6 +2222,8 @@ insertQuestion = root.insertQuestion = (question, options) ->
       pauseVideo()
       questionCorrect question
       hideButton qnum, \next
+      clearNeedAnswerForQuestion qnum
+      disableAnswerOptions qnum
       #disableQuestion qnum
       #showButton qnum, \watch
       insertQuestion getNextQuestion()
