@@ -271,12 +271,43 @@ getVideoStartEnd = (vidname, vidpart) ->
     end = getVideoEnd vidinfo
     return [toSeconds(start), toSeconds(end)]
 
-root.video-parts-seen = []
+root.video-parts-seen = {}
+root.video-parts-seen-server = {}
 console.log 'vidinfo!!!---------------------==================='
 do ->
   for vidname,vidinfo of root.video_info
     seen = [0] * (Math.round(getVideoEnd(vidinfo)) + 1)
     root.video-parts-seen[vidname] = seen
+
+getVideoPartsSeenThatNeedToBeSent = root.getVideoPartsSeenThatNeedToBeSent = ->
+  output = {}
+  for vidname,seenpart of root.video-parts-seen
+    if not root.video-parts-seen-server[vidname]? or seenpart !== root.video-parts-seen-server[vidname]
+      output[vidname] = seenpart
+  return output
+
+getVideoPartsSeenThatNeedToBeSentCompressed = root.getVideoPartsSeenThatNeedToBeSentCompressed = ->
+  return {[vidname, LZString.compressToBase64(seenpart.join(''))] for vidname,seenpart of getVideoPartsSeenThatNeedToBeSent()}
+
+decompressBinaryArray = (compressedData) ->
+  uncompressed = LZString.decompressFromBase64 compressedData
+  return [parseInt(x) for x in uncompressed]
+
+sendVideoPartsSeen = root.sendVideoPartsSeen = ->
+  to-be-sent = getVideoPartsSeenThatNeedToBeSentCompressed()
+  #console.log to-be-sent
+  qnum = getCurrentQuestionQnum()
+  qidx = getQidx qnum
+  addlog {
+    event: \videopartsseen
+    partsseen: to-be-sent
+    qnum
+    qidx
+  }
+  for vidname,compressedData of to-be-sent
+    root.video-parts-seen-server[vidname] = decompressBinaryArray compressedData
+    # root.video-parts-seen-server[vidname] = root.video-parts-seen[vidname][to]
+  
 
 getVideoProgress = root.getVideoProgress = (vidname, vidpart) ->
   [start,end] = getVideoStartEnd vidname, vidpart
@@ -2212,6 +2243,8 @@ insertQuestion = root.insertQuestion = (question, options) ->
         if not answer? or not isFinite(answer)
           needAnswerForQuestion qnum
           return
+      if not root.replaying-logs
+        sendVideoPartsSeen()
       addlog {
         event: 'next'
         type: 'button'
@@ -2320,6 +2353,11 @@ isScrollAtBottom = ->
 root.replaying-logs = false
 
 replayLogs = (logs) ->
+  root.replaying-logs = true
+  for log in logs
+    console.log 'replaying: ' + JSON.stringify(log)
+
+replayLogsOrig = (logs) ->
   root.replaying-logs = true
   for log in logs
     console.log 'replaying: ' + JSON.stringify(log)
