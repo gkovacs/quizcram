@@ -187,14 +187,14 @@ clearlog = root.clearlog = ->
   }
 
 root.logged-data = []
-root.logging-disabled-globally = true
+root.logging-disabled-globally = false
 root.logging-disabled = false
+
+root.server-received-logidx = {}
 
 ensureLoggedToServer = (list, name) ->
   if not name?
     name = randomString(14)
-  if not root.server-received-logidx?
-    root.server-received-logidx = {}
   if root.server-received-logidx[name]?
     console.log 'already ensuring logged to server: ' + name
     return
@@ -203,19 +203,44 @@ ensureLoggedToServer = (list, name) ->
     nextidx = root.server-received-logidx[name] + 1
     if nextidx < list.length
       # have new data to send
-      console.log 'sending item ' + nextidx
+      #console.log 'postJSON called'
+      #console.log 'listLength: ' + list.length
       postJSON '/addlog', list[nextidx], (updated-idx) ->
-        console.log 'updated-idx: ' + updated-idx
+        #console.log 'postJSON results'
+        #console.log updated-idx
         updated-idx = parseInt(updated-idx)
         if isFinite(updated-idx)
           root.server-received-logidx[name] = updated-idx
   , 350
 
+addlogvideo = root.addlogvideo = (logdata) ->
+  if root.logging-disabled or root.logging-disabled-globally
+    return
+  videotag = $('.activevideo')
+  if not videotag? or videotag.length == 0
+    return
+  video = getVideoPanel videotag
+  if not video? or video.length == 0
+    return
+  qnum = video.data \qnum
+  vidname = video.data \vidname
+  vidpart = video.data \vidpart
+  data = $.extend {}, logdata
+  data.vidname = vidname
+  data.vidpart = vidpart
+  data.qnum = qnum
+  data.type = \video
+  data.curtime = videotag[0].currentTime
+  data.paused = videotag[0].paused
+  data.speed = videotag[0].playbackRate
+  data.partsseen = getVideoPartSeenCompressed(vidname)
+  addlog data
+
 addlogReal = root.addlogReal = (data) ->
   if not data.logidx?
     data.logidx = root.logged-data.length
   root.logged-data.push data
-  #postJSON '/addlog', data
+  postJSON '/addlog', data
 
 addlog = root.addlog = (logdata) ->
   if root.logging-disabled or root.logging-disabled-globally
@@ -279,11 +304,17 @@ do ->
     seen = [0] * (Math.round(getVideoEnd(vidinfo)) + 1)
     root.video-parts-seen[vidname] = seen
 
+getVideoPartSeenCompressed = (vidname) ->
+  seenpart = root.video-parts-seen[vidname]
+  if not seenpart?
+    return ''
+  return LZString.compressToBase64(seenpart.join(''))
+
 getVideoPartsSeenThatNeedToBeSent = root.getVideoPartsSeenThatNeedToBeSent = ->
   output = {}
   for vidname,seenpart of root.video-parts-seen
     if not root.video-parts-seen-server[vidname]? or seenpart !== root.video-parts-seen-server[vidname]
-      output[vidname] = seenpart
+      output[vidname] = seenpart[to]
   return output
 
 getVideoPartsSeenThatNeedToBeSentCompressed = root.getVideoPartsSeenThatNeedToBeSentCompressed = ->
@@ -294,12 +325,17 @@ decompressBinaryArray = (compressedData) ->
   return [parseInt(x) for x in uncompressed]
 
 sendVideoPartsSeen = root.sendVideoPartsSeen = ->
+  console.log 'sendVideoPartsSeen called!'
   to-be-sent = getVideoPartsSeenThatNeedToBeSentCompressed()
+  console.log 'parts sent: ' + JSON.stringify(Object.keys(to-be-sent))
+  if Object.keys(to-be-sent).length == 0
+    return
   #console.log to-be-sent
   qnum = getCurrentQuestionQnum()
   qidx = getQidx qnum
   addlog {
     event: \videopartsseen
+    type: \video
     partsseen: to-be-sent
     qnum
     qidx
@@ -311,13 +347,16 @@ sendVideoPartsSeen = root.sendVideoPartsSeen = ->
 
 getVideoProgress = root.getVideoProgress = (vidname, vidpart) ->
   [start,end] = getVideoStartEnd vidname, vidpart
-  start = 0
+  #start = 0
   viewing-history = root.video-parts-seen[vidname]
   relevant-section = viewing-history[Math.round(start) to Math.round(end)]
   return sum(relevant-section) / relevant-section.length
 
 isCurrentPortionPreviouslySeen = root.isCurrentPortionPreviouslySeen = (qnum) ->
-  curtime = Math.round $('#video_' + qnum)[0].currentTime
+  video = $('#video_' + qnum)
+  if video.length < 1
+    return false
+  curtime = Math.round video[0].currentTime
   vidname = getVidname qnum
   vidpart = getVidpart qnum
   [start,end] = getVideoStartEnd vidname, vidpart
@@ -338,6 +377,10 @@ skipToEndOfSeenPortion = root.skipToEndOfSeenPortion = (qnum) ->
   seen-intervals = getVideoSeenIntervalsRaw vidname, vidpart
   for [start,end] in seen-intervals
     if start <= curtime < end - 1
+      addlogvideo {
+        event: \skipToEndOfSeenPortion
+        newtime: end - 1
+      }
       seekVideoTo end - 1
       (getVideo vidname, vidpart).find(\.skipseen).hide()
       return
@@ -376,14 +419,15 @@ markVideoSecondWatched = root.markVideoSecondWatched = (vidname, vidpart, second
   viewing-history[Math.round(second + start)] = 1
 
 setWatchButtonProgress = root.setWatchButtonProgress = (vidname, vidpart, percent-viewed) ->
-  $('.videoprogress_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).text(toPercent(percent-viewed) + '% seen')
+  seenmsg = '% seen'
+  #if root.video_info[vidname].parts.length > 1
+  #  seenmsg = '% of part ' + (vidpart + 1) + ' seen'
+  $('.videoprogress_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).text(toPercent(percent-viewed) + seenmsg)
   $('.watch_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> watch video (' + toPercent(percent-viewed) + '% seen)')
-  $('.review_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> review video before answering again (' + toPercent(percent-viewed) + '% seen)')
+  #$('.review_' + toVidnamePart(vidname, vidpart)).data('progress', percent-viewed).html('<span class="glyphicon glyphicon-play"></span> review video before answering again (' + toPercent(percent-viewed) + '% seen)')
 
 updateWatchButtonProgress = root.updateWatchButtonProgress = (vidname, vidpart) ->
-  console.log "setWatchButtonProgress(#vidname, #vidpart)"
   percent-viewed = getVideoProgress vidname, vidpart
-  console.log 'percent-viewed: ' + percent-viewed
   setWatchButtonProgress vidname, vidpart, percent-viewed
 
 updateCurrentTimeText = root.updateCurrentTimeText = (vidname, vidpart) ->
@@ -442,6 +486,8 @@ timeUpdatedReal = (qnum) ->
   #body = getBody qnum
   vidname = getVidname qnum
   vidpart = getVidpart qnum
+  qnum-current = getCurrentQuestionQnum()
+  tryClearWaitBeforeAnswering(qnum-current)
   #fixVideoHeight video
   /*
   if not video.data('duration')?
@@ -488,12 +534,24 @@ seekVideoTo = (time) ->
   video = $(\.activevideo)
   if not video? or not video.length? or video.length < 1
     return
+  addlogvideo {
+    event: \seek
+    subevent: \seekVideoTo
+    offset: offset
+    newtime: time
+  }
   video[0].currentTime = time
 
 seekVideoByOffset = (offset) ->
   video = $(\.activevideo)
   if not video? or not video.length? or video.length < 1
     return
+  addlogvideo {
+    event: \seek
+    subevent: \seekVideoByOffset
+    offset: offset
+    newtime: video[0].currentTime + offset
+  }
   video[0].currentTime += offset
 
 playPauseVideo = ->
@@ -816,11 +874,13 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title
   if vidpart?
+    numparts = root.video_info[vidname].parts.length
     if vidpart == 0
-      if root.video_info[vidname].parts.length > 1
-        fulltitle = fulltitle + ' part 1'
+      if numparts > 1
+        fulltitle = fulltitle + ' part 1/' + numparts
     else
-      fulltitle = fulltitle + ' parts 1-' + (vidpart+1)
+      fulltitle = fulltitle + ' part ' + (vidpart+1) + '/' + numparts
+      #fulltitle = fulltitle + ' parts 1-' + (vidpart+1)
   #$('.activevideo').removeClass 'activevideo'
   removeActiveVideoAndShrink()
   videodiv = J(\div)
@@ -863,6 +923,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       this.currentTime = start
     .on 'ended', (evt) ->
       this.pause()
+      #this.currentTime = 0
       this.currentTime = start
       #gotoNum getCurrentQuestionQnum()
     .append(J('source').attr('src', fileurl))
@@ -895,7 +956,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     }
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).css(\pointer-events, \none).text fulltitle
-  video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css(\pointer-events, \none).css(\color, \white).css(\margin-left, \30px).css(\font-size, \24px).text '0% seen'
+  video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css({pointer-events: \none, color: \white, margin-left: \30px, font-size: \24px}).text '0% seen'
   if reasonForInsertion?
     video-header.append $(reasonForInsertion).addClass('insertionreason').css(\display, \none).css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
   video-footer = J(\.videofooter)
@@ -994,21 +1055,15 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     .mouseleave (evt) ->
       $('.videohovertick').hide()
     .mousemove (evt) ->
-      console.log 'hover on progress bar:'
-      console.log evt
       percent = getPercentageOnProgressBar(evt, progress-bar)
       if not percent? or not isFinite(percent) or not 0 < percent <= 1
         return
       #console.log percent
       setHoverTickPercentage vidname, vidpart, percent
     .click (evt) ->
-      console.log 'click on progress bar:'
-      console.log evt
       percent = getPercentageOnProgressBar(evt, progress-bar)
       if not percent? or not isFinite(percent) or not 0 < percent <= 1
         return
-      console.log 'percent:'
-      console.log percent
       makeVideoActive qnum
       setTickPercentage vidname, vidpart, percent
       seekVideoToPercent percent
@@ -1046,8 +1101,8 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       border-radius: \15px
       color: \white
       font-size: \20px
-      bottom: \70px
-      left: \30px
+      top: \50px
+      left: \10px
       text-align: \center
       display: \none
       cursor: \pointer
@@ -1116,7 +1171,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   body.append [video-header, video-skip, subtitle-display-container, playbutton-overlay, video, video-footer]
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
-    view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> view previous video').click (evt) ->
+    view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> previous video').click (evt) ->
       console.log 'do not understand video'
       console.log vidname
       viewPreviousClip vidname, vidpart
@@ -1307,19 +1362,12 @@ scrollToElement = (elem) ->
   cur-elem-idx = root.scroll-elem-idx
   offset = elem.offset().top
   scrollWindow offset
-  console.log 'scrollToElement'
-  console.log elem
-  printStack()
   if isParentAnimated(elem)
-    console.log 'animated!'
     setTimeout ->
       if cur-elem-idx != root.scroll-elem-idx
         return
       newoffset = elem.offset().top
       if Math.abs(newoffset - offset) > 30
-        console.log 'have new offset!'
-        console.log 'going to element:'
-        console.log elem
         scrollWindow newoffset
     , 350
 
@@ -1388,6 +1436,9 @@ makeVideoActiveByVideoTag = (video) ->
     if outerbody?
       applyTransform outerbody, ''
     video.addClass \activevideo
+    addlogvideo {
+      event: \makeactive
+    }
 
 makeVideoActive = root.makeVideoActive = (qnum) ->
   body = $("\#body_#qnum")
@@ -1555,13 +1606,44 @@ getMagicNet = root.getMagicNet = ->
   , 0
 */
 
+setExplanationHtml = root.setExplanationHtml = (qnum, html) ->
+  $("\#explanation_#qnum").html(html)
+
+setExplanation = root.setExplanation = (qnum, text) ->
+  $("\#explanation_#qnum").text(text)
+
+getExplanation = root.getExplanation = (qnum) ->
+  return $("\#explanation_#qnum").text()
+
 needAnswerForQuestion = (qnum) ->
-  $("\#explanation_#qnum").text('Please answer the question before moving to the next video')
+  setExplanationHtml qnum, '<b>Please answer the question</b> before moving to the next video'
 
 clearNeedAnswerForQuestion = (qnum) ->
-  explanation-display = $("\#explanation_#qnum")
-  if explanation-display.text() == 'Please answer the question before moving to the next video'
-    explanation-display.text('')
+  if getExplanation(qnum) == 'Please answer the question before moving to the next video'
+    setExplanation qnum, ''
+
+tryClearWaitBeforeAnswering = root.tryClearWaitBeforeAnswering = (qnum) ->
+  explanation = getExplanation(qnum)
+  if explanation.indexOf('Please watch at least ') == 0
+    qbody = getBody qnum
+    vidname = qbody.data \vidname
+    vidpart = qbody.data \vidpart
+    progress = getVideoProgress vidname, vidpart
+    target-amount = parseInt explanation.split('%')[0].split(' ')[*-1]
+    if 100 * progress >= target-amount
+      enableAnswerOptions qnum
+      setExplanation qnum, ''
+      showButton qnum, \check
+
+clearWaitBeforeAnswering = root.clearWaitBeforeAnswering = (qnum) ->
+  if getExplanation(qnum).indexOf('Please watch at least ') == 0
+    enableAnswerOptions qnum
+    setExplanation qnum, ''
+    showButton qnum, \check
+
+waitBeforeAnswering = root.waitBeforeAnswering = (qnum, target) ->
+  disableAnswerOptions qnum
+  setExplanationHtml qnum, "<span style='font-size: 20px'><b>Please watch at least #{toPercent(target)}% of this video part</b> before trying to answer again.</span>"
 
 createRadio = (qnum, idx, option, body) ->
   inputbox = J("input.radiogroup_#{qnum}(type='radio' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "radiogroup_#{qnum}").attr('id', "radio_#{qnum}_#{idx}").attr('value', idx).change (evt) ->
@@ -1593,11 +1675,9 @@ shouldBeChecked = (qnum, idx) ->
   return false
 
 createCheckbox = (qnum, idx, option, body) ->
-  #console.log option
   inputbox = J("input.checkboxgroup_#{qnum}(type='checkbox' style='vertical-align: top; display: inline-block; margin-right: 5px')").attr('name', "checkboxgroup_#{qnum}").attr('id', "checkbox_#{qnum}_#{idx}").attr('value', idx).change (evt) ->
     clearNeedAnswerForQuestion qnum
     value = $('#checkbox_' + qnum + '_' + idx).is(':checked')
-    console.log 'value:' + value
     shouldbechecked = shouldBeChecked(qnum, idx)
     addlog {
       event: \checkbox
@@ -1686,7 +1766,6 @@ markQuestion = (question_idx, mark) ->
   if question_idx.idx?
     return markQuestion question_idx.idx, mark
   question_progress = root.question_progress[question_idx]
-  console.log question_progress
   question_progress[mark].push Date.now()
 
 questionSkip = (question) -> markQuestion question, 'skip'
@@ -1723,8 +1802,6 @@ increaseButtonFill = ->
     autotrigger.click()
     root.automatic-trigger = false
     return
-  console.log 'increaseButtionFill ' + button-fill
-  console.log 'autotrigger offset: ' + autotrigger.offset().top
   autotrigger.data('button-fill', button-fill)
   partialFillButton button-fill
 
@@ -1739,7 +1816,6 @@ partialFillButton = root.partialFillButton = (fraction) ->
   root.overlap-button.width autotrigger.width()
   root.overlap-button.height autotrigger.height()
   {top, left} = autotrigger.offset()
-  console.log 'top is: ' + top
   root.overlap-button.css \top, top
   root.overlap-button.css \left, left
   root.overlap-button.css 'clip', 'rect(0px ' + (autotrigger.outerWidth() * fraction) + 'px auto 0px)' # top right bottom left
@@ -1758,7 +1834,6 @@ reviewInserted = (qnum) ->
 showIsCorrect = (qnum, isCorrect) ->
   qidx = getQidx qnum
   question = root.questions[qidx]
-  console.log 'showIsCorrect!'
   feedback = J('span')
   if isCorrect
     feedback.append J('b').css('color', 'green').text 'Correct'
@@ -1796,8 +1871,7 @@ hideAnswer = root.hideAnswer = (qnum) ->
     $(".radiogroup_#{qnum}").prop \checked, false
   feedback-display = $("\#iscorrect_#qnum")
   feedback-display.html ''
-  explanation-display = $("\#explanation_#qnum")
-  explanation-display.text ''
+  setExplanation qnum, ''
   hideButton qnum, \show
   hideButton qnum, \next
   showButton qnum, \check
@@ -1819,8 +1893,7 @@ showAnswer = root.showAnswer = (qnum) ->
     $("\#radio_#{qnum}_#{question.correct}").prop \checked, true
   feedback-display = $("\#iscorrect_#qnum")
   feedback-display.html '<b style="color: red">Incorrect - see correct answer above</b>'
-  explanation-display = $("\#explanation_#qnum")
-  explanation-display.text question.explanation
+  setExplanation qnum, question.explanation
   hideButton qnum, \show
   hideButton qnum, \check
   vidname = question.videos[0].name
@@ -1872,9 +1945,14 @@ getCurrentQuestionQnum = root.getCurrentQuestionQnum = ->
 playVideo = ->
   resetIfNeeded getCurrentQuestionQnum()
   video = $('.activevideo')
-  if video.length > 0
-    if video[0].paused
-      video[0].play()
+  if video.length < 1
+    return
+  if not video[0].paused
+    return
+  addlogvideo {
+    event: \play
+  }
+  video[0].play()
 
 root.playback-speed = '1.00'
 
@@ -1883,7 +1961,12 @@ setPlaybackSpeed = (new-speed) ->
     return
   root.playback-speed = new-speed
   $('.currentspeed').text(new-speed + 'x')
-  $('video').prop('playbackRate', parseFloat(new-speed))
+  new-speed = parseFloat new-speed
+  addlogvideo {
+    event: \setPlaybackSpeed
+    newspeed: new-speed
+  }
+  $('video').prop('playbackRate', new-speed)
   #for x in $('video')
   #  x.playbackRate = parseFloat new-speed
 
@@ -1920,7 +2003,6 @@ pauseVideo = ->
   #  video[0].pause()
 
 disableButtonAutotrigger = ->
-  console.log 'disableButtonAutotrigger'
   resetButtonFill()
   button = $(\.autotrigger)
   button.removeClass \autotrigger
@@ -2115,19 +2197,21 @@ insertQuestion = root.insertQuestion = (question, options) ->
   root.currentQuestionQnum = qnum
   turnOffAllDefaultbuttons()
   #removeAllVideos()
+  vidname = getVidnameForQuestion(question)
+  vidpart = getVidpartForQuestion(question)
   body = J('.panel-body-new')
     .attr('id', "body_#qnum")
     .data(\qnum, qnum)
     .data('qidx', question.idx)
     .data(\type, \question)
+    .data(\vidname, vidname)
+    .data(\vidpart, vidpart)
     .css {
       padding-top: \0px
       padding-left: \10px
       padding-right: \10px
       padding-bottom: \10px
     }
-  vidname = getVidnameForQuestion(question)
-  vidpart = getVidpartForQuestion(question)
   vidnamepart = getVidnamePartForQuestion(question)
   question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
   body.append J('div').css({font-size: \24px, padding-top: \10px}).text question-title
@@ -2158,7 +2242,6 @@ insertQuestion = root.insertQuestion = (question, options) ->
     body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
       gotoNum qnum
       answers = getAnswerValue question.type, qnum
-      console.log answers
       if isAnswerCorrect question, answers
         addlog {
           event: 'check'
@@ -2233,8 +2316,12 @@ insertQuestion = root.insertQuestion = (question, options) ->
       setDefaultButton watch-video-button
     body.append watch-video-button
   insertReviewVideoButton = ->
-    review-video-button = J('button.btn.btn-primary.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').css(\width, \100%).text('review video before answering again (0% seen)').click (evt) ->
+    review-video-button = J('button.btn.btn-primary.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').css(\width, \100%).html('<span class="glyphicon glyphicon-play"></span> review video before answering again').click (evt) ->
       (getButton qnum, \watch).click()
+      percent-seen = getVideoProgress vidname, vidpart
+      if percent-seen < 0.75
+        waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.1)
+        hideButton qnum, \check
     body.append review-video-button
   insertNextQuestionButton = ->
     body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next video').click (evt) ->
@@ -2299,7 +2386,6 @@ insertQuestion = root.insertQuestion = (question, options) ->
   #$('#quizstream').prepend J('#prebody_' + qnum)
   #body.prependTo($('#quizstream'))
   autoShowVideo = ->
-    console.log 'autoshowvideo for question ' + qnum
     (getButton qnum, \watch).click()
   if not options.immediate? #and not question.autoshowvideo
     body.hide()
@@ -2352,10 +2438,18 @@ isScrollAtBottom = ->
 
 root.replaying-logs = false
 
-replayLogs = (logs) ->
+replayLogs = root.replayLogs = (logs) ->
   root.replaying-logs = true
   for log in logs
     console.log 'replaying: ' + JSON.stringify(log)
+    switch log.event
+    | \videopartsseen =>
+      for vidname,compressedData of log.partsseen
+        decompressed = decompressBinaryArray compressedData
+        root.video-parts-seen-server[vidname] = decompressed
+        root.video-parts-seen[vidname] = decompressed[to]
+    | _ => console.log log
+  root.replaying-logs = false
 
 replayLogsOrig = (logs) ->
   root.replaying-logs = true
@@ -2384,19 +2478,14 @@ videoHeightFractionVisible = ->
     return 0
   window-height = $(window).height()
   window-top = $(window).scrollTop()
-  console.log 'window-top:' + window-top
   window-bottom = window-top + window-height
   video-top = video.offset().top
   video-bottom = video-top + video-height
   video-hidden-top = Math.max(0, window-top - video-top)
-  console.log 'video-hidden-top:' + video-hidden-top
   video-hidden-bottom = Math.max(0, video-bottom - window-bottom)
-  console.log 'video-hidden-bottom:' + video-hidden-bottom
   video-hidden = video-hidden-top + video-hidden-bottom
   video-shown = video-height - video-hidden
   #fraction-hidden = video-hidden / Math.min(window-height, video-height)
-  #console.log 'video-hidden:' + video-hidden
-  #console.log 'fraction hiddden:' +  (1 - fraction-hidden)
   #return 1 - fraction-hidden
   fraction-shown = video-shown / Math.min(window-height, video-height)
   return fraction-shown
@@ -2429,12 +2518,14 @@ questionAlwaysShownProcess = ->
   , 500
 
 getUrlParameters = root.getUrlParameters = ->
+  url = window.location.href
+  hash = url.lastIndexOf('#')
+  if hash != -1
+    url = url.slice(0, hash)
   map = {}
-  parts = window.location.href.replace /[?&]+([^=&]+)=([^&]*)/gi, (m,key,value) ->
+  parts = url.replace /[?&]+([^=&]+)=([^&]*)/gi, (m,key,value) ->
     map[key] = decodeURI(value)
   return map
-
-root.skip-load-logs = true
 
 prepadTo2 = (num) ->
   num = num.toString()
@@ -2461,21 +2552,27 @@ millisecToDisplayable = (millisec) ->
   seconds = prepadTo2 seconds
   return "#hours:#minutes:#seconds"
 
+root.baseparams = null
+
 updateUrlBar = ->
+  if not root.baseparams?
+    pdict = {
+      user: root.username
+      course: root.coursename
+      started: root.time-started
+    }
+    if root.logging-disabled-globally
+      pdict.nolog = true
+    root.baseparams = '?' + $.param pdict
   elapsed = millisecToDisplayable(Date.now() - root.time-started)
-  history.replaceState {}, '', "?username=#{root.username}&course=#{root.coursename}&started=#{root.time-started}\#elapsed=#{elapsed}"
-  #history.replaceState {}, '', '?' + ($.param {
-  #  username: root.username
-  #  course: root.coursename
-  #  started: root.time-started
-  #}) + '#elapsed=' + elapsed
+  history.replaceState {}, '', root.baseparams + '#elapsed=' + elapsed
 
 updateUrlHash = root.updateUrlHash = ->
   elapsed = millisecToDisplayable(Date.now() - root.time-started)
   window.location.hash = 'elapsed=' + elapsed
 
 updateUsername = ->
-  root.username = getUrlParameters().username
+  root.username = getUrlParameters().user ? getUrlParameters().username
   past-usernames = []
   if $.cookie('usernames')
     past-usernames = JSON.parse $.cookie('usernames')
@@ -2501,7 +2598,7 @@ updateTimeStarted = ->
 root.coursename = null
 
 updateCourseName = root.updateCourseName = ->
-  root.coursename = getUrlParameters().course
+  root.coursename = getUrlParameters().coursename ? getUrlParameters().course
   if not root.coursename?
     root.coursename = 'neuro_1'
   if root.coursename == '1'
@@ -2554,7 +2651,13 @@ updateQuestions = root.updateQuestions = ->
       vidinfo = root.video_info[vidname]
       question.course = vidinfo.course
 
+updateOptions = ->
+  params = getUrlParameters()
+  if params.nolog? and params.nolog != 'false'
+    root.logging-disabled-globally = true
+
 $(document).ready ->
+  updateOptions()
   updateUsername()
   updateTimeStarted()
   updateCourseName()
@@ -2592,9 +2695,11 @@ $(document).ready ->
       | 8 => pauseVideo() # backspace
       | 46 => pauseVideo() # delete
       | 187 => increasePlaybackSpeed() # + key
+      | 61 => increasePlaybackSpeed() # + key
       | 221 => increasePlaybackSpeed() # ] key      
       | 219 => decreasePlaybackSpeed() # [ key
       | 189 => decreasePlaybackSpeed() # - key
+      | 173 => decreasePlaybackSpeed() # - key
       | 13 => # enter
         skipToEndOfSeenPortion $(\.activevideo).data(\qnum)
         playVideo()
@@ -2667,23 +2772,16 @@ $(document).ready ->
       evt.preventDefault()
       return false
   */
-  if not root.skip-load-logs
+  if root.logging-disabled-globally
+    insertQuestion getNextQuestion(), {immediate: true}
+  else
     getlog (logs) ->
-      if logs.length > 0
+      if logs? and logs.length > 0
         root.logging-disabled = true
         console.log 'replaying logs!'
         root.logged-data = logs
         replayLogs(logs)
         root.logging-disabled = false
-      else
-        insertQuestion getNextQuestion(), {immediate: true}
-  else
-    #insertQuestion getNextQuestion(), {immediate: true}
-    insertQuestion getNextQuestion()
-    ensureLoggedToServer(root.logged-data, 'logged-data')
-  #insertQuestion questions[0]
-  #for question in root.questions.slice 0,1
-  #  insertQuestion question
-    
-  #$('#quizstream').append J('.panel.panel-default').append J('.panel-body').text('some text')
-  #$('#quizstream').append J('.panel.panel-default').append J('.panel-body').text('some more text')
+      insertQuestion getNextQuestion(), {immediate: true}
+      ensureLoggedToServer(root.logged-data, 'logged-data')
+

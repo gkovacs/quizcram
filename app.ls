@@ -31,13 +31,15 @@ getLogsCollectionReal = (callback) ->
   getMongoDb (db) ->
     callback db.collection('logs')
 
-getLogsCollection = (callback) ->
-  if root.logs-collection?
-    callback root.logs-collection
-  else
-    getLogsCollectionReal (logs) ->
-      root.logs-collection = logs
-      callback logs
+getLogsCollection = getLogsCollectionReal
+
+#getLogsCollection = (callback) ->
+#  if root.logs-collection?
+#    callback root.logs-collection
+#  else
+#    getLogsCollectionReal (logs) ->
+#      root.logs-collection = logs
+#      callback logs
 
 app.use(bodyParser.json())
 
@@ -103,6 +105,8 @@ app.post '/addlog', (req, res) ->
   #if Object.keys(req.body).length == 0
   #  res.send 'need to provide data'
   #  return
+  #console.log 'addlog'
+  #console.log req.body
   logidx = req.body.logidx
   username = req.body.username
   if not logidx?
