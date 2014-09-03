@@ -2,7 +2,7 @@ root = exports ? this
 
 J = $.jade
 
-{sum} = require \prelude-ls
+{sum, reverse} = require \prelude-ls
 
 # Date.now = Date.now || -> +new Date
 
@@ -78,6 +78,7 @@ createQuestionsForVideosWithoutQuizzes = ->
           autoshowvideo: true
           nocheckanswer: true
           needanswer: true
+          selfrate: true
           options: [
             'Perfectly understand'
             'Somewhat understand'
@@ -248,6 +249,8 @@ addlog = root.addlog = (logdata) ->
   data = $.extend {}, logdata
   if not data.username?
     data.username = root.username
+  if not data.course?
+    data.course = root.coursename
   if not data.time?
     data.time = Date.now()
   if not data.timeloc?
@@ -1262,7 +1265,7 @@ bodyExists = (qnum) ->
 getBody = root.getBody = (qnum) ->
   return $("\#body_#qnum")
 
-getQidx = (qnum) ->
+getQidx = root.getQidx = (qnum) ->
   return $("\#body_#qnum").data \qidx
 
 getVidnameForQidx = (qidx) ->
@@ -2187,6 +2190,102 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
     appendWithSlideDown newvideo, $('#prebody_' + qnum)
     getVideo(vidname, vidpart).data(\prebody, qnum)
 
+getPartialScoreCheckbox = root.getPartialScoreCheckbox = (qnum) ->
+  qidx = getQidx qnum
+  question = root.questions[qidx]
+  numoptions = $('.checkboxgroup_' + qnum).length
+  scores = []
+  for optidx in [0 til numoptions]
+    checkbox = $('#checkbox_' + qnum + '_' + optidx)
+    myanswer = checkbox.is(':checked')
+    realanswer = question.correct.indexOf(optidx) != -1
+    score = 0
+    if myanswer == realanswer
+      score = 1
+    # TODO track whether has been put into incorrect / correct state and award partial credit accordingly
+    # 0.8 for correct final state, 0.1 for entering correct state, 0.1 for not entering incorrect state
+    scores.push score
+  return sum(scores) / scores.length
+
+getPartialScoreSelfRate = root.getPartialScoreSelfRate = (qnum) ->
+  radioidx = getRadioValue(qnum)
+  switch radioidx
+  | 0 => 1.0 # perfectly understand
+  | 1 => 0.5 # somewhat understand
+  | 2 => 0.0 # do not understand
+  | _ => 0.5
+
+getPartialScore = root.getPartialScore = (qnum) ->
+  qidx = getQidx qnum
+  question = root.questions[qidx]
+  if question.type == 'checkbox'
+    return getPartialScoreCheckbox qnum
+  if question.type == 'radio'
+    if question.selfrate
+      return getPartialScoreSelfRate qnum
+  throw 'getScoreForAnswers does not support question type: ' + question.type
+
+root.question_scores = []
+
+computeScoreFromHistory = (qnumhistory, scorehistory) ->
+  total = 0
+  divisor = 0
+  power = 1
+  for qnum in qnumhistory
+    for score in scorehistory[qnum]
+      total += power * score
+      divisor += power
+    power *= 0.5
+  return total / divisor
+
+
+updateQuestionScore = root.updateQuestionScore = (qnum) ->
+  qidx = getQidx qnum
+  question = root.questions[qidx]
+  score = getPartialScore qnum
+  overallscore = score
+  if not root.question_scores[qidx]?
+    root.question_scores[qidx] = {
+      current: score
+      qnumhistory: [] # most recent to oldest
+      scorehistory: {}
+    }
+  scoreinfo = root.question_scores[qidx]
+  if not scoreinfo.scorehistory[qnum]?
+    scoreinfo.scorehistory[qnum] = []
+    scoreinfo.qnumhistory.unshift qnum # prepends
+  scoreinfo.scorehistory[qnum].unshift score # prepends
+  scoreinfo.current = computeScoreFromHistory(scoreinfo.qnumhistory, scoreinfo.scorehistory)
+  overallscore = scoreinfo.current
+  addlog {
+    event: \questionscore
+    newscore: score
+    overallscore: overallscore
+    qnum: qnum
+    qidx: qidx
+    scoreinfo: root.question_scores[qidx]
+  }
+  $('#questionscore_' + qnum).text(overallscore)
+  #score = getScoreForAnswers question, answers
+
+root.question_recency_info = []
+
+updateRecencyInfo = root.updateRecencyInfo = (qnum) ->
+  qidx = getQidx qnum
+  qcycle = getBody(qnum).data \qcycle
+  if not root.question_recency_info[qidx]?
+    root.question_recency_info[qidx] = {}
+  root.question_recency_info[qidx].qcycle = qcycle
+  root.question_recency_info[qidx].time = Date.now()
+  addlog {
+    event: \recencyinfo
+    qnum: qnum
+    qidx: qidx
+    recencyinfo: root.question_recency_info[qidx]
+  }
+
+root.numIncorrectAnswers = 0
+
 insertQuestion = root.insertQuestion = (question, options) ->
   options = {} if not options?
   if options.qnum?
@@ -2194,7 +2293,13 @@ insertQuestion = root.insertQuestion = (question, options) ->
     counterSet 'qnum', qnum
   else
     qnum = counterNext 'qnum'
+  if options.qcycle?
+    qcycle = options.qcycle
+    counterSet 'qcycle', qcycle
+  else
+    qcycle = counterNext 'qcycle'
   root.currentQuestionQnum = qnum
+  root.numIncorrectAnswers = 0
   turnOffAllDefaultbuttons()
   #removeAllVideos()
   vidname = getVidnameForQuestion(question)
@@ -2202,6 +2307,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   body = J('.panel-body-new')
     .attr('id', "body_#qnum")
     .data(\qnum, qnum)
+    .data(\qcycle, qcycle)
     .data('qidx', question.idx)
     .data(\type, \question)
     .data(\vidname, vidname)
@@ -2215,6 +2321,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   vidnamepart = getVidnamePartForQuestion(question)
   question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
   body.append J('div').css({font-size: \24px, padding-top: \10px}).text question-title
+  body.append J('#questionscore_' + qnum).text('0')
   body.append J('div').text question.text
   optionsdiv = J("\#options_#qnum")
   for option,idx in question.options
@@ -2225,6 +2332,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
     type: 'question'
     qidx: question.idx
     qnum: qnum
+    qcycle: qcycle
   }
   insertShowAnswerButton = ->
     body.append J('button.btn.btn-default.btn-lg#show_' + qnum).css(\display, \none).css('margin-right', '15px')/*.attr('disabled', true)*/.text('see solution').click (evt) ->
@@ -2242,6 +2350,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
     body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
       gotoNum qnum
       answers = getAnswerValue question.type, qnum
+      updateQuestionScore(qnum, answers)
       if isAnswerCorrect question, answers
         addlog {
           event: 'check'
@@ -2249,6 +2358,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
           correct: true
           qidx: question.idx
           answers: answers
+          numIncorrectAnswers: root.numIncorrectAnswers
           qnum: qnum
         }
         showIsCorrect qnum, true
@@ -2273,10 +2383,12 @@ insertQuestion = root.insertQuestion = (question, options) ->
           correct: false
           qidx: question.idx
           answers: answers
+          numIncorrectAnswers: root.numIncorrectAnswers
           qnum: qnum
         }
         showIsCorrect qnum, false
         questionIncorrect question
+        root.numIncorrectAnswers += 1
         #setDefaultButton qnum, \watch
         showAnswer qnum
         (getBody qnum).data(\answered, true)
@@ -2344,6 +2456,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
       hideButton qnum, \next
       clearNeedAnswerForQuestion qnum
       disableAnswerOptions qnum
+      updateRecencyInfo qnum
       #disableQuestion qnum
       #showButton qnum, \watch
       insertQuestion getNextQuestion()
@@ -2441,8 +2554,17 @@ root.replaying-logs = false
 replayLogs = root.replayLogs = (logs) ->
   root.replaying-logs = true
   for log in logs
+    if log.course != root.coursename
+      continue
     console.log 'replaying: ' + JSON.stringify(log)
     switch log.event
+    | \insertquestion =>
+      counterSet \qnum, log.qnum
+      counterSet \qcycle, log.qcycle
+    | \questionscore =>
+      root.question_scores[log.qidx] = log.scoreinfo
+    | \recencyinfo =>
+      root.question_recency_info[log.qidx] = log.recencyinfo
     | \videopartsseen =>
       for vidname,compressedData of log.partsseen
         decompressed = decompressBinaryArray compressedData
@@ -2782,6 +2904,6 @@ $(document).ready ->
         root.logged-data = logs
         replayLogs(logs)
         root.logging-disabled = false
-      insertQuestion getNextQuestion(), {immediate: true}
+      insertQuestion getNextQuestion(), {immediate: true, qnum: counterCurrent('qnum'), qcycle: counterCurrent('qcycle')}
       ensureLoggedToServer(root.logged-data, 'logged-data')
 
