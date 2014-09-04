@@ -259,6 +259,8 @@ addlog = root.addlog = (logdata) ->
     data.timeloc = new Date().toString()
   if not data.started?
     data.started = root.time-started
+  if not data.qnumcurq?
+    data.qnumcurq = getCurrentQuestionQnum()
   if not data.automatic? and root.automatic-trigger
     data.automatic = true
     root.automatic-trigger = false
@@ -378,6 +380,8 @@ isCurrentPortionPreviouslySeen = root.isCurrentPortionPreviouslySeen = (qnum) ->
 skipToEndOfSeenPortion = root.skipToEndOfSeenPortion = (qnum) ->
   #if not isCurrentPortionPreviouslySeen qnum
   #  return
+  if root.platform == 'invideo'
+    return
   curtime = Math.round $('#video_' + qnum)[0].currentTime
   vidname = getVidname qnum
   vidpart = getVidpart qnum
@@ -466,6 +470,8 @@ updateSeenIntervals = (vidname, vidpart) ->
   #$('.videoprogress_' + vidnamepart).text(toPercent(percent-viewed) + '% seen')
   setWatchButtonProgress vidname, vidpart, percent-viewed
   seen-intervals = getVideoSeenIntervals vidname, vidpart
+  if root.platform == 'invideo'
+    return
   setSeenIntervals vidname, vidpart, seen-intervals
 
 setSubtitleText = root.setSubtitleText = (vidname, vidpart, text) ->
@@ -487,6 +493,8 @@ updateSubtitle = root.updateSubtitle = (vidname, vidpart, curtime) ->
         setSubtitleText vidname, vidpart, line.text
         return
   setSubtitleText vidname, vidpart, ''
+
+root.most-recent-time-quiz-skipped = {}
 
 timeUpdatedReal = (qnum) ->
   video = $("\#video_#qnum")
@@ -513,6 +521,15 @@ timeUpdatedReal = (qnum) ->
     markVideoSecondWatched vidname, vidpart, curtime
     updateSubtitle vidname, vidpart, curtime
     updateCurrentTimeText vidname, vidpart
+    if root.platform == 'invideo'
+      for partinfo,partidx in root.video_info[vidname].parts[0 til -1] # skip the last
+        partend = toSeconds partinfo.end
+        if partend < curtime < partend + 0.7
+          skippedtime = root.most-recent-time-quiz-skipped[vidname + '_' + partidx]
+          if skippedtime? and Date.now() < skippedtime + 1300 # just finished the in-video quiz
+            continue
+          pauseVideo()
+          showInVideoQuiz(vidname, partidx)
   updateTickLocation qnum
   if isCurrentPortionPreviouslySeen qnum
     (getVideo vidname, vidpart).find(\.skipseen).show()
@@ -537,7 +554,15 @@ seekVideoToPercent = (percent) ->
   video = $(\.activevideo)
   if not video? or not video.length? or video.length < 1
     return
-  video[0].currentTime = percent * video[0].duration
+  newtime = percent * video[0].duration
+  addlogvideo {
+    event: \seek
+    subevent: \seekVideoToPercent
+    percent
+    newtime
+  }
+  hideInVideoQuiz()
+  video[0].currentTime = newtime
 
 seekVideoTo = (time) ->
   video = $(\.activevideo)
@@ -546,22 +571,24 @@ seekVideoTo = (time) ->
   addlogvideo {
     event: \seek
     subevent: \seekVideoTo
-    offset: time
     newtime: time
   }
+  hideInVideoQuiz()
   video[0].currentTime = time
 
 seekVideoByOffset = (offset) ->
   video = $(\.activevideo)
   if not video? or not video.length? or video.length < 1
     return
+  newtime = video[0].currentTime + offset
   addlogvideo {
     event: \seek
     subevent: \seekVideoByOffset
-    offset: offset
-    newtime: video[0].currentTime + offset
+    offset
+    newtime
   }
-  video[0].currentTime += offset
+  hideInVideoQuiz()
+  video[0].currentTime = newtime
 
 playPauseVideo = ->
   video = $(\.activevideo)
@@ -886,7 +913,7 @@ insertVideo = (vidname, vidpart, options) ->
   title = root.video_info[vidname].title
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title
-  if vidpart?
+  if vidpart? and not options.nopart
     numparts = root.video_info[vidname].parts.length
     if vidpart == 0
       if numparts > 1
@@ -934,8 +961,17 @@ insertVideo = (vidname, vidpart, options) ->
     #  , 300
     .on 'loadedmetadata', (evt) ->
       this.currentTime = start
+      addlogvideo {
+        event: \loadedmetadata
+        newstart: start
+      }
     .on 'ended', (evt) ->
       this.pause()
+      addlogvideo {
+        event: \ended
+        newstart: start
+      }
+      hideInVideoQuiz()
       #this.currentTime = 0
       this.currentTime = start
       #gotoNum getCurrentQuestionQnum()
@@ -970,7 +1006,8 @@ insertVideo = (vidname, vidpart, options) ->
     }
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).css(\pointer-events, \none).text fulltitle
-  video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css({pointer-events: \none, color: \white, margin-left: \30px, font-size: \24px}).text '0% seen'
+  if not options.noprogressdisplay
+    video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css({pointer-events: \none, color: \white, margin-left: \30px, font-size: \24px}).text '0% seen'
   video-footer = J(\.videofooter)
     .css {
       width: \100%
@@ -1180,7 +1217,9 @@ insertVideo = (vidname, vidpart, options) ->
       makeVideoActive qnum
       playVideo()
     #.text 'play button is here'
-  body.append [video-header, video-skip, subtitle-display-container, playbutton-overlay, video, video-footer]
+  body.append [video-header, subtitle-display-container, playbutton-overlay, video, video-footer]
+  if not options.novideoskip
+    body.append video-skip
   if options.quizzes
     console.log 'insertVideo options.quizzes is true!'
     console.log 'vidpart is:'
@@ -1193,6 +1232,8 @@ insertVideo = (vidname, vidpart, options) ->
         return
       quiz-overlay = J(\#quizoverlay_ + vidname + '_' + vidpartidx)
         .addClass(\quizoverlay)
+        .data('quizvidname', vidname)
+        .data('quizvidpart', vidpartidx)
         .css {
           position: \absolute
           left: \0px
@@ -1208,7 +1249,7 @@ insertVideo = (vidname, vidpart, options) ->
         }
       body.append quiz-overlay
       insertInVideoQuiz question-for-quiz-overlay[0], body, vidpartidx
-  if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
+  if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0) and not options.noprevvideo
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
     view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> previous video').click (evt) ->
       console.log 'do not understand video'
@@ -2365,10 +2406,28 @@ updateRecencyInfo = root.updateRecencyInfo = (qnum) ->
 root.numIncorrectAnswers = 0
 
 showInVideoQuiz = root.showInVideoQuiz = (vidname, vidpart) ->
-   $('#quizoverlay_' + vidname + '_' + vidpart).show()
+  if root.platform == 'invideo'
+    quiz-overlay = $('#quizoverlay_' + vidname + '_' + vidpart)
+    if quiz-overlay.filter(':visible').length > 0
+      return
+    quiz-overlay.show()
+    addlogvideo {
+      event: \quizshow
+      quizvidname: vidname
+      quizvidpart: vidpart
+    }
 
 hideInVideoQuiz = root.hideInVideoQuiz = ->
-  $('.quizoverlay').hide()
+  if root.platform == 'invideo'
+    quiz-overlay = $('.quizoverlay')
+    if quiz-overlay.filter(':visible').length == 0
+      return
+    quiz-overlay.hide()
+    addlogvideo {
+      event: \quizhide
+      quizvidname: quiz-overlay.data(\quizvidname)
+      quizvidpart: quiz-overlay.data(\quizvidpart)
+    }
 
 insertInVideoQuiz = root.insertInVideoQuiz = (question, video, vidpart) ->
   vidname = video.data(\vidname)
@@ -2443,16 +2502,30 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qidx: question.idx
         qnum: qnum
       }
+  quizvidname = question.videos[0].name
+  quizvidpart = question.videos[0].part
   insertInVideoSubmitButton = ->
     body.append J('button.btn.btn-primary.btn-lg#submit_' + qnum).css('margin-right', '15px').html('<span class="glyphicon glyphicon-check"></span> submit answer').click (evt) ->
       console.log 'in video submit button clicked'
       answers = getAnswerValue question.type, qnum
       isCorrect = isAnswerCorrect question, answers
+      partialscore = getPartialScore qnum
       if isCorrect
         showIsCorrect qnum, true, {correcttext: ''}
         hideButton qnum, \submit
         hideButton qnum, \skip
         showButton qnum, \continue
+        addlogvideo {
+          event: \check
+          qidx: question.idx
+          questionqnum: qnum
+          correct: true
+          partialscore: partialscore
+          answers: answers
+          numIncorrectAnswers: root.numIncorrectAnswers
+          quizvidname
+          quizvidpart
+        }
       else
         root.numIncorrectAnswers += 1
         if root.numIncorrectAnswers >= 3
@@ -2460,16 +2533,55 @@ insertQuestion = root.insertQuestion = (question, options) ->
           hideButton qnum, \skip
           hideButton qnum, \submit
           showButton qnum, \continue
+          addlogvideo {
+            event: \check
+            qidx: question.idx
+            questionqnum: qnum
+            correct: false
+            partialscore: partialscore
+            answers: answers
+            numIncorrectAnswers: root.numIncorrectAnswers
+            quizvidname
+            quizvidpart
+          }
+          showAnswer qnum
         else
           showIsCorrect qnum, false, {incorrecttext: 'Try again'}
+          addlogvideo {
+            event: \check
+            qidx: question.idx
+            questionqnum: qnum
+            correct: false
+            partialscore: partialscore
+            answers: answers
+            numIncorrectAnswers: root.numIncorrectAnswers
+            quizvidname
+            quizvidpart
+          }
   insertInVideoContinueButton = ->
     body.append J('button.btn.btn-primary.btn-lg#continue_' + qnum).css('margin-right', '15px').css('display', 'none').html('<span class="glyphicon glyphicon-forward"></span> continue').click (evt) ->
       console.log 'in video continue button clicked'
+      addlogvideo {
+        event: \continue
+        qidx: question.idx
+        questionqnum: qnum
+        quizvidname
+        quizvidpart
+      }
+      root.most-recent-time-quiz-skipped[quizvidname + '_' + quizvidpart] = Date.now()
       hideInVideoQuiz()
       playVideo()
   insertInVideoSkipButton = ->
     body.append J('button.btn.btn-primary.btn-lg#skip_' + qnum).css('margin-right', '15px').html('<span class="glyphicon glyphicon-forward"></span> skip question').click (evt) ->
       console.log 'in video skip button clicked'
+      addlogvideo {
+        event: \skip
+        qidx: question.idx
+        questionqnum: qnum
+        quizvidname
+        quizvidpart
+      }
+      root.most-recent-time-quiz-skipped[quizvidname + '_' + quizvidpart] = Date.now()
       hideInVideoQuiz()
       playVideo()
   insertCheckAnswerButton = ->
@@ -2506,6 +2618,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         (getBody qnum).data(\answered, true)
         (getBody qnum).data(\correct, true)
       else
+        root.numIncorrectAnswers += 1
         addlog {
           event: 'check'
           type: 'button'
@@ -2518,7 +2631,6 @@ insertQuestion = root.insertQuestion = (question, options) ->
         }
         showIsCorrect qnum, false
         questionIncorrect question
-        root.numIncorrectAnswers += 1
         #setDefaultButton qnum, \watch
         showAnswer qnum
         (getBody qnum).data(\answered, true)
@@ -3132,7 +3244,7 @@ courseraInitialize = ->
         root.current-video-vidname = vidname
         root.current-video-vidpart = vidpart
         console.log vidname
-        newvideo = insertVideo vidname, vidpart, {nopart: true, quizzes: true}
+        newvideo = insertVideo vidname, vidpart, { nopart: true, quizzes: true, noprevvideo: true, noprogressdisplay: true, novideoskip: true }
         $('.rightbar').append newvideo
         root.current-video-qnum = getVideo(vidname, vidpart).data \qnum
         addlog {
