@@ -14,10 +14,16 @@ MongoClient = require(\mongodb).MongoClient
 getMongoDbReal = (callback) ->
   {mongourl} = JSON.parse(fs.readFileSync(\mongologin.json, \utf-8))
   #mongourl = 
-  MongoClient.connect mongourl, (err, db) ->
+  MongoClient.connect mongourl, {
+    auto_reconnect: true
+    poolSize: 20
+    socketOptions: {keepAlive: 1}
+  }, (err, db) ->
     if err
       throw err
     callback db
+
+#getMongoDb = getMongoDbReal
 
 getMongoDb = (callback) ->
   if root.mongo-db?
@@ -29,7 +35,7 @@ getMongoDb = (callback) ->
 
 getLogsCollectionReal = (callback) ->
   getMongoDb (db) ->
-    callback db.collection('logs')
+    callback db.collection('logs'), db
 
 getLogsCollection = getLogsCollectionReal
 
@@ -65,6 +71,7 @@ app.post '/clearlog', (req, res) ->
       if user-to-logidx[username]?
         delete user-to-logidx[username]
       res.send 'done'
+      #db.close()
 
 app.post '/testpost', (req, res) ->
   res.send 'yay post! you sent: ' + JSON.stringify(req.body)
@@ -82,6 +89,7 @@ getLogIdxForUsernameReal = (username, callback) ->
       if topidx >= 0
         user-to-logidx[username] = topidx
       callback topidx
+      #db.close()
 
 getLogIdxForUsername = (username, callback) ->
   if user-to-logidx[username]?
@@ -135,6 +143,7 @@ app.post '/addlog', (req, res) ->
           console.log err
           getLogIdxForUsernameReal username, (topidx) ->
             res.send topidx.toString()
+        #db.close()
 
           
 
@@ -145,11 +154,13 @@ app.get '/viewlog', (req, res) ->
   getLogsCollection (logs) ->
     logs.find({username: req.query.username}).sort({_id: 1}).toArray (err, results) ->
       res.send JSON.stringify(results)
+      #db.close()
 
 app.get '/viewlogall', (req, res) ->
   getLogsCollection (logs) ->
     logs.find().sort({_id: 1}).toArray (err, results) ->
       res.send JSON.stringify(results)
+      #db.close()
 
 get_index = (req, res) ->
   res.render 'index', {}
