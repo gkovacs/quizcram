@@ -251,10 +251,14 @@ addlog = root.addlog = (logdata) ->
     data.username = root.username
   if not data.course?
     data.course = root.coursename
+  if not data.platform?
+    data.platform = root.platform
   if not data.time?
     data.time = Date.now()
   if not data.timeloc?
     data.timeloc = new Date().toString()
+  if not data.started?
+    data.started = root.time-started
   if not data.automatic? and root.automatic-trigger
     data.automatic = true
     root.automatic-trigger = false
@@ -491,6 +495,7 @@ timeUpdatedReal = (qnum) ->
   vidpart = getVidpart qnum
   qnum-current = getCurrentQuestionQnum()
   tryClearWaitBeforeAnswering(qnum-current)
+  #curqidx = getQidx qnum-current
   #fixVideoHeight video
   /*
   if not video.data('duration')?
@@ -540,7 +545,7 @@ seekVideoTo = (time) ->
   addlogvideo {
     event: \seek
     subevent: \seekVideoTo
-    offset: offset
+    offset: time
     newtime: time
   }
   video[0].currentTime = time
@@ -1534,12 +1539,27 @@ maxidx = (list) ->
       maxidx = idx
   return maxidx
 
-getNextQuestion = ->
+getNextQuestionOld = ->
   now = Date.now()
   scores = [scoreQuestion(now, question) for question,idx in root.question_progress]
   qidx = maxidx scores
   #qidx = Math.random() * root.questions.length |> Math.floor
   return root.questions[qidx]
+
+getNextQuestion = ->
+  curqnum = getCurrentQuestionQnum()
+  curbody = getBody curqnum
+  curqidx = -1
+  if curbody? and curbody.data(\qidx)? and isFinite(curbody.data(\qidx))
+    curqidx = curbody.data(\qidx)
+  scores = [{score: getMasteryScoreForQuestion(qidx), qidx: qidx} for qidx in [0 til root.questions.length] when qidx != curqidx]
+  scores = [{score: score, qidx: qidx} for {score, qidx} in scores when score != null]
+  scores.sort (a,b) ->
+    return a.score - b.score
+  new-qidx = scores[0].qidx
+  console.log 'new-qidx is: ' + new-qidx
+  console.log 'question is: ' + root.questions[new-qidx]
+  return root.questions[new-qidx]
 
 interleavedConcat = (list1, list2) ->
   output = []
@@ -2235,9 +2255,18 @@ computeScoreFromHistory = (qnumhistory, scorehistory) ->
     for score in scorehistory[qnum]
       total += power * score
       divisor += power
-    power *= 0.5
+    power = power * 0.5
   return total / divisor
 
+haveSeenQuestion = root.haveSeenQuestion = (qidx) ->
+  if root.question_scores[qidx]?
+    return true
+  return false
+
+getScoreForQuestion = root.getScoreForQuestion = (qidx) ->
+  if not root.question_scores[qidx]?
+    return 0
+  return root.question_scores[qidx].current
 
 updateQuestionScore = root.updateQuestionScore = (qnum) ->
   qidx = getQidx qnum
@@ -2269,6 +2298,33 @@ updateQuestionScore = root.updateQuestionScore = (qnum) ->
   #score = getScoreForAnswers question, answers
 
 root.question_recency_info = []
+
+getRecencyScoreForQuestion = root.getRecencyScoreForQuestion = (qidx) ->
+  # 0 = was inserted just now
+  # 1 = has been questions.length or more since it has been seen
+  if not root.question_recency_info[qidx]?
+    return 0
+  qcycle = root.question_recency_info[qidx].qcycle
+  cur-qcycle = counterCurrent \qcycle
+  cycles-since-seen = Math.min(root.questions.length, cur-qcycle - qcycle)
+  oldness-score = cycles-since-seen / root.questions.length
+  oldness-score = Math.max(0, Math.min(1, oldness-score))
+  return 1 - oldness-score
+
+getVideoScoreForQuestion = root.getVideoScoreForQuestion = (qidx) ->
+  vidinfo = root.questions[qidx].videos[0]
+  vidname = vidinfo.name
+  vidpart = vidinfo.part
+  return getVideoProgress vidname, vidpart
+
+getMasteryScoreForQuestion = root.getMasteryScoreForQuestion = (qidx) ->
+  # 1 = mastered (no need to review), 0 = haven't tried yet, null = should not attempt it at all
+  questionscore = getScoreForQuestion qidx # 0 = answered the worst, 1 = answered the best
+  recencyscore = getRecencyScoreForQuestion qidx # 0 = oldest, 1 = most recent
+  videoscore = getVideoScoreForQuestion qidx # 0 = haven't watched any, 1 = watched 100%
+  if qidx == 0 or haveSeenQuestion(qidx) or haveSeenQuestion(qidx - 1)
+    return Math.max(0, Math.min(1, (questionscore + recencyscore + videoscore) / 3))
+  return null
 
 updateRecencyInfo = root.updateRecencyInfo = (qnum) ->
   qidx = getQidx qnum
@@ -2319,9 +2375,16 @@ insertQuestion = root.insertQuestion = (question, options) ->
       padding-bottom: \10px
     }
   vidnamepart = getVidnamePartForQuestion(question)
-  question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
+  if question.exam
+    question-title = question.title
+  else
+    question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
   body.append J('div').css({font-size: \24px, padding-top: \10px}).text question-title
-  body.append J('#questionscore_' + qnum).text('0')
+  body.append J('.questionscore_' + question.idx).css({
+    #float: \right
+    #clear: \both
+    display: \none
+  }).text('Question Mastery Score:')
   body.append J('div').text question.text
   optionsdiv = J("\#options_#qnum")
   for option,idx in question.options
@@ -2350,12 +2413,14 @@ insertQuestion = root.insertQuestion = (question, options) ->
     body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
       gotoNum qnum
       answers = getAnswerValue question.type, qnum
-      updateQuestionScore(qnum, answers)
+      updateQuestionScore(qnum)
+      partialscore = getPartialScore(qnum)
       if isAnswerCorrect question, answers
         addlog {
           event: 'check'
           type: 'button'
           correct: true
+          partialscore: partialscore
           qidx: question.idx
           answers: answers
           numIncorrectAnswers: root.numIncorrectAnswers
@@ -2374,6 +2439,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
         disableAnswerOptions qnum
         #insertQuestion getNextQuestion()
         #(getButton qnum, \next).hide()
+        updateRecencyInfo qnum
         (getBody qnum).data(\answered, true)
         (getBody qnum).data(\correct, true)
       else
@@ -2381,6 +2447,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
           event: 'check'
           type: 'button'
           correct: false
+          partialscore: partialscore
           qidx: question.idx
           answers: answers
           numIncorrectAnswers: root.numIncorrectAnswers
@@ -2456,7 +2523,9 @@ insertQuestion = root.insertQuestion = (question, options) ->
       hideButton qnum, \next
       clearNeedAnswerForQuestion qnum
       disableAnswerOptions qnum
-      updateRecencyInfo qnum
+      if question.selfrate
+        updateQuestionScore(qnum)
+        updateRecencyInfo qnum
       #disableQuestion qnum
       #showButton qnum, \watch
       insertQuestion getNextQuestion()
@@ -2472,30 +2541,29 @@ insertQuestion = root.insertQuestion = (question, options) ->
   body.append J("span\#iscorrect_#qnum").html('')
   body.append J("span\#explanation_#qnum").css(\margin-left, \5px).html('')
   body.append J(\br)
-  insertWatchVideoButton(true)
-  insertCheckAnswerButton()
-  insertReviewVideoButton()
-  /*
-  if root.question_progress[question.idx].correct.length > 0
+  if not options.nobuttons
+    insertWatchVideoButton(true)
     insertCheckAnswerButton()
-    if not options.skip-video?
-      insertWatchVideoButton()
-  else
-    if not options.skip-video?
-      insertWatchVideoButton(true)
-    insertCheckAnswerButton()
-  */
-  #if root.question_progress[question.idx].correct.length > 0
-  #  insertSkipButton()
-  insertShowAnswerButton()
-  insertNextQuestionButton()
+    insertReviewVideoButton()
+    insertShowAnswerButton()
+    insertNextQuestionButton()
   #body.append J('.endquestion#endquestion_' + qnum).data(\qnum, qnum)
-  containerdiv = J(\.container_ + qnum).css({width: \100%}).append [
-    J(\.leftbar.leftbar_ + qnum).css({width: \30%, float: \left}).append(body),
-    J(\.rightbar.rightbar_ + qnum).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
-    J(\div).css({clear: \both})
-  ]
-  containerdiv.prependTo $(\#quizstream)
+  if options.nocontainer
+    containerdiv = J(\.container_ + qnum).css({width: \100%}).append [
+      J(\.leftbar.leftbar_ + qnum).css({width: \100%, float: \left}).append(body),
+      J(\.rightbar.rightbar_ + qnum).css({width: \0%, float: \right}).append(J('#prebody_' + qnum)),
+      J(\div).css({clear: \both})
+    ]
+  else
+    containerdiv = J(\.container_ + qnum).css({width: \100%}).append [
+      J(\.leftbar.leftbar_ + qnum).css({width: \30%, float: \left}).append(body),
+      J(\.rightbar.rightbar_ + qnum).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
+      J(\div).css({clear: \both})
+    ]
+  if options.append
+    containerdiv.appendTo $(\#quizstream)
+  else
+    containerdiv.prependTo $(\#quizstream)
   #$('#quizstream').prepend J('#prebody_' + qnum)
   #body.prependTo($('#quizstream'))
   autoShowVideo = ->
@@ -2516,6 +2584,8 @@ insertQuestion = root.insertQuestion = (question, options) ->
   scrambleAnswerOptions qnum
   updateWatchButtonProgress(vidname, vidpart)
   setTimeout ->
+    if options.novideo
+      return
     insertVideoHere()
     if options.immediate and question.autoshowvideo
       #autoShowVideo()
@@ -2552,9 +2622,13 @@ isScrollAtBottom = ->
 root.replaying-logs = false
 
 replayLogs = root.replayLogs = (logs) ->
+  if root.platform != 'quizcram'
+    return
   root.replaying-logs = true
   for log in logs
     if log.course != root.coursename
+      continue
+    if log.platform != root.platform
       continue
     console.log 'replaying: ' + JSON.stringify(log)
     switch log.event
@@ -2681,10 +2755,13 @@ updateUrlBar = ->
     pdict = {
       user: root.username
       course: root.coursename
+      platform: root.platform
       started: root.time-started
     }
     if root.logging-disabled-globally
       pdict.nolog = true
+    if root.limit-numquestions
+      pdict.numquestions = root.limit-numquestions
     root.baseparams = '?' + $.param pdict
   elapsed = millisecToDisplayable(Date.now() - root.time-started)
   history.replaceState {}, '', root.baseparams + '#elapsed=' + elapsed
@@ -2718,6 +2795,7 @@ updateTimeStarted = ->
     root.time-started = Date.now()
 
 root.coursename = null
+root.platform = 'quizcram'
 
 updateCourseName = root.updateCourseName = ->
   root.coursename = getUrlParameters().coursename ? getUrlParameters().course
@@ -2773,40 +2851,45 @@ updateQuestions = root.updateQuestions = ->
       vidinfo = root.video_info[vidname]
       question.course = vidinfo.course
 
+updateExamQuestions = root.updateExamQuestions = ->
+  for question,idx in root.exam_questions
+    question.idx = idx
+    question.exam = true
+    if question.course == '1' or question.course == 1
+      question.course = 'neuro_1'
+    if question.course == '2' or question.course == 2
+      question.course = 'neuro_2'
+
+root.limit-numquestions = null
+
 updateOptions = ->
   params = getUrlParameters()
   if params.nolog? and params.nolog != 'false'
     root.logging-disabled-globally = true
+  if params.numquestions? and isFinite(parseInt(params.numquestions))
+    root.limit-numquestions = parseInt(params.numquestions)
+  if params.platform?
+    root.platform = params.platform
 
-$(document).ready ->
-  updateOptions()
-  updateUsername()
-  updateTimeStarted()
-  updateCourseName()
-  #updateUrlBar()
-  updateVideos()
-  filterVideos()
-  downloadAndParseAllSubtitles()
-  createQuestionsForVideosWithoutQuizzes()
-  updateQuestions()
-  filterQuestions()
+updateMasteryScoreDisplay = root.updateMasteryScoreDisplay = (qidx) ->
+  scoredisplay = $('.questionscore_' + qidx)
+  if scoredisplay.length < 1
+    return
+  scoredisplay.text 'Question Mastery Score:' + toPercent(getMasteryScoreForQuestion(qidx)) + '%'
+
+updateMasteryScoreDisplayProcess = ->
+  setInterval ->
+    for curqidx in [0 til root.questions.length]
+      updateMasteryScoreDisplay curqidx
+  , 1000
+
+updateUrlBarProcess = ->
   setInterval ->
     #updateUrlHash()
     updateUrlBar()
-  , 1000
-  console.log 'ready'
-  fixVideoHeightProcess()
-  #questionAlwaysShownProcess()
-  /*
-  $(document).mousedown (evt) ->
-    console.log 'document mousedown'
-    resetButtonFill()
-    if isVideoFocused()
-      console.log 'docuemtn mousedown video is focused'
-      if not isMouseInVideo(evt)
-        console.log 'document mousedown setvideofocused false'
-        setVideoFocused(false)
-  */
+  , 10000
+
+setKeyBindings = ->
   $(document).keydown (evt) ->
     key = evt.which
     if $('.activevideo').length > 0 # in video
@@ -2829,6 +2912,22 @@ $(document).ready ->
       | _ => console.log key; return true
       evt.preventDefault()
       return false
+
+quizCramInitialize = ->
+  updateMasteryScoreDisplayProcess()
+  console.log 'ready'
+  fixVideoHeightProcess()
+  #questionAlwaysShownProcess()
+  /*
+  $(document).mousedown (evt) ->
+    console.log 'document mousedown'
+    resetButtonFill()
+    if isVideoFocused()
+      console.log 'docuemtn mousedown video is focused'
+      if not isMouseInVideo(evt)
+        console.log 'document mousedown setvideofocused false'
+        setVideoFocused(false)
+  */
   /*
   $(document).mousewheel (evt) ->
     try
@@ -2906,4 +3005,141 @@ $(document).ready ->
         root.logging-disabled = false
       insertQuestion getNextQuestion(), {immediate: true, qnum: counterCurrent('qnum'), qcycle: counterCurrent('qcycle')}
       ensureLoggedToServer(root.logged-data, 'logged-data')
+
+courseraInitialize = ->
+  console.log 'coursera initialize'
+
+testExamInitialize = ->
+  for question in root.questions
+    if question.selfrate
+      continue
+    console.log JSON.stringify(question)
+    insertQuestion question, {immediate: true, novideo: true, append: true, nobuttons: true, nocontainer: true}
+  #randomizeChildrenOrder $('#quizstream')
+  submit-button = J('button.btn.btn-primary.btn-lg#submitquiz').html('<span class="glyphicon glyphicon-check"></span> Submit Quiz').click (evt) ->
+    console.log 'submit quiz clicked'
+    numcorrect = 0
+    numincorrect = 0
+    idxcorrect = []
+    idxincorrect = []
+    partialscores = []
+    for panel in $('.panel-body-new')
+      qnum = $(panel).data \qnum
+      qidx = getQidx qnum
+      question = root.questions[qidx]
+      answers = getAnswerValue question.type, qnum
+      isCorrect = isAnswerCorrect question, answers
+      if isCorrect
+        numcorrect += 1
+        idxcorrect.push qidx
+      else
+        numincorrect += 1
+        idxincorrect.push qidx
+      showIsCorrect qnum, isCorrect
+      partialscore = getPartialScore qnum
+      partialscores.push partialscore
+      addlog {
+        event: \testexamcheck
+        correct: isCorrect
+        partialscore: partialscore
+        qidx: question.idx
+        answers: answers
+        qnum: qnum
+      }
+    addlog {
+      event: \submittestexam
+      numcorrect: numcorrect
+      numincorrect: numincorrect
+      idxcorrect: idxcorrect
+      idxincorrect: idxincorrect
+      partialscores: partialscores
+    }
+  $('#quizstream').append submit-button
+  getlog (logs) ->
+    if logs? and logs.length > 0
+      root.logged-data = logs
+    ensureLoggedToServer(root.logged-data, 'logged-data')
+
+#randomizeChildrenOrder = (container) ->
+#  throw 'not implemented yet: randomizeChildrenOrder'
+
+testQuizInitialize = ->
+  for question in root.questions
+    if question.selfrate
+      continue
+    console.log JSON.stringify(question)
+    insertQuestion question, {immediate: true, novideo: true, append: true, nobuttons: true, nocontainer: true}
+  #randomizeChildrenOrder $('#quizstream')
+  submit-button = J('button.btn.btn-primary.btn-lg#submitquiz').html('<span class="glyphicon glyphicon-check"></span> Submit Quiz').click (evt) ->
+    console.log 'submit quiz clicked'
+    numcorrect = 0
+    numincorrect = 0
+    idxcorrect = []
+    idxincorrect = []
+    partialscores = []
+    for panel in $('.panel-body-new')
+      qnum = $(panel).data \qnum
+      qidx = getQidx qnum
+      question = root.questions[qidx]
+      answers = getAnswerValue question.type, qnum
+      isCorrect = isAnswerCorrect question, answers
+      if isCorrect
+        numcorrect += 1
+        idxcorrect.push qidx
+      else
+        numincorrect += 1
+        idxincorrect.push qidx
+      showIsCorrect qnum, isCorrect
+      partialscore = getPartialScore qnum
+      partialscores.push partialscore
+      addlog {
+        event: \testquizcheck
+        correct: isCorrect
+        partialscore: partialscore
+        qidx: question.idx
+        answers: answers
+        qnum: qnum
+      }
+    addlog {
+      event: \submittestquiz
+      numcorrect: numcorrect
+      numincorrect: numincorrect
+      idxcorrect: idxcorrect
+      idxincorrect: idxincorrect
+      partialscores: partialscores
+    }
+  $('#quizstream').append submit-button
+  getlog (logs) ->
+    if logs? and logs.length > 0
+      root.logged-data = logs
+    ensureLoggedToServer(root.logged-data, 'logged-data')
+
+$(document).ready ->
+  updateOptions()
+  updateUsername()
+  updateTimeStarted()
+  updateCourseName()
+  #updateUrlBar()
+  updateVideos()
+  filterVideos()
+  downloadAndParseAllSubtitles()
+  if root.platform == 'quizcram'
+    createQuestionsForVideosWithoutQuizzes()
+  if root.platform == 'exam'
+    updateExamQuestions()
+    root.questions = root.exam_questions
+  else
+    updateQuestions()
+  filterQuestions()
+  if root.limit-numquestions != null
+    root.questions = root.questions[0 til root.limit-numquestions]
+    # this is incorrect - video_info is a dictionary not a list!
+  updateUrlBarProcess()
+  setKeyBindings()
+  switch root.platform
+  | 'quizcram' => quizCramInitialize()
+  | 'coursera' => courseraInitialize()
+  | 'exam' => testExamInitialize()
+  | 'quiz' => testQuizInitialize()
+  | _ => throw 'unknown platform name: ' + root.platform
 
