@@ -54,7 +54,7 @@ getAllDependencies = root.getAllDependencies = (videoname) ->
       output = output ++ getAllDependencies(x)
     return output
 
-getQuestionsForVideoPart = (vidname, vidpart) ->
+getQuestionsForVideoPart = root.getQuestionsForVideoPart = (vidname, vidpart) ->
   output = []
   for question in root.questions
     for video in question.videos
@@ -518,9 +518,10 @@ timeUpdatedReal = (qnum) ->
     (getVideo vidname, vidpart).find(\.skipseen).show()
   else
     (getVideo vidname, vidpart).find(\.skipseen).hide()
-  for curvidpart in [0 til root.video_info[vidname].parts.length]
-    if getVideo(vidname, curvidpart).length > 0
-      updateSeenIntervals vidname, curvidpart
+  if root.video_info[vidname]? and root.video_info[vidname].parts?
+    for curvidpart in [0 til root.video_info[vidname].parts.length]
+      if getVideo(vidname, curvidpart).length > 0
+        updateSeenIntervals vidname, curvidpart
 
 timeUpdated = root.timeUpdated = _.throttle timeUpdatedReal, 300
 
@@ -587,7 +588,7 @@ timeSinceVideoFocus = root.timeSinceVideoFocus = ->
     return 0
   return (Date.now() - video.data('timeVideoFocused')) / 1000
 
-getVideoPanel = (elem) ->
+getVideoPanel = root.getVideoPanel = (elem) ->
   while elem? and elem.length? and elem.length > 0 and elem.parent?
     if elem.hasClass(\videopanel)
       return elem
@@ -699,7 +700,7 @@ addStartMarker = root.addStartMarker = (vidname, vidpart, percentage, label-text
   tick = J(\.videostarttick.tick)
     .css {
       position: \absolute
-      z-index: \4
+      z-index: 6
       height: 'calc(100% + 1px)'
       width: \5px
       bottom: \0%
@@ -713,7 +714,7 @@ addStartMarker = root.addStartMarker = (vidname, vidpart, percentage, label-text
       position: \absolute
       display: \table
       overflow: \hidden
-      z-index: \4
+      z-index: 6
       height: \20px
       margin-left: \-15px
       padding-left: \3px
@@ -754,7 +755,7 @@ setTickPercentage = root.setTickPercentage = (vidname, vidpart, percentage) ->
     tick = J(\.videotick.tick)
       .css {
         position: \absolute
-        z-index: \5
+        z-index: 7
         height: \90%
         width: \5px
         top: \5%
@@ -774,7 +775,7 @@ setHoverTickPercentage = root.setHoverTickPercentage = (vidname, vidpart, percen
     tick = J(\.videohovertick.tick)
       .css {
         position: \absolute
-        z-index: \6
+        z-index: 8
         height: \90%
         width: \5px
         top: \5%
@@ -836,8 +837,12 @@ getbot = root.getbot = (elem) ->
     elem = $(elem)
   return elem.offset().top + elem.height()
 
-insertVideo = (vidname, vidpart, reasonForInsertion) ->
+insertVideo = (vidname, vidpart, options) ->
+  if not options?
+    options = {}
   [start,end] = getVideoStartEnd vidname, vidpart
+  if options.nopart
+    start = 0
   qnum = counterNext 'qnum'
   vidnamepart = toVidnamePart(vidname, vidpart)
   outer-body = J('.outerbody')
@@ -956,6 +961,7 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       position: \absolute
       z-index: \2
       top: \0px
+      height: \38px
       padding-left: \10px
       padding-top: \2px
       padding-bottom: \2px
@@ -965,8 +971,6 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).css(\pointer-events, \none).text fulltitle
   video-header.append J('span#progress_' + qnum).addClass('videoprogress_' + vidnamepart).css({pointer-events: \none, color: \white, margin-left: \30px, font-size: \24px}).text '0% seen'
-  if reasonForInsertion?
-    video-header.append $(reasonForInsertion).addClass('insertionreason').css(\display, \none).css(\font-size, \24px).css(\color, \white).css(\margin-left, \30px) #.css(\float, \left).css(\margin-top, \10px)
   video-footer = J(\.videofooter)
     .css {
       width: \100%
@@ -1177,6 +1181,33 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
       playVideo()
     #.text 'play button is here'
   body.append [video-header, video-skip, subtitle-display-container, playbutton-overlay, video, video-footer]
+  if options.quizzes
+    console.log 'insertVideo options.quizzes is true!'
+    console.log 'vidpart is:'
+    console.log vidpart
+    console.log 'vidname is:'
+    console.log vidname
+    for let vidpartidx in [0 to vidpart]
+      question-for-quiz-overlay = getQuestionsForVideoPart(vidname, vidpartidx)
+      if not question-for-quiz-overlay? or question-for-quiz-overlay.length < 1
+        return
+      quiz-overlay = J(\#quizoverlay_ + vidname + '_' + vidpartidx)
+        .addClass(\quizoverlay)
+        .css {
+          position: \absolute
+          left: \0px
+          right: \0px
+          top: \40px
+          bottom: \40px
+          border: '3px solid black'
+          display: \none
+          #width: \100%
+          #height: \100%
+          z-index: 5
+          background-color: \white
+        }
+      body.append quiz-overlay
+      insertInVideoQuiz question-for-quiz-overlay[0], body, vidpartidx
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0)
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
     view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> previous video').click (evt) ->
@@ -1226,11 +1257,15 @@ insertVideo = (vidname, vidpart, reasonForInsertion) ->
     if vidpart?
       for part-idx in [0 to vidpart]
         start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
-        addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", (part-idx == vidpart)
-    else
-      for part-idx in [0 til root.video_info[vidname].parts.length]
-        start-time-for-part = toSeconds root.video_info[vidname].parts[part-idx].start
-        addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", false
+        isCurrentPart = part-idx == vidpart
+        if options.nopart
+          isCurrentPart = false
+        if options.quizzes
+          if part-idx == 0
+            continue
+          addStartMarker vidname, vidpart, start-time-for-part / end, "quiz #{part-idx}", false
+        else
+          addStartMarker vidname, vidpart, start-time-for-part / end, "part #{part-idx + 1}", isCurrentPart
   outer-body.append body
   return outer-body #body
 
@@ -1332,7 +1367,7 @@ insertReviewForQuestion = (qnum) ->
   if question.videos?
     for vidinfo in question.videos
       #$('#quizstream').append insertVideo vidinfo.name, vidinfo.part, "<h3>(to help you understand <a href='\#body_#{qnum}' onclick='setVideoFocused(false)'>#{question.title}</a>)</h3>"
-      insertBefore qnum, (insertVideo vidinfo.name, vidinfo.part, "<span>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)</span>")
+      insertBefore qnum, (insertVideo vidinfo.name, vidinfo.part)
       addVideoDependsOnQuestion qnum, counterCurrent(\qnum)
       body.data \video, counterCurrent(\qnum)
 
@@ -1854,19 +1889,27 @@ haveInsertedReview = (qnum) ->
 reviewInserted = (qnum) ->
   root.inserted-reviews[qnum] = true
 
-showIsCorrect = (qnum, isCorrect) ->
+showIsCorrect = (qnum, isCorrect, options) ->
+  if not options?
+    options = {}
   qidx = getQidx qnum
   question = root.questions[qidx]
   feedback = J('span')
   if isCorrect
     feedback.append J('b').css('color', 'green').text 'Correct'
     if not question.explanation? or question.explanation == '(see correct answers above)'
-      $("\#explanation_#qnum").text 'Move on to the next video!'
+      correcttext = 'Move on to the next video!'
+      if options.correcttext?
+        correcttext = options.correcttext
+      $("\#explanation_#qnum").text correcttext
     else
       $("\#explanation_#qnum").text question.explanation
   else
     feedback.append J('b').css('color', 'red').text 'Incorrect'
-    $("\#explanation_#qnum").text 'We suggest you watch the video and try answering again, or see solution'
+    incorrecttext = 'We suggest you watch the video and try answering again, or see solution'
+    if options.incorrecttext?
+      incorrecttext = options.incorrecttext
+    $("\#explanation_#qnum").text incorrecttext
   #feedback.append question.explanation
   feedback-display = $("\#iscorrect_#qnum")
   feedback-display.html ''
@@ -2040,6 +2083,9 @@ getButton = root.getButton = (qnum, buttontype) ->
   | \watch => $("\#watch_#qnum")
   | \next => $("\#next_#qnum")
   | \review => $("\#review_#qnum")
+  | \skip => $("\#skip_#qnum")
+  | \continue => $("\#continue_#qnum")
+  | \submit => $("\#submit_#qnum")
   | _ => throw 'unknown button type ' + buttontype
 
 showButton = (qnum, buttontype) ->
@@ -2106,7 +2152,6 @@ showChildVideoForVideo = (qnum) ->
       insertBefore qnum, (insertVideo dvidname, dvidpart, "<h3>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{vidname}</span>)</h3>")
     */
     placeVideoBefore dvidname, dvidpart, prebody-qnum
-    setInsertionReasonAsVideo dvidname, dvidpart, vidname, vidpart
     addVideoDependsOnQuestion qnum, counterCurrent(\qnum)
     body = getBody qnum
     body.data \video, counterCurrent(\qnum)
@@ -2145,28 +2190,6 @@ getVideo = root.getVideo = (vidname, vidpart) ->
     return root.vidnamepart-to-videos[vidnamepart]
   return $('.video_' + vidnamepart)
 
-setInsertionReasonAs = (vidname, vidpart, reason) ->
-  curvid = getVideo(vidname, vidpart)
-  curvid.find('.insertionreason').html(reason)
-
-setInsertionReasonAsQuestion = (vidname, vidpart, qnum) ->
-  qidx = getQidx qnum
-  question = root.questions[qidx]
-  lqnum = getCurrentQuestionQnum()
-  setInsertionReasonAs vidname, vidpart, "<span class='linklike' onclick='gotoNum(#{lqnum})'><span class='glyphicon glyphicon-share-alt'></span> go to current question</span>"
-  #setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>#{question.title}</span>)"
-
-setInsertionReasonAsVideo = (vidname, vidpart, pvidname, pvidpart) ->
-  pqnum = getVideo(pvidname, pvidpart).data(\qnum)
-  lqnum = getCurrentQuestionQnum()
-  setInsertionReasonAs vidname, vidpart,  "<span class='linklike' onclick='gotoNum(#{lqnum})'><span class='glyphicon glyphicon-share-alt'></span> go to current question</span>"
-  /*
-  if pvidpart?
-    setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#pqnum)'>#{pvidname} part #{pvidpart + 1}</span>)"
-  else
-    setInsertionReasonAs vidname, vidpart, "(to help you understand <span class='linklike' onclick='gotoNum(#pqnum)'>#{pvidname}</span>)"
-  */
-
 showVideo = (vidname, vidpart) ->
   curvid = getVideo(vidname, vidpart)
   gotoNum curvid.data(\qnum)
@@ -2179,7 +2202,6 @@ viewPreviousClip = (vidname, vidpart) ->
   dependency = getVideoDependencies(vidname, vidpart)[*-1]
   [dvidname,dvidpart] = dependency
   placeVideoBefore dvidname, dvidpart, prebody-qnum
-  setInsertionReasonAsVideo dvidname, dvidpart, vidname, vidpart
   showVideo dvidname, dvidpart
   playVideo()
 
@@ -2205,7 +2227,7 @@ placeVideoBefore = root.placeVideoBefore = (vidname, vidpart, qnum) ->
       #curvid.data(curvid-data)
       curvid.data(\prebody, qnum)
   else
-    newvideo = insertVideo vidname, vidpart, "<span>(to help you understand <span class='linklike' onclick='gotoNum(#qnum)'>Question Title</span>)</span>"
+    newvideo = insertVideo vidname, vidpart
     #$('#prebody_' + qnum).append newvideo
     appendWithSlideDown newvideo, $('#prebody_' + qnum)
     getVideo(vidname, vidpart).data(\prebody, qnum)
@@ -2342,6 +2364,18 @@ updateRecencyInfo = root.updateRecencyInfo = (qnum) ->
 
 root.numIncorrectAnswers = 0
 
+showInVideoQuiz = root.showInVideoQuiz = (vidname, vidpart) ->
+   $('#quizoverlay_' + vidname + '_' + vidpart).show()
+
+hideInVideoQuiz = root.hideInVideoQuiz = ->
+  $('.quizoverlay').hide()
+
+insertInVideoQuiz = root.insertInVideoQuiz = (question, video, vidpart) ->
+  vidname = video.data(\vidname)
+  target = video.find '#quizoverlay_' + vidname + '_' + vidpart
+  #target = $('#quizoverlay_' + vidname + '_' + vidpart)
+  insertQuestion question, { immediate: true, novideo: true, append: true, target: target, nobuttons: true, nocontainer: true, invideo: true, video: video }
+
 insertQuestion = root.insertQuestion = (question, options) ->
   options = {} if not options?
   if options.qnum?
@@ -2409,6 +2443,35 @@ insertQuestion = root.insertQuestion = (question, options) ->
         qidx: question.idx
         qnum: qnum
       }
+  insertInVideoSubmitButton = ->
+    body.append J('button.btn.btn-primary.btn-lg#submit_' + qnum).css('margin-right', '15px').html('<span class="glyphicon glyphicon-check"></span> submit answer').click (evt) ->
+      console.log 'in video submit button clicked'
+      answers = getAnswerValue question.type, qnum
+      isCorrect = isAnswerCorrect question, answers
+      if isCorrect
+        showIsCorrect qnum, true, {correcttext: ''}
+        hideButton qnum, \submit
+        hideButton qnum, \skip
+        showButton qnum, \continue
+      else
+        root.numIncorrectAnswers += 1
+        if root.numIncorrectAnswers >= 3
+          showIsCorrect qnum, false, {incorrecttext: 'See correct answer above'}
+          hideButton qnum, \skip
+          hideButton qnum, \submit
+          showButton qnum, \continue
+        else
+          showIsCorrect qnum, false, {incorrecttext: 'Try again'}
+  insertInVideoContinueButton = ->
+    body.append J('button.btn.btn-primary.btn-lg#continue_' + qnum).css('margin-right', '15px').css('display', 'none').html('<span class="glyphicon glyphicon-forward"></span> continue').click (evt) ->
+      console.log 'in video continue button clicked'
+      hideInVideoQuiz()
+      playVideo()
+  insertInVideoSkipButton = ->
+    body.append J('button.btn.btn-primary.btn-lg#skip_' + qnum).css('margin-right', '15px').html('<span class="glyphicon glyphicon-forward"></span> skip question').click (evt) ->
+      console.log 'in video skip button clicked'
+      hideInVideoQuiz()
+      playVideo()
   insertCheckAnswerButton = ->
     body.append J('button.btn.btn-primary.btn-lg#check_' + qnum).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-check"></span> check answer').click (evt) ->
       gotoNum qnum
@@ -2474,7 +2537,6 @@ insertQuestion = root.insertQuestion = (question, options) ->
         #  reviewInserted (counterCurrent \qnum)
   insertVideoHere = ->
     placeVideoBefore(vidname, vidpart, qnum)
-    setInsertionReasonAsQuestion(vidname, vidpart, qnum)
     showVideo(vidname, vidpart)
     setVideoFocused(true)
   insertWatchVideoButton = (autotrigger) ->
@@ -2541,6 +2603,10 @@ insertQuestion = root.insertQuestion = (question, options) ->
   body.append J("span\#iscorrect_#qnum").html('')
   body.append J("span\#explanation_#qnum").css(\margin-left, \5px).html('')
   body.append J(\br)
+  if options.invideo
+    insertInVideoSubmitButton()
+    insertInVideoSkipButton()
+    insertInVideoContinueButton()
   if not options.nobuttons
     insertWatchVideoButton(true)
     insertCheckAnswerButton()
@@ -2560,10 +2626,13 @@ insertQuestion = root.insertQuestion = (question, options) ->
       J(\.rightbar.rightbar_ + qnum).css({width: \70%, float: \right}).append(J('#prebody_' + qnum)),
       J(\div).css({clear: \both})
     ]
+  targetToAddQuestionTo = $(\#quizstream)
+  if options.target
+    targetToAddQuestionTo = options.target
   if options.append
-    containerdiv.appendTo $(\#quizstream)
+    containerdiv.appendTo targetToAddQuestionTo
   else
-    containerdiv.prependTo $(\#quizstream)
+    containerdiv.prependTo targetToAddQuestionTo
   #$('#quizstream').prepend J('#prebody_' + qnum)
   #body.prependTo($('#quizstream'))
   autoShowVideo = ->
@@ -2846,10 +2915,23 @@ downloadAndParseAllSubtitles = root.downloadAndParseAllSubtitles = ->
 updateQuestions = root.updateQuestions = ->
   for question,idx in root.questions
     question.idx = idx
+    if question.course == '1' or question.course == 1
+      question.course = 'neuro_1'
+    if question.course == '2' or question.course == 2
+      question.course = 'neuro_2'
+    if question.course != 'neuro_1' and question.course != 'neuro_2'
+      throw 'unknown course: ' + question.course
+    /*
     if not question.course?
       vidname = question.videos[0].name
       vidinfo = root.video_info[vidname]
+      if not vidinfo?
+        console.log 'no vidinfo!'
+        console.log vidname
+        console.log idx
+        console.log question
       question.course = vidinfo.course
+    */
 
 updateExamQuestions = root.updateExamQuestions = ->
   for question,idx in root.exam_questions
@@ -2859,6 +2941,8 @@ updateExamQuestions = root.updateExamQuestions = ->
       question.course = 'neuro_1'
     if question.course == '2' or question.course == 2
       question.course = 'neuro_2'
+    if question.course != 'neuro_1' and question.course != 'neuro_2'
+      throw 'unknown course: ' + question.course
 
 root.limit-numquestions = null
 
@@ -3006,8 +3090,69 @@ quizCramInitialize = ->
       insertQuestion getNextQuestion(), {immediate: true, qnum: counterCurrent('qnum'), qcycle: counterCurrent('qcycle')}
       ensureLoggedToServer(root.logged-data, 'logged-data')
 
+root.current-video-qnum = -1
+root.current-video-vidname = null
+root.current-video-vidpart = null
+
 courseraInitialize = ->
   console.log 'coursera initialize'
+  $('#quizstream').append [
+    J(\.leftbar).css({width: \30%, height: \100%, float: \left}),
+    J(\.rightbar).css({width: \70%, height: \100%, float: \right}),
+    J(\div).css({clear: \both})
+  ]
+  idx = -1
+  for let vidname,vidinfo of root.video_info
+    console.log vidname
+    vidpart = vidinfo.parts.length - 1
+    idx += 1
+    video-selector = J('#videoselector_' + idx)
+      .data(\idx, idx)
+      .css {
+        cursor: \pointer
+        font-size: \16px
+        margin-bottom: \10px
+        #text-decoration: \underline
+      }
+      .mouseenter (evt) ->
+        $(this).css \text-decoration, \underline
+      .mouseleave (evt) ->
+        $(this).css \text-decoration, ''
+      .text(vidname.split('-').join('.') + ': ' + vidinfo.title)
+      .click (evt) ->
+        oldvidname = root.current-video-vidname
+        oldvidpart = root.current-video-vidpart
+        oldqnum = root.current-video-qnum
+        $(\.activevideoselect).removeClass \activevideoselect
+        $('#body_' + root.current-video-qnum).remove()
+        $('#outerbody_' + root.current-video-qnum).remove()
+        if root.current-video-vidname?
+          resetVideoBody root.current-video-vidname, root.current-video-vidpart
+        video-selector.addClass \activevideoselect
+        root.current-video-vidname = vidname
+        root.current-video-vidpart = vidpart
+        console.log vidname
+        newvideo = insertVideo vidname, vidpart, {nopart: true, quizzes: true}
+        $('.rightbar').append newvideo
+        root.current-video-qnum = getVideo(vidname, vidpart).data \qnum
+        addlog {
+          event: \switchvideo
+          vidname: vidname
+          vidpart: vidpart
+          oldvidname: oldvidname
+          oldvidpart: oldvidpart
+          qnum: root.current-video-qnum
+          oldqnum: oldqnum
+        }
+        playVideo()
+        #insertInVideoQuiz root.questions[0], vidname, vidpart
+    $('.leftbar').append video-selector
+  $('#videoselector_0').click()
+  #getlog (logs) ->
+  #  if logs? and logs.length > 0
+  #    root.logged-data = logs
+  #  ensureLoggedToServer(root.logged-data, 'logged-data')
+
 
 testExamInitialize = ->
   for question in root.questions
@@ -3138,7 +3283,7 @@ $(document).ready ->
   setKeyBindings()
   switch root.platform
   | 'quizcram' => quizCramInitialize()
-  | 'coursera' => courseraInitialize()
+  | 'invideo' => courseraInitialize()
   | 'exam' => testExamInitialize()
   | 'quiz' => testQuizInitialize()
   | _ => throw 'unknown platform name: ' + root.platform
