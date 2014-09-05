@@ -1,0 +1,14 @@
+#!/usr/bin/env python
+
+import json
+from subprocess import check_output, call
+
+outfile = 'mongoexport_' + check_output('date --rfc-3339=seconds', shell=True).strip().replace(' ', '_') + '.json'
+login = json.load(open('mongologin.json'))
+host = login['mongohost']
+db = login['mongodb']
+user = login['mongouser']
+passwd = login['mongopassword']
+
+call('mongoexport -h ' + host + ' -d ' + db + ' -u ' + user + ' -p ' + passwd + " -c logs -o '" + outfile + "'", shell=True)
+
