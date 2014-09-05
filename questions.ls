@@ -644,7 +644,7 @@ root.questions = [
   }
   {
     course: 2
-    text: 'Clostridial toxins such as Botox cut the Snare pin proteins'
+    text: 'Which of the following are true of Botox?'
     title: '2-2-3 Question 2'
     type: 'checkbox'
     options: [

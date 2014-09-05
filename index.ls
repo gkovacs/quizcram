@@ -2673,7 +2673,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
       (getButton qnum, \watch).click()
       percent-seen = getVideoProgress vidname, vidpart
       if percent-seen < 0.75
-        waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.1)
+        waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.25)
         hideButton qnum, \check
     body.append review-video-button
   insertNextQuestionButton = ->
@@ -3267,10 +3267,10 @@ courseraInitialize = ->
         #insertInVideoQuiz root.questions[0], vidname, vidpart
     $('.leftbar').append video-selector
   $('#videoselector_0').click()
-  #getlog (logs) ->
-  #  if logs? and logs.length > 0
-  #    root.logged-data = logs
-  #  ensureLoggedToServer(root.logged-data, 'logged-data')
+  getlog (logs) ->
+    if logs? and logs.length > 0
+      root.logged-data = logs
+    ensureLoggedToServer(root.logged-data, 'logged-data')
 
 
 testExamInitialize = ->
