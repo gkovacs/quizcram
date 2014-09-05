@@ -2990,9 +2990,16 @@ updateCourseName = root.updateCourseName = ->
 filterQuestions = root.filterQuestions = ->
   root.questions = switch root.coursename
   | 'neuro_1' =>
-    [x for x in root.questions when x.course.indexOf('1') != -1]
+    [x for x in root.questions when x.course == 1 or x.course == 'neuro_1']
   | 'neuro_2' =>
-    [x for x in root.questions when x.course.indexOf('2') != -1]
+    [x for x in root.questions when x.course == 2 or x.course == 'neuro_2']
+  | _ =>
+    throw 'unknown course: ' + root.coursename
+  root.exam_questions = switch root.coursename
+  | 'neuro_1' =>
+    [x for x in root.exam_questions when x.course == 1 or x.course == 'neuro_1']
+  | 'neuro_2' =>
+    [x for x in root.exam_questions when x.course == 2 or x.course == 'neuro_2']
   | _ =>
     throw 'unknown course: ' + root.coursename
 
@@ -3382,12 +3389,12 @@ $(document).ready ->
   downloadAndParseAllSubtitles()
   if root.platform == 'quizcram'
     createQuestionsForVideosWithoutQuizzes()
+  filterQuestions()
   if root.platform == 'exam'
     updateExamQuestions()
     root.questions = root.exam_questions
   else
     updateQuestions()
-  filterQuestions()
   if root.limit-numquestions != null
     root.questions = root.questions[0 til root.limit-numquestions]
     # this is incorrect - video_info is a dictionary not a list!

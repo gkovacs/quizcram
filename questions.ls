@@ -614,7 +614,7 @@ root.questions = [
       {
         name: '2-2-2'
         degree: 1.0
-        part: 1
+        part: 0
       }
     ]
   }
