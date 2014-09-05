@@ -162,6 +162,14 @@ app.get '/viewlogall', (req, res) ->
       res.send JSON.stringify(results)
       #db.close()
 
+get_portal = (req, res) ->
+  res.render 'portal', {}
+
+app.get '/portal', get_portal
+app.get '/portal.html', get_portal
+app.get '/front', get_portal
+app.get '/instructions', get_portal
+
 get_index = (req, res) ->
   res.render 'index', {}
 
