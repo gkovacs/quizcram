@@ -2318,7 +2318,7 @@ computeScoreFromHistory = (qnumhistory, scorehistory) ->
     for score in scorehistory[qnum]
       total += power * score
       divisor += power
-    power = power * 0.5
+    power = power * 0.25
   return total / divisor
 
 haveSeenQuestion = root.haveSeenQuestion = (qidx) ->
