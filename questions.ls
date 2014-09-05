@@ -526,7 +526,7 @@ root.questions = [
   }
   {
     course: 2
-    text: 'Action potentials are critical for carrying signals over long distances.'
+    text: 'Which of the following are true of sodium ions?'
     title: '2-1-3 Question 2'
     type: 'checkbox'
     options: [
