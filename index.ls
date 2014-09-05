@@ -2294,9 +2294,9 @@ getPartialScoreSelfRate = root.getPartialScoreSelfRate = (qnum) ->
   radioidx = getRadioValue(qnum)
   switch radioidx
   | 0 => 1.0 # perfectly understand
-  | 1 => 0.5 # somewhat understand
-  | 2 => 0.0 # do not understand
-  | _ => 0.5
+  | 1 => 0.75 # somewhat understand
+  | 2 => 0.5 # do not understand
+  | _ => 0.75
 
 getPartialScore = root.getPartialScore = (qnum) ->
   qidx = getQidx qnum
