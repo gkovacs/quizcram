@@ -2931,6 +2931,8 @@ millisecToDisplayable = (millisec) ->
 
 root.baseparams = null
 
+root.have-shown-done = false
+
 updateUrlBar = ->
   if not root.baseparams?
     pdict = {
@@ -2944,7 +2946,12 @@ updateUrlBar = ->
     if root.limit-numquestions
       pdict.numquestions = root.limit-numquestions
     root.baseparams = '?' + $.param pdict
-  elapsed = millisecToDisplayable(Date.now() - root.time-started)
+  millisecsElapsed = Date.now() - root.time-started
+  elapsed = millisecToDisplayable(millisecsElapsed)
+  if not root.have-shown-done and millisecsElapsed > 90 * 60 * 1000
+    root.have-shown-done = true
+    window.alert '90 minutes study time is over! Move on to the quiz!'
+    $('body').text '90 minutes study time is over! Move on to the quiz!'
   history.replaceState {}, '', root.baseparams + '#elapsed=' + elapsed
 
 updateUrlHash = root.updateUrlHash = ->

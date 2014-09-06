@@ -11,6 +11,10 @@ bodyParser = require 'body-parser'
 
 MongoClient = require(\mongodb).MongoClient
 
+root.isdevel = false
+if __dirname.indexOf('quizcram-development') != -1
+  root.isdevel = true
+
 getMongoDbReal = (callback) ->
   {mongourl} = JSON.parse(fs.readFileSync(\mongologin.json, \utf-8))
   #mongourl = 
@@ -35,7 +39,10 @@ getMongoDb = (callback) ->
 
 getLogsCollectionReal = (callback) ->
   getMongoDb (db) ->
-    callback db.collection('logs'), db
+    if root.isdevel
+      callback db.collection('logsdevel'), db
+    else
+      callback db.collection('logs'), db
 
 getLogsCollection = getLogsCollectionReal
 
@@ -275,6 +282,10 @@ app.get '/mkoverlay', (req, res) ->
     height: height
   }
 
-app.listen(8080, '0.0.0.0')
-console.log('Listening on port 8080')
+if root.isdevel
+  app.listen(8081, '0.0.0.0')
+  console.log('Listening on port 8081')
+else
+  app.listen(8080, '0.0.0.0')
+  console.log('Listening on port 8080')
 
