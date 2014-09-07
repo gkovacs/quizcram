@@ -80,9 +80,9 @@ createQuestionsForVideosWithoutQuizzes = ->
           needanswer: true
           selfrate: true
           options: [
-            'Perfectly understand'
-            'Somewhat understand'
-            'Do not understand'
+            'Understand the video'
+            'Somewhat unclear, would like to rewatch it later'
+            'Do not understand the video at all, would like to rewatch it soon'
           ]
           correct: 0
           explanation: 'some explanation'
