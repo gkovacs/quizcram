@@ -103,6 +103,26 @@ updateCondition = ->
   else if $.cookie('condition')?
     root.condition = parseInt($.cookie('condition'))
 
+gotoTarget = ->
+  url = switch getUrlParameters().target
+  | \poststudy1 =>
+    platform = getPlatformForUnitNum 0
+    whichhalf = 'First+half'
+    'https://docs.google.com/forms/d/1AcYedar8ZEmJ0UjGCCJ43pFvLSNsujgzdj0dIUMnXKk/viewform?entry.1110594938=' + whichhalf + '&entry.1656808541=' + platform
+  | \poststudy2 =>
+    platform = getPlatformForUnitNum 1
+    whichhalf = 'Second+half'
+    'https://docs.google.com/forms/d/1AcYedar8ZEmJ0UjGCCJ43pFvLSNsujgzdj0dIUMnXKk/viewform?entry.1110594938=' + whichhalf + '&entry.1656808541=' + platform
+  | \quiz1 =>
+    "https://docs.google.com/forms/d/1gOLtZuVO5HIuIgKAaYJMg91DyRKkZFbXgF8XFgtzibk/viewform"
+  | \exam1 =>
+    "https://docs.google.com/forms/d/1wToigTH9pglQApRf0g-t02134rRv9gvBJEaJfG31gsg/viewform"
+  | \quiz2 =>
+    "https://docs.google.com/forms/d/1h-CcxVTnXGNcZ5mYKLdcygYi92lNbJJEu9Uua6SsH2I/viewform"
+  | \exam2 =>
+    "https://docs.google.com/forms/d/1N78vFuHeoyBlwFdJfgk2PY9ATwnqRpe02_PZNusc32Y/viewform"
+  window.location.href = url
+
 $(document).ready ->
   hideQuizzes()
   console.log 'ready!'
@@ -118,6 +138,9 @@ $(document).ready ->
     return
   if [0, 1].indexOf(root.condition) == -1
     $('body').text 'need condition param, either 0 or 1'
+    return
+  if params.target?
+    gotoTarget()
     return
   updateUrlBar()
   for unitnum in [0, 1]
