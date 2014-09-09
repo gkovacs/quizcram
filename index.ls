@@ -2970,6 +2970,9 @@ updateUsername = ->
     if most-recent-username != root.username
       past-usernames.push {name: root.username, time: Date.now()}
       $.cookie 'usernames', JSON.stringify(past-usernames)
+  else if root.username?
+    past-usernames.push {name: root.username, time: Date.now()}
+    $.cookie 'usernames', JSON.stringify(past-usernames)
   else if not root.username?
     root.username = randomString(14)
     past-usernames.push {name: root.username, time: Date.now()}

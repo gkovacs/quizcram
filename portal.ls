@@ -88,16 +88,27 @@ updateUsername = ->
     if most-recent-username != root.username
       past-usernames.push {name: root.username, time: Date.now()}
       $.cookie 'usernames', JSON.stringify(past-usernames)
+  else if root.username?
+    past-usernames.push {name: root.username, time: Date.now()}
+    $.cookie 'usernames', JSON.stringify(past-usernames)
   else if not root.username?
     root.username = null #randomString(14)
     #past-usernames.push {name: root.username, time: Date.now()}
     #$.cookie 'usernames', JSON.stringify(past-usernames)
+
+updateCondition = ->
+  root.condition = parseInt(getUrlParameters().condition)
+  if root.condition? and isFinite(root.condition) and [0, 1].indexOf(root.condition) != -1
+    $.cookie 'condition', root.condition
+  else if $.cookie('condition')?
+    root.condition = parseInt($.cookie('condition'))
 
 $(document).ready ->
   hideQuizzes()
   console.log 'ready!'
   params = getUrlParameters()
   updateUsername()
+  updateCondition()
   setPreStudyUrl()
   if not isFirefox()
     $('body').text 'need to be using Firefox'
@@ -105,7 +116,6 @@ $(document).ready ->
   if not root.username?
     $('body').text 'need user param'
     return
-  root.condition = parseInt params.condition
   if [0, 1].indexOf(root.condition) == -1
     $('body').text 'need condition param, either 0 or 1'
     return
