@@ -2948,7 +2948,7 @@ updateUrlBar = ->
     root.baseparams = '?' + $.param pdict
   millisecsElapsed = Date.now() - root.time-started
   elapsed = millisecToDisplayable(millisecsElapsed)
-  if not root.have-shown-done and millisecsElapsed > 45 * 60 * 1000
+  if not root.have-shown-done and millisecsElapsed > 90 * 60 * 1000
     root.have-shown-done = true
     window.alert '90 minutes study time is over! Move on to the quiz!'
     $('body').text '90 minutes study time is over! Move on to the quiz!'
