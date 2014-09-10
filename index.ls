@@ -2673,7 +2673,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
       (getButton qnum, \watch).click()
       percent-seen = getVideoProgress vidname, vidpart
       if percent-seen < 0.75
-        waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.25)
+        waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.10)
         hideButton qnum, \check
     body.append review-video-button
   insertNextQuestionButton = ->
@@ -2948,7 +2948,7 @@ updateUrlBar = ->
     root.baseparams = '?' + $.param pdict
   millisecsElapsed = Date.now() - root.time-started
   elapsed = millisecToDisplayable(millisecsElapsed)
-  if not root.have-shown-done and millisecsElapsed > 90 * 60 * 1000
+  if not root.have-shown-done and millisecsElapsed > 45 * 60 * 1000
     root.have-shown-done = true
     window.alert '90 minutes study time is over! Move on to the quiz!'
     $('body').text '90 minutes study time is over! Move on to the quiz!'
