@@ -131,7 +131,7 @@ $(document).ready ->
   updateCondition()
   setPreStudyUrl()
   if not isFirefox()
-    $('body').text 'need to be using Firefox'
+    $('body').html 'Please view this page using <a href="http://www.mozilla.org/en-US/firefox">Firefox</a>'
     return
   if not root.username?
     $('body').text 'need user param'
