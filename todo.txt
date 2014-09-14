@@ -1,0 +1,15 @@
+move the intro video [1-1-1] so that it is a preview, watched before the others. remove associated supplementary quiz question (please watch the introductory video first, you will not be tested on it but it will help you understand the other lectures)
+
+remove video 1-3-3 neuronal uniqueness and associated question
+
+half 1: 1-2-1 [four functions] -> 1-3-4 [glial cells]
+half 2: 1-3-5 [myelin] -> 1-4-3 [brain tumors]
+
+question "A mutation that led to the degeneration of glial cells could result in which of the following?" is probably half 1, but could technically also be half 2
+
+write some supplementary questions for the brain tumors section
+
+more quizzes for the myelin part?
+
+ensure that the supplementary video questions are of equal density in both parts
+

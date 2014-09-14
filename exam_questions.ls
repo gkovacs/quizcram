@@ -3,6 +3,7 @@ root = exports ? this
 root.exam_questions = [
   {
     course: 1
+    half: 1
     text: 'Damage to the spinal cord could cause impairment of which of the following functions?'
     title: 'Question 1'
     type: 'checkbox'
@@ -19,7 +20,7 @@ root.exam_questions = [
     explanation: ''
     videos: [
       {
-        name: '1-2-1'
+        name: '1-2-2'
         degree: 1.0
         part: 0
       }
@@ -27,6 +28,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 1
     text: 'Damage to the brainstem could cause impairment of which of the following functions?'
     title: 'Question 2'
     type: 'checkbox'
@@ -43,7 +45,7 @@ root.exam_questions = [
     explanation: 'The brain stem is involved in all of the functions except for abstract functions.'
     videos: [
       {
-        name: '1-2-1'
+        name: '1-2-2'
         degree: 1.0
         part: 1
       }
@@ -51,6 +53,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 1
     text: 'Damage to the forebrain could cause impairment of which of the following functions?'
     title: 'Question 3'
     type: 'checkbox'
@@ -68,7 +71,7 @@ root.exam_questions = [
     explanation: 'The forebrain is involved in all of the listed functions'
     videos: [
       {
-        name: '1-2-1'
+        name: '1-2-2'
         degree: 1.0
         part: 2
       }
@@ -76,6 +79,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 1
     text: 'A mutation that led to the degeneration of glial cells could result in which of the following?'
     title: 'Question 4'
     type: 'checkbox'
@@ -92,7 +96,7 @@ root.exam_questions = [
     explanation: ''
     videos: [
       {
-        name: '1-2-2'
+        name: '1-3-4'
         degree: 1.0
         part: 0
       }
@@ -100,6 +104,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 2
     text: 'Which of the following are inside (underneath) the arachnoid layer?'
     title: 'Question 5'
     type: 'checkbox'
@@ -116,7 +121,7 @@ root.exam_questions = [
     explanation: ''
     videos: [
       {
-        name: '1-2-2'
+        name: '1-4-1'
         degree: 1.0
         part: 1
       }
@@ -124,6 +129,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 1
     text: 'Within a neuron, information flows in which direction(s)?'
     title: 'Question 6'
     type: 'checkbox'
@@ -140,7 +146,7 @@ root.exam_questions = [
     explanation: 'Information comes in through the dendrites, to the cell bodies, down the axon to the synaptic terminal.'
     videos: [
       {
-        name: '1-3-1'
+        name: '1-3-2'
         degree: 1.0
         part: 0
       }
@@ -148,6 +154,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 1
     text: 'Between neurons, information flows in which directions?'
     title: 'Question 7'
     type: 'checkbox'
@@ -173,6 +180,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 2
     text: 'There are no more than 100,000 motoneurons and yet these are the only neurons that:'
     title: 'Question 8'
     type: 'checkbox'
@@ -190,7 +198,7 @@ root.exam_questions = [
     explanation: ''
     videos: [
       {
-        name: '1-3-2'
+        name: '1-3-6'
         degree: 1.0
         part: 1
       }
@@ -198,6 +206,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 2
     text: 'Which of the following are true of myelin?'
     title: 'Question 9'
     type: 'checkbox'
@@ -214,7 +223,7 @@ root.exam_questions = [
     explanation: 'Myelin is wrapped around the axon of some neurons and increases the speed of action potential conduction.'
     videos: [
       {
-        name: '1-3-3'
+        name: '1-3-5'
         degree: 1.0
         part: 0
       }
@@ -222,6 +231,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 2
     text: 'An intracranial tumor is least likely to be made up of which type of cells?'
     title: 'Question 10'
     type: 'checkbox'
@@ -238,7 +248,7 @@ root.exam_questions = [
     explanation: 'Neurons are rarely the source of tumors because they are no longer able to divide.'
     videos: [
       {
-        name: '1-3-4'
+        name: '1-4-3'
         degree: 1.0
         part: 0
       }
@@ -246,6 +256,7 @@ root.exam_questions = [
   }
   {
     course: 1
+    half: 2
     text: 'You discover a new toxin which, like most toxins, is a large molecule that can reach peripheral neurons but cannot cross the meninges on its own. Which of the following symptoms may result from exposure to this toxin?'
     title: 'Question 11'
     type: 'checkbox'
@@ -262,7 +273,7 @@ root.exam_questions = [
     explanation: 'The toxin can only access neuronal cell bodies or synaptic terminals that are present peripherally. With an exception, the central nervous system will not be affected by the toxin. The exception is that motoneurons (that innervate skeletal muscle for volitional movement) and autonomic motor neurons (that innervate autonomic ganglia neurons which in turn innervate glands, cardiac or smooth muscle) may take up a toxin in the periphery and transport it back to the cell body that is located centrally. This happens with polio.'
     videos: [
       {
-        name: '1-3-5'
+        name: '1-4-2'
         degree: 1.0
         part: 0
       }
