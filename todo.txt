@@ -13,3 +13,12 @@ more quizzes for the myelin part?
 
 ensure that the supplementary video questions are of equal density in both parts
 
+current in-video quizzes have an implicit implication that the answer is to be found between the end of the previous in-video quiz (or the start of the video, if there was no previous in-video quiz), or . Although this is conceptually simple - each video segment is tested by only up to one quiz - it reduces the flexibility in writing questions, particularly those that cover multiple portions of the video.
+
+To give a concrete example, in the neurobiology course, there was a lecture on brain anatomy where . We wished to add an additional question about the forebrain, but .
+
+ we had a video about a general topic (brain anatomy), which covers the forebrain at the time interval 0:00 to 1:00, then the brainstem at the time interval 1:00 to 2:00. Suppose we have 2 questions we want to have students answer while watching the video: the first covers the forebrain (so it requires the student to have watched 0:00 to 1:00), then the second compares the forebrain and the brainstem (so it requires the student to have watched 0:00 to 2:00).
+
+Thus, the current in-video quiz model limits the flexibility in writing questions that cover overlapping content.
+
+

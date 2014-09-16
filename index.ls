@@ -1939,7 +1939,7 @@ showIsCorrect = (qnum, isCorrect, options) ->
   if isCorrect
     feedback.append J('b').css('color', 'green').text 'Correct'
     if not question.explanation? or question.explanation == '(see correct answers above)'
-      correcttext = 'Move on to the next video!'
+      correcttext = 'Move on to the next question!'
       if options.correcttext?
         correcttext = options.correcttext
       $("\#explanation_#qnum").text correcttext
@@ -2382,8 +2382,8 @@ getVideoScoreForQuestion = root.getVideoScoreForQuestion = (qidx) ->
 
 getMasteryScoreForQuestion = root.getMasteryScoreForQuestion = (qidx) ->
   # 1 = mastered (no need to review), 0 = haven't tried yet, null = should not attempt it at all
-  questionscore = getScoreForQuestion qidx # 0 = answered the worst, 1 = answered the best
-  recencyscore = (getRecencyScoreForQuestion qidx) * 1.5 # 0 = oldest, 1 = most recent
+  questionscore = getScoreForQuestion qidx * 1.5 # 0 = answered the worst, 1 = answered the best
+  recencyscore = (getRecencyScoreForQuestion qidx) # 0 = oldest, 1 = most recent
   videoscore = (getVideoScoreForQuestion qidx) * 0.5 # 0 = haven't watched any, 1 = watched 100%
   if qidx == 0 or haveSeenQuestion(qidx) or haveSeenQuestion(qidx - 1)
     return Math.max(0, Math.min(1, (questionscore + recencyscore + videoscore) / 3))
@@ -2471,13 +2471,17 @@ insertQuestion = root.insertQuestion = (question, options) ->
   if question.exam
     question-title = question.title
   else
-    question-title = vidname.split('-').join('.') + ' ' + root.video_info[vidname].title + ' – Question ' + (vidpart + 1)
-  body.append J('div').css({font-size: \24px, padding-top: \10px}).text question-title
-  body.append J('.questionscore_' + question.idx).css({
-    #float: \right
+    question-title = root.video_info[vidname].title + ', part ' + (vidpart + 1) + '/' + root.video_info[vidname].parts.length
+  question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length
+  question-subtitle-div = J('span').text question-subtitle
+  question-score-div = J('span.questionscore_' + question.idx).css({
+    float: \right
+    #text-align: \right
     #clear: \both
-    display: \none
-  }).text('Question Mastery Score:')
+    #display: \none
+  })#.text('Question Score:')
+  body.append J('div').css({font-size: \14px, padding-top: \10px, clear: \both}).append [ question-subtitle-div, question-score-div ]
+  body.append J('div').css({font-size: \24px, padding-top: \0px}).text question-title
   body.append J('div').text question.text
   optionsdiv = J("\#options_#qnum")
   for option,idx in question.options
@@ -3088,7 +3092,9 @@ updateMasteryScoreDisplay = root.updateMasteryScoreDisplay = (qidx) ->
   scoredisplay = $('.questionscore_' + qidx)
   if scoredisplay.length < 1
     return
-  scoredisplay.text 'Question Mastery Score:' + toPercent(getMasteryScoreForQuestion(qidx)) + '%'
+  questionscore = getScoreForQuestion qidx
+  if questionscore > 0
+    scoredisplay.text 'Question Mastery: ' + toPercent(questionscore) + '%'
 
 updateMasteryScoreDisplayProcess = ->
   setInterval ->
@@ -3389,6 +3395,8 @@ testQuizInitialize = ->
     ensureLoggedToServer(root.logged-data, 'logged-data')
 
 $(document).ready ->
+  root.questions = root.questions_extra
+  root.video_info = root.video_info_extra
   updateOptions()
   updateUsername()
   updateTimeStarted()

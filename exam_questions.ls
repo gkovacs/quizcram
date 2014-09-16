@@ -240,7 +240,7 @@ root.exam_questions = [
       'Arachnoid'
       'Pituitary cells'
       'Astrocytes'
-      'Glial cells are critical to brain development' #
+      'Neurons' #
     ]
     correct: [
       4
