@@ -1189,7 +1189,7 @@ insertVideo = (vidname, vidpart, options) ->
       text-align: \center
       pointer-events: \none
     }
-    .text 'here is the current subtitle text'
+    .text 'loading video and subtitles'
   subtitle-display-container.append subtitle-display
   #video.append subtitle-display
   #videodiv.append [video-header, video-skip, subtitle-display-container, video, video-footer]

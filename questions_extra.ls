@@ -141,7 +141,7 @@ root.questions_extra = [
     correct: [
       0, 1
     ]
-    explanation: 'Motor neurons are located in the brain stem and spinal cord'
+    explanation: 'Motor neurons in the brain stem move the face, mouth, and larynx, and are responsible for speech and swallowing. Motor neurons in the spinal cord move the arms and legs.'
     videos: [
       {
         name: '1-2-2'
@@ -690,6 +690,7 @@ root.questions_extra = [
     half: 2
     extra: true
     text: 'Which of the following are differences between the peripheral and central nervous systems?'
+    type: 'checkbox'
     options: [
       'The peripheral nervous system is more vulnerable to toxins and viruses' #
       'The central nervous system is more vulnerable to toxins and viruses'
@@ -713,6 +714,7 @@ root.questions_extra = [
     half: 2
     extra: true
     text: 'Which of the following are true of polio?'
+    type: 'checkbox'
     options: [
       'It is a virus' #
       'It is a toxin'
