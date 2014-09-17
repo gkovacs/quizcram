@@ -17,12 +17,12 @@ stringEach = (l) ->
 
 root.video_dependencies = {
   '1-1-1': []
-  '1-2-1': [ '1-1-1' ]
+  '1-2-1': []
   '1-2-2': [ '1-2-1' ]
   '1-3-1': [ '1-2-2' ]
   '1-3-2': [ '1-3-1' ]
-  '1-3-3': [ '1-3-2' ]
-  '1-3-4': [ '1-3-3' ]
+  '1-3-3': []
+  '1-3-4': []
   '1-3-5': [ '1-3-4' ]
   '1-3-6': [ '1-3-5' ]
   '1-4-1': [ '1-3-6' ]
@@ -2059,6 +2059,7 @@ playVideo = ->
   addlogvideo {
     event: \play
   }
+  hideInVideoQuizAndForward()
   video[0].play()
 
 root.playback-speed = '1.00'
@@ -2417,16 +2418,33 @@ showInVideoQuiz = root.showInVideoQuiz = (vidname, vidpart) ->
       quizvidpart: vidpart
     }
 
+hideInVideoQuizAndForward = root.hideInVideoQuizAndForward = ->
+  if root.platform == 'invideo'
+    quiz-overlay = $('.quizoverlay')
+    if quiz-overlay.filter(':visible').length == 0
+      return
+    quiz-overlay.hide()
+    quizvidname = quiz-overlay.data(\quizvidname)
+    quizvidpart = quiz-overlay.data(\quizvidpart)
+    root.most-recent-time-quiz-skipped[quizvidname + '_' + quizvidpart] = Date.now()
+    addlogvideo {
+      event: \quizhide
+      quizvidname
+      quizvidpart
+    }
+
 hideInVideoQuiz = root.hideInVideoQuiz = ->
   if root.platform == 'invideo'
     quiz-overlay = $('.quizoverlay')
     if quiz-overlay.filter(':visible').length == 0
       return
     quiz-overlay.hide()
+    quizvidname = quiz-overlay.data(\quizvidname)
+    quizvidpart = quiz-overlay.data(\quizvidpart)
     addlogvideo {
       event: \quizhide
-      quizvidname: quiz-overlay.data(\quizvidname)
-      quizvidpart: quiz-overlay.data(\quizvidpart)
+      quizvidname
+      quizvidpart
     }
 
 insertInVideoQuiz = root.insertInVideoQuiz = (question, video, vidpart) ->
@@ -2472,15 +2490,16 @@ insertQuestion = root.insertQuestion = (question, options) ->
     question-title = question.title
   else
     question-title = root.video_info[vidname].title + ', part ' + (vidpart + 1) + '/' + root.video_info[vidname].parts.length
-  question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length
-  question-subtitle-div = J('span').text question-subtitle
-  question-score-div = J('span.questionscore_' + question.idx).css({
-    float: \right
-    #text-align: \right
-    #clear: \both
-    #display: \none
-  })#.text('Question Score:')
-  body.append J('div').css({font-size: \14px, padding-top: \10px, clear: \both}).append [ question-subtitle-div, question-score-div ]
+  if root.platform == 'quizcram'
+    question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length
+    question-subtitle-div = J('span').text question-subtitle
+    question-score-div = J('span.questionscore_' + question.idx).css({
+      float: \right
+      #text-align: \right
+      #clear: \both
+      #display: \none
+    })#.text('Question Score:')
+    body.append J('div').css({font-size: \14px, padding-top: \10px, clear: \both}).append [ question-subtitle-div, question-score-div ]
   body.append J('div').css({font-size: \24px, padding-top: \0px}).text question-title
   body.append J('div').text question.text
   optionsdiv = J("\#options_#qnum")
@@ -3412,9 +3431,13 @@ testQuizInitialize = ->
       ensureLoggedToServer(root.logged-data, 'logged-data')
 
 $(document).ready ->
-  root.questions = root.questions_extra
-  root.video_info = root.video_info_extra
   updateOptions()
+  if root.platform == 'quizcram'
+    root.questions = root.questions_extra
+    root.video_info = root.video_info_extra
+  if root.platform == 'invideo'
+    root.questions = root.questions_std
+    root.video_info = root.video_info_std
   updateUsername()
   updateTimeStarted()
   updateCourseName()

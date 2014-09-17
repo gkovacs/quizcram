@@ -1,6 +1,6 @@
-move the intro video [1-1-1] so that it is a preview, watched before the others. remove associated supplementary quiz question (please watch the introductory video first, you will not be tested on it but it will help you understand the other lectures)
+[DONE] move the intro video [1-1-1] so that it is a preview, watched before the others. remove associated supplementary quiz question (please watch the introductory video first, you will not be tested on it but it will help you understand the other lectures)
 
-remove video 1-3-3 neuronal uniqueness and associated question
+[DONE] remove video 1-3-3 neuronal uniqueness and associated question
 
 half 1: 1-2-1 [four functions] -> 1-3-4 [glial cells]
 half 2: 1-3-5 [myelin] -> 1-4-3 [brain tumors]
