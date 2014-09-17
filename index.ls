@@ -1022,6 +1022,7 @@ insertVideo = (vidname, vidpart, options) ->
       padding-bottom: \2px
       margin-top: \0px
       margin-bottom: \0px
+      display: \none
     }
   #video-header.append J('h3').css(\color, \white).css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px).text fulltitle
   video-header.append J('span').css(\color, \white).css(\font-size, \24px).css(\pointer-events, \none).text fulltitle
@@ -1170,8 +1171,8 @@ insertVideo = (vidname, vidpart, options) ->
       border-radius: \15px
       color: \white
       font-size: \20px
-      top: \50px
-      left: \10px
+      top: \40px
+      left: \20px
       text-align: \center
       display: \none
       cursor: \pointer
@@ -2396,9 +2397,12 @@ getRecencyScoreForQuestion = root.getRecencyScoreForQuestion = (qidx) ->
   qcycle = root.question_recency_info[qidx].qcycle
   cur-qcycle = counterCurrent \qcycle
   cycles-since-seen = Math.min(root.questions.length, cur-qcycle - qcycle)
-  oldness-score = cycles-since-seen / root.questions.length
-  oldness-score = Math.max(0, Math.min(1, oldness-score))
-  return 1 - oldness-score
+  #oldness-score = cycles-since-seen / root.questions.length
+  #oldness-score = Math.max(0, Math.min(1, oldness-score))
+  #return 1 - oldness-score
+  if cycles-since-seen == 0
+    return 10
+  return 1.0 / cycles-since-seen
 
 getVideoScoreForQuestion = root.getVideoScoreForQuestion = (qidx) ->
   vidinfo = root.questions[qidx].videos[0]
@@ -2408,9 +2412,9 @@ getVideoScoreForQuestion = root.getVideoScoreForQuestion = (qidx) ->
 
 getMasteryScoreForQuestion = root.getMasteryScoreForQuestion = (qidx) ->
   # 1 = mastered (no need to review), 0 = haven't tried yet, null = should not attempt it at all
-  questionscore = getScoreForQuestion qidx * 1.5 # 0 = answered the worst, 1 = answered the best
-  recencyscore = (getRecencyScoreForQuestion qidx) # 0 = oldest, 1 = most recent
-  videoscore = (getVideoScoreForQuestion qidx) * 0.5 # 0 = haven't watched any, 1 = watched 100%
+  questionscore = (getScoreForQuestion qidx) * 1.5 # 0 = answered the worst, 1 = answered the best
+  recencyscore = (getRecencyScoreForQuestion qidx) * 0.5 # 0 = oldest, 1 = most recent
+  videoscore = (getVideoScoreForQuestion qidx) * 1.0 # 0 = haven't watched any, 1 = watched 100%
   if qidx == 0 or haveSeenQuestion(qidx) or haveSeenQuestion(qidx - 1)
     return Math.max(0, Math.min(1, (questionscore + recencyscore + videoscore) / 3))
   return null
@@ -2517,6 +2521,8 @@ insertQuestion = root.insertQuestion = (question, options) ->
     question-title = root.video_info[vidname].title + ', part ' + (vidpart + 1) + '/' + root.video_info[vidname].parts.length
   if root.platform == 'quizcram'
     question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length
+    if haveSeenQuestion(question.idx)
+      question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length + ' (review)'
     question-subtitle-div = J('span').text question-subtitle
     question-score-div = J('span.questionscore_' + question.idx).css({
       float: \right
@@ -3156,8 +3162,13 @@ updateMasteryScoreDisplay = root.updateMasteryScoreDisplay = (qidx) ->
   if scoredisplay.length < 1
     return
   questionscore = getScoreForQuestion qidx
+  videoprogress = getVideoScoreForQuestion qidx
+  #if questionscore > 0
+  #  scoredisplay.text 'Question Mastery: ' + toPercent(questionscore) + '%'
   if questionscore > 0
-    scoredisplay.text 'Question Mastery: ' + toPercent(questionscore) + '%'
+    scoredisplay.text(toPercent(questionscore) + '% correct, ' + toPercent(videoprogress) + '% seen')
+  else if videoprogress > 0.01
+    scoredisplay.text(toPercent(videoprogress) + '% seen')
 
 updateMasteryScoreDisplayProcess = ->
   setInterval ->

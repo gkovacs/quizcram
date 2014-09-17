@@ -216,6 +216,7 @@ root.video_info_extra = {
         start: '3:34'
         relstart: '0:13'
         #end: '4:51'
+        relend: '6:01'
         end: '6:09'
       }
     ]
@@ -227,16 +228,18 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
+        relstart: '0:13'
         end: '2:54'
         extra: true
       }
       {
         start: '2:54'
-        relstart: '0:00'
+        relstart: '0:13'
         end: '5:06'
       }
       {
         start: '5:06' # noquiz # inserted
+        relend: '5:31'
         end: '5:46'
         extra: true
       }
