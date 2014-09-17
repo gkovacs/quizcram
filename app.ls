@@ -17,14 +17,14 @@ if __dirname.indexOf('quizcram-development') != -1
 
 getMongoDbReal = (callback) ->
   {mongourl} = JSON.parse(fs.readFileSync(\mongologin.json, \utf-8))
-  #mongourl = 
   MongoClient.connect mongourl, {
     auto_reconnect: true
     poolSize: 20
     socketOptions: {keepAlive: 1}
   }, (err, db) ->
     if err
-      throw err
+      console.log 'error getting mongodb'
+      #throw err
     callback db
 
 #getMongoDb = getMongoDbReal

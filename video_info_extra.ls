@@ -7,13 +7,7 @@ root.video_info_extra = {
     title: 'The Four Functions'
     parts: [
       {
-        start: '0:00' # inserted
-        end: '0:44'
-        extra: true
-      }
-      {
-        start: '0:44'
-        relstart: '0:00'
+        start: '0:00'
         end: '2:40'
       }
       {
@@ -171,13 +165,7 @@ root.video_info_extra = {
     title: 'Meninges'
     parts: [
       {
-        start: '0:00' # inserted
-        end: '0:51'
-        extra: true
-      }
-      {
-        start: '0:51'
-        relstart: '0:00'
+        start: '0:00'
         end: '1:58'
       }
       {

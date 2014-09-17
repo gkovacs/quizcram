@@ -3,30 +3,6 @@ root = exports ? this
 root.questions_extra = [
   {
     course: 1
-    half : 1
-    extra: true
-    text: 'Which of the following are basic functions of the central nervous system?'
-    type: 'checkbox'
-    options: [
-      'Voluntary Movement' #
-      'Perception' #
-      'Homeostasis' #
-      'Abstract functions' #
-    ]
-    correct: [
-      0, 1, 2, 3
-    ]
-    explanation: '(see correct answers above)'
-    videos: [
-      {
-        name: '1-2-1'
-        degree: 1.0
-        part: 0
-      }
-    ]
-  }
-  {
-    course: 1
     half: 1
     extra: false
     text: 'Which of the following are voluntary movements?'
@@ -46,7 +22,7 @@ root.questions_extra = [
       {
         name: '1-2-1'
         degree: 1.0
-        part: 1
+        part: 0
       }
     ]
   }
@@ -71,7 +47,7 @@ root.questions_extra = [
       {
         name: '1-2-1'
         degree: 1.0
-        part: 2
+        part: 1
       }
     ]
   }
@@ -97,7 +73,7 @@ root.questions_extra = [
       {
         name: '1-2-1'
         degree: 1.0
-        part: 3
+        part: 2
       }
     ]
   }
@@ -123,7 +99,7 @@ root.questions_extra = [
       {
         name: '1-2-1'
         degree: 1.0
-        part: 4
+        part: 3
       }
     ]
   }
@@ -565,31 +541,6 @@ root.questions_extra = [
   {
     course: 1
     half: 2
-    extra: true
-    text: 'Which of the following are meningial layers?'
-    type: 'checkbox'
-    options: [
-      'Dura' #
-      'Arachnoid' #
-      'Pia' #
-      'Central nervous system'
-      'Peripheral nervous system'
-    ]
-    correct: [
-      0, 1, 2
-    ]
-    explanation: 'The 3 meningial layers are the Dura, Arachnoid, and Pia'
-    videos: [
-      {
-        name: '1-4-1'
-        degree: 1.0
-        part: 0
-      }
-    ]
-  }
-  {
-    course: 1
-    half: 2
     extra: false
     text: 'Which of the following are true about the meninges?'
     type: 'checkbox'
@@ -608,7 +559,7 @@ root.questions_extra = [
       {
         name: '1-4-1'
         degree: 1.0
-        part: 1
+        part: 0
       }
     ]
   }
@@ -633,7 +584,7 @@ root.questions_extra = [
       {
         name: '1-4-1'
         degree: 1.0
-        part: 2
+        part: 1
       }
     ]
   }
@@ -657,7 +608,7 @@ root.questions_extra = [
       {
         name: '1-4-1'
         degree: 1.0
-        part: 3
+        part: 2
       }
     ]
   }
@@ -681,7 +632,7 @@ root.questions_extra = [
       {
         name: '1-4-1'
         degree: 1.0
-        part: 4
+        part: 3
       }
     ]
   }

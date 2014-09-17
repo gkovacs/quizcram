@@ -3297,10 +3297,11 @@ courseraInitialize = ->
         #insertInVideoQuiz root.questions[0], vidname, vidpart
     $('.leftbar').append video-selector
   $('#videoselector_0').click()
-  getlog (logs) ->
-    if logs? and logs.length > 0
-      root.logged-data = logs
-    ensureLoggedToServer(root.logged-data, 'logged-data')
+  if not root.logging-disabled-globally
+    getlog (logs) ->
+      if logs? and logs.length > 0
+        root.logged-data = logs
+      ensureLoggedToServer(root.logged-data, 'logged-data')
 
 
 testExamInitialize = ->
@@ -3349,10 +3350,11 @@ testExamInitialize = ->
       partialscores: partialscores
     }
   $('#quizstream').append submit-button
-  getlog (logs) ->
-    if logs? and logs.length > 0
-      root.logged-data = logs
-    ensureLoggedToServer(root.logged-data, 'logged-data')
+  if not root.logging-disabled-globally
+    getlog (logs) ->
+      if logs? and logs.length > 0
+        root.logged-data = logs
+      ensureLoggedToServer(root.logged-data, 'logged-data')
 
 #randomizeChildrenOrder = (container) ->
 #  throw 'not implemented yet: randomizeChildrenOrder'
@@ -3403,10 +3405,11 @@ testQuizInitialize = ->
       partialscores: partialscores
     }
   $('#quizstream').append submit-button
-  getlog (logs) ->
-    if logs? and logs.length > 0
-      root.logged-data = logs
-    ensureLoggedToServer(root.logged-data, 'logged-data')
+  if not root.logging-disabled-globally
+    getlog (logs) ->
+      if logs? and logs.length > 0
+        root.logged-data = logs
+      ensureLoggedToServer(root.logged-data, 'logged-data')
 
 $(document).ready ->
   root.questions = root.questions_extra
