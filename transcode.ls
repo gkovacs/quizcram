@@ -18,6 +18,7 @@ createTranscodeTasksForVideos = (video_info) ->
         console.log filename + ' start: ' + start + ' end: ' + end
         console.log '============================================='
         transcodeIfNeeded(filename, start, end + 1, -> callback(null))
+  return tasks
 
 tasks = createTranscodeTasksForVideos(video_info) ++ createTranscodeTasksForVideos(video_info_std) ++ createTranscodeTasksForVideos(video_info_extra)
 

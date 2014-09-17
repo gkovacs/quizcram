@@ -187,7 +187,7 @@ app.get '/index.html', get_index
 
 spawn = require('child_process').spawn
 
-serverRootStatic = 'http://10.172.99.36:80/'
+serverRootStatic = 'http://educrowd.stanford.edu/'
 
 segmentVideo = (req, res) ->
   console.log 'segmentvideo'
@@ -197,10 +197,10 @@ segmentVideo = (req, res) ->
   start = toSeconds start
   end = toSeconds end
   transcodeIfNeeded video, start, end, (output_path) ->
-    switch getPlatform()
-    | 'osx' => res.sendFile(path.join(__dirname, output_path))
-    | _ => res.sendFile(path.join(__dirname, output_path))
-    #| _ => res.redirect(serverRootStatic + output_path)
+    #switch getPlatform()
+    #| 'osx' => res.sendFile(path.join(__dirname, output_path))
+    #| _ => res.sendFile(path.join(__dirname, output_path))
+    res.redirect(serverRootStatic + output_path.split('static/').join(''))
 
 app.get '/segmentvideo', segmentVideo
 #app.get '/segmentvideo*', segmentVideo

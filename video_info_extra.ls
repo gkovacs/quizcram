@@ -114,6 +114,7 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
+        relstart: '0:13'
         end: '2:19'
         extra: true
       }
@@ -124,7 +125,7 @@ root.video_info_extra = {
       }
       {
         start: '2:44' # shortened for this version
-        relstart: '0:00'
+        relstart: '0:13'
         relend: '3:14'
         #end: '3:47'
         end: '3:14'
