@@ -255,8 +255,8 @@ root.questions_extra = [
     options: [
       'It is also known as the soma' #
       'It is only present in neurons, not other cell types'
-      'It is the source of energy for the cell' #
-      'Makes proteins' #
+      'It is where energy is produced for the cell' #
+      'It is where proteins are made for the cell' #
       'Contains the nucleus and DNA' #
     ]
     correct: [

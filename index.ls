@@ -807,13 +807,30 @@ setHoverTickPercentage = root.setHoverTickPercentage = (vidname, vidpart, percen
         width: \5px
         top: \5%
         border-radius: \5px
-        border: '2px yellow'
-        background-color: \yellow
+        border: '2px rgba(0, 100, 255, 1.0)'
+        background-color: 'rgba(0, 100, 255, 1.0)'
         pointer-events: \none
       }
     progress-bar.append tick
   tick.css \left, toPercentCss(percentage)
   tick.show()
+
+setRelevantPortion = root.setRelevantPortion = (vidname, vidpart, startpercent, endpercent) ->
+  video = getVideo vidname, vidpart
+  progress-bar = video.find \.videoprogressbar
+  relevant-portion = J(\.tick.relevantportion)
+    .css {
+      position: \absolute
+      left: toPercentCss(startpercent)
+      width: toPercentCss(endpercent - startpercent)
+      #left: (startpercent * bar-width) + 'px'
+      #width: ((endpercent - startpercent) * bar-width) + 'px'
+      height: '10%'
+      top: '45%'
+      z-index: 1
+      background-color: 'yellow' #'rgba(50, 255, 50, 1.0)'
+    }
+  progress-bar.append relevant-portion
 
 setSeenIntervals = root.setSeenIntervals = (vidname, vidpart, intervals) ->
   video = getVideo vidname, vidpart
@@ -1123,7 +1140,8 @@ insertVideo = (vidname, vidpart, options) ->
       height: \10%
       left: \0%
       top: \45%
-      background-color: \white
+      z-index: 0
+      background-color: 'rgba(150, 150, 150, 1.0)'
     }
   time-indicator = J(\.timeindicator)
     .css {
@@ -1294,6 +1312,11 @@ insertVideo = (vidname, vidpart, options) ->
       #gotoNum target-qnum
       (getButton target-qnum, \watch).show()
   video-header.append close-button
+  #setRelevantPortion(vidname, vidpart, 0.0, 0.8)
+  relevant-portion-start = toSeconds root.video_info[vidname].parts[vidpart].relstart
+  relevant-portion-end = toSeconds root.video_info[vidname].parts[vidpart].relend
+  full-video-length = toSeconds root.video_info[vidname].parts[vidpart].end
+  setRelevantPortion(vidname, vidpart, relevant-portion-start / full-video-length, relevant-portion-end / full-video-length)
   if root.video_info[vidname].parts.length > 1
     if vidpart?
       for part-idx in [0 to vidpart]
@@ -3062,6 +3085,11 @@ updateVideos = root.updateVideos = ->
         vidinfo.course = 'neuro_2'
     if not vidinfo.srtfile?
       vidinfo.srtfile = vidname + '.srt'
+    for part in vidinfo.parts
+      if not part.relstart?
+        part.relstart = part.start
+      if not part.relend?
+        part.relend = part.end
 
 downloadAndParseSubtitle = root.downloadAndParseSubtitle = (srtfile, callback) ->
   $.get srtfile, (data) ->

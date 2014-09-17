@@ -8,6 +8,7 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00'
+        relstart: '0:13'
         end: '2:40'
       }
       {
@@ -20,6 +21,7 @@ root.video_info_extra = {
       }
       {
         start: '5:22' # noquiz # inserted
+        relend: '6:02'
         end: '6:15'
         extra: true
       }
@@ -32,12 +34,13 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
+        relstart: '0:13'
         end: '3:47'
         extra: true
       }
       {
         start: '3:47'
-        relstart: '0:00'
+        relstart: '2:08'
         end: '4:54'
       }
       {
@@ -46,6 +49,7 @@ root.video_info_extra = {
       }
       {
         start: '5:48' # noquiz # inserted
+        relend: '6:42'
         end: '6:56'
         extra: true
       }
@@ -58,12 +62,13 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
+        relstart: '0:13'
         end: '1:10'
         extra: true
       }
       {
         start: '1:10'
-        relstart: '0:00'
+        relstart: '0:58'
         relend: '2:01'
         end: '2:20'
       }
@@ -76,6 +81,7 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
+        relstart: '0:13'
         end: '1:01'
         extra: true
       }
@@ -91,7 +97,7 @@ root.video_info_extra = {
       }
       {
         start: '2:33'
-        relstart: '0:00'
+        relstart: '0:13'
         end: '2:57'
       }
       {
