@@ -156,12 +156,13 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
-        end: '0:50'
+        relstart: '0:13'
+        end: '1:33'
         extra: true
       }
       {
-        start: '0:50'
-        relstart: '0:00'
+        start: '1:33'
+        relstart: '0:13'
         relend: '2:51'
         end: '3:06'
       }
@@ -174,6 +175,7 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00'
+        relstart: '0:13'
         end: '1:58'
       }
       {
@@ -188,6 +190,7 @@ root.video_info_extra = {
       }
       {
         start: '4:02' # noquiz # inserted
+        relend: '5:31'
         end: '5:49'
         extra: true
       }
@@ -200,17 +203,18 @@ root.video_info_extra = {
     parts: [
       {
         start: '0:00' # inserted
-        end: '1:24'
+        relstart: '0:13'
+        end: '2:03'
         extra: true
       }
       {
-        start: '1:24' # inserted
+        start: '2:03' # inserted
         end: '3:34'
         extra: true
       }
       {
         start: '3:34'
-        relstart: '0:00'
+        relstart: '0:13'
         #end: '4:51'
         end: '6:09'
       }
