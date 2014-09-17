@@ -98,6 +98,8 @@ updateUsername = ->
 
 updateCondition = ->
   root.condition = parseInt(getUrlParameters().condition)
+  if not root.condition?
+    root.condition = prelude.sum([x.charCodeAt(0) for x in root.username]) % 2
   if root.condition? and isFinite(root.condition) and [0, 1].indexOf(root.condition) != -1
     $.cookie 'condition', root.condition
   else if $.cookie('condition')?

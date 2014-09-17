@@ -2997,10 +2997,10 @@ updateUrlBar = ->
     root.baseparams = '?' + $.param pdict
   millisecsElapsed = Date.now() - root.time-started
   elapsed = millisecToDisplayable(millisecsElapsed)
-  #if not root.have-shown-done and millisecsElapsed > 90 * 60 * 1000
-  #  root.have-shown-done = true
-  #  window.alert '90 minutes study time is over! Move on to the quiz!'
-  #  $('body').text '90 minutes study time is over! Move on to the quiz!'
+  if not root.have-shown-done and millisecsElapsed > 40 * 60 * 1000
+    root.have-shown-done = true
+    window.alert '40 minutes study time is over!'
+    #$('body').text '90 minutes study time is over! Move on to the quiz!'
   history.replaceState {}, '', root.baseparams + '#elapsed=' + elapsed
 
 updateUrlHash = root.updateUrlHash = ->
