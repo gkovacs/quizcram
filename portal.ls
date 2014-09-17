@@ -43,7 +43,8 @@ setPostStudyUrl = (unitnum) ->
   $('#poststudy' + unitnum).attr 'href', url
 
 setPreStudyUrl = ->
-  url = 'https://docs.google.com/forms/d/1kvJiqjf4J2bm9b4_ZFjUViMP74tAXL8OpIJTy24Uv64/viewform?entry.142775808=' + root.username
+  #url = 'https://docs.google.com/forms/d/1kvJiqjf4J2bm9b4_ZFjUViMP74tAXL8OpIJTy24Uv64/viewform?entry.142775808=' + root.username
+  url = 'https://docs.google.com/forms/d/1UIvXiC1kgci59J9lsWrTjDRthqysA6KoYLVklx2JZTs/viewform?entry.142775808=' + root.username
   $('#prestudy').text 'Pre-Study Questionnaire'
   $('#prestudy').attr 'href', url
 
