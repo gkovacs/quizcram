@@ -26,20 +26,20 @@ getPlatformForUnitNum = (unitnum) ->
 makeUrl = (unitnum) ->
   params = {
     user: root.username
-    course: 'neuro_' + (unitnum + 1)
+    #course: 'neuro_' + (unitnum + 1)
+    half: (unitnum + 1)
     platform: getPlatformForUnitNum(unitnum)
   }
-  return 'http://10.172.99.36:8080/?' + $.param(params)
+  return '/?' + $.param(params)
 
 root.study-time-for-unit = 90 * 60 * 1000
 
 setPostStudyUrl = (unitnum) ->
   platform = getPlatformForUnitNum unitnum
-  whichhalf = switch unitnum
-  | 0 => 'First+half'
-  | 1 => 'Second+half'
-  url = 'https://docs.google.com/forms/d/1AcYedar8ZEmJ0UjGCCJ43pFvLSNsujgzdj0dIUMnXKk/viewform?entry.1110594938=' + whichhalf + '&entry.1656808541=' + platform
-  $('#poststudy' + unitnum).text 'Post-Study Survey ' + (unitnum + 1)
+  url = switch unitnum
+  | 0 => 'https://docs.google.com/forms/d/1f3fHYPzUofCFrkEdIt0L4PuV7O4JtvkA26Q1nPUH4TU/viewform?entry.1047354409=' + root.username + '&entry.1656808541=' + platform
+  | 1 => 'https://docs.google.com/forms/d/1yKeFXh-Bqv7-nMA0Cdpfo6GUv9YLmjJ7EIWbalsCmsY/viewform?entry.1047354409=' + root.username + '&entry.1656808541=' + platform
+  $('#poststudy' + unitnum).text 'Post-Viewing Survey for part ' + (unitnum + 1)
   $('#poststudy' + unitnum).attr 'href', url
 
 setPreStudyUrl = ->
@@ -65,9 +65,6 @@ show1 = root.show1 = ->
 
 show2 = root.show2 = ->
   $('#quiz1').show()
-
-#updateCondition = ->
-#  root.condition = getUrlParameters().condition ? 
 
 updateUrlBar = ->
   params = {
@@ -98,12 +95,12 @@ updateUsername = ->
 
 updateCondition = ->
   root.condition = parseInt(getUrlParameters().condition)
-  if not root.condition?
-    root.condition = prelude.sum([x.charCodeAt(0) for x in root.username]) % 2
-  if root.condition? and isFinite(root.condition) and [0, 1].indexOf(root.condition) != -1
-    $.cookie 'condition', root.condition
-  else if $.cookie('condition')?
-    root.condition = parseInt($.cookie('condition'))
+  if not root.condition? or not isFinite(root.condition)
+    root.condition = require('prelude-ls').sum([x.charCodeAt(0) for x in root.username]) % 2
+  #if root.condition? and isFinite(root.condition) and [0, 1].indexOf(root.condition) != -1
+  #  $.cookie 'condition', root.condition
+  #else if $.cookie('condition')?
+  #  root.condition = parseInt($.cookie('condition'))
 
 gotoTarget = ->
   url = switch getUrlParameters().target
@@ -125,16 +122,36 @@ gotoTarget = ->
     "https://docs.google.com/forms/d/1N78vFuHeoyBlwFdJfgk2PY9ATwnqRpe02_PZNusc32Y/viewform"
   window.location.href = url
 
+toUserName = (fullname) ->
+  output = []
+  allowedletters = [\a to \z] ++ [\0 to \9]
+  for c in fullname
+    c = c.toLowerCase()
+    if allowedletters.indexOf(c) != -1
+      output.push c
+  return output.join('')
+
+submitname = root.submitname = ->
+  fullname = $('#nameinput').val()
+  username = toUserName fullname
+  params = getUrlParameters()
+  params.user = username
+  window.location = window.location.pathname + '?' + $.param(params)
+
 $(document).ready ->
   hideQuizzes()
   console.log 'ready!'
   params = getUrlParameters()
+  if not isFirefox()
+    $('#studycontents').html '<b>Please open this page using <a href="http://www.mozilla.org/en-US/firefox">Firefox</a> to do the study, it does not work on other browsers at the moment.</b>'
+    return
   updateUsername()
+  if not root.username?
+    $('#entername').show()
+    $('#studycontents').hide()
+    return
   updateCondition()
   setPreStudyUrl()
-  if not isFirefox()
-    $('body').html 'Please view this page using <a href="http://www.mozilla.org/en-US/firefox">Firefox</a>'
-    return
   if not root.username?
     $('body').text 'need user param'
     return
@@ -149,5 +166,5 @@ $(document).ready ->
     url = makeUrl unitnum
     platform = getPlatformForUnitNum unitnum
     setPostStudyUrl unitnum
-    $('#url' + unitnum).text(url).attr(\href, url)
+    $('#url' + unitnum).attr(\href, url)
     $('#cond' + unitnum).text platform

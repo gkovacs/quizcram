@@ -2412,11 +2412,11 @@ getVideoScoreForQuestion = root.getVideoScoreForQuestion = (qidx) ->
 
 getMasteryScoreForQuestion = root.getMasteryScoreForQuestion = (qidx) ->
   # 1 = mastered (no need to review), 0 = haven't tried yet, null = should not attempt it at all
-  questionscore = (getScoreForQuestion qidx) * 1.5 # 0 = answered the worst, 1 = answered the best
-  recencyscore = (getRecencyScoreForQuestion qidx) * 0.5 # 0 = oldest, 1 = most recent
-  videoscore = (getVideoScoreForQuestion qidx) * 1.0 # 0 = haven't watched any, 1 = watched 100%
+  questionscore = (getScoreForQuestion qidx) * 4.0 # 0 = answered the worst, 1 = answered the best
+  recencyscore = (getRecencyScoreForQuestion qidx) * 1.0 # 0 = oldest, 1 = most recent
+  videoscore = (getVideoScoreForQuestion qidx) * 2.0 # 0 = haven't watched any, 1 = watched 100%
   if qidx == 0 or haveSeenQuestion(qidx) or haveSeenQuestion(qidx - 1)
-    return Math.max(0, Math.min(1, (questionscore + recencyscore + videoscore) / 3))
+    return Math.max(0, Math.min(1, (questionscore + recencyscore + videoscore) / 7))
   return null
 
 updateRecencyInfo = root.updateRecencyInfo = (qnum) ->
@@ -3167,8 +3167,8 @@ updateMasteryScoreDisplay = root.updateMasteryScoreDisplay = (qidx) ->
   #  scoredisplay.text 'Question Mastery: ' + toPercent(questionscore) + '%'
   if questionscore > 0
     scoredisplay.text(toPercent(questionscore) + '% correct, ' + toPercent(videoprogress) + '% seen')
-  else if videoprogress > 0.01
-    scoredisplay.text(toPercent(videoprogress) + '% seen')
+  #else if videoprogress > 0.01
+  #  scoredisplay.text(toPercent(videoprogress) + '% seen')
 
 updateMasteryScoreDisplayProcess = ->
   setInterval ->
