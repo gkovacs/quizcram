@@ -1584,7 +1584,7 @@ initializeQuestion = ->
     skip: []
   }
 
-root.question_progress = [initializeQuestion() for x in root.questions]
+root.question_progress = null
 
 havePassedQuestion = (question) ->
   return question.correct.length > 0 or question.skip.length > 0
@@ -2941,7 +2941,8 @@ updateUrlBar = ->
   if not root.baseparams?
     pdict = {
       user: root.username
-      course: root.coursename
+      #course: root.coursename
+      half: root.halfnum
       platform: root.platform
       started: root.time-started
     }
@@ -3000,6 +3001,19 @@ updateCourseName = root.updateCourseName = ->
     root.coursename = 'neuro_1'
   if root.coursename == '2'
     root.coursename = 'neuro_2'
+
+updateHalfNum = root.updateHalfNum = ->
+  root.halfnum = getUrlParameters().halfnum ? getUrlParameters().half
+  if not root.halfnum?
+    root.halfnum = 1
+  else
+    root.halfnum = parseInt root.halfnum
+
+filterQuestionsByHalf = root.filterQuestionsByHalf = ->
+  root.questions = [x for x in root.questions when x.half == root.halfnum]
+
+filterVideosByHalf = root.filterVideosByHalf = ->
+  root.video_info = {[vidname, vidinfo] for vidname,vidinfo of root.video_info when vidinfo.half == root.halfnum}
 
 filterQuestions = root.filterQuestions = ->
   root.questions = switch root.coursename
@@ -3401,13 +3415,16 @@ $(document).ready ->
   updateUsername()
   updateTimeStarted()
   updateCourseName()
+  updateHalfNum()
   #updateUrlBar()
   updateVideos()
   filterVideos()
+  filterVideosByHalf()
   downloadAndParseAllSubtitles()
   if root.platform == 'quizcram'
     createQuestionsForVideosWithoutQuizzes()
   filterQuestions()
+  filterQuestionsByHalf()
   if root.platform == 'exam'
     updateExamQuestions()
     root.questions = root.exam_questions
@@ -3416,6 +3433,7 @@ $(document).ready ->
   if root.limit-numquestions != null
     root.questions = root.questions[0 til root.limit-numquestions]
     # this is incorrect - video_info is a dictionary not a list!
+  root.question_progress = [initializeQuestion() for x in root.questions]
   updateUrlBarProcess()
   setKeyBindings()
   switch root.platform

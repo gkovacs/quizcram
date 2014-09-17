@@ -788,8 +788,8 @@ root.questions_extra = [
     text: 'Which of the following are true of brain tumors?'
     type: 'checkbox'
     options: [
-      'Tumors that start outside the brain can spread to the brain'
-      'Intracranial tumors are problematic because they increase pressure within the skull'
+      'Tumors that start outside the brain can spread to the brain' #
+      'Intracranial tumors are problematic because they increase pressure within the skull' #
       'The most common type of brain tumor is a tumor of immortalized neurons'
       'Glial cells are post-mitotic and therefore do not become cancerous'
     ]
