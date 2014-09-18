@@ -143,6 +143,18 @@ submitname = root.submitname = ->
   params.user = username
   window.location = window.location.pathname + '?' + $.param(params)
 
+showquiz = root.showquiz = ->
+  $('#quizlater').hide()
+  $('#quizsection').show()
+  $('#q00').attr 'href', 'https://docs.google.com/forms/d/13jOTdfcGtcxdaCXp4SQSe3yW3MwFISQhowX8a3uKgHI/viewform?entry.1982045070=' + root.username
+  $('#q01').attr 'href', 'https://docs.google.com/forms/d/1zpkzXj9TF0hmGVNaQgc3gqUnRQJhjyJhm0D2FsFaeW0/viewform?entry.56085394=' + root.username
+  $('#q10').attr 'href', 'https://docs.google.com/forms/d/1mNZWkc-VGk0XjPKvH5be74NC1XyQlM2VxjKFYq1G7ic/viewform?entry.565234045=' + root.username
+  $('#q11').attr 'href', 'https://docs.google.com/forms/d/1F5DeOZYtN2w0O-mGi1nyU_s47ccgk5RcZWDd3nupQko/viewform?entry.565234045=' + root.username
+  $('#q20').attr 'href', 'https://docs.google.com/forms/d/1YxjqtoBldX1tH6fZlMNrtQwYzVb0sgRlb88GJM1TV0I/viewform?entry.894447393=' + root.username
+  $('#q21').attr 'href', 'https://docs.google.com/forms/d/1y4swiqx33sPFxjJ6Awnted-dJoAH2_oAqb-MtNme0NA/viewform?entry.894447393=' + root.username
+  $('#q30').attr 'href', 'https://docs.google.com/forms/d/1UANjvn-9pmDNPYYlvJcy1Id_ZbHUINrBq_AHktOC4Vc/viewform?entry.1893730634=' + root.username
+  $('#q31').attr 'href', 'https://docs.google.com/forms/d/1c8g43cDWAMlcfpM4eIlGrL1bHgIjj1cfu-9LYh1LaV8/viewform?entry.1827769055=' + root.username
+
 $(document).ready ->
   $('#nameinput').keydown (evt) ->
     if evt.keyCode == 13 # return / enter
@@ -181,4 +193,11 @@ $(document).ready ->
       return
     starttime = logs[0].time
     day2time = starttime + 1000 * 60 * 60 * 24 # + 24 hours
-    $('#quiztimedetails').text 'You started watching videos at ' + (new Date(starttime).toString()) + ' so you can take the exam at ' + (new Date(day2time).toString())
+    currenttime = Date.now()
+    #$('#quiztimedetails').text 'You started watching videos at ' + (new Date(starttime).toString()) + ' so you can take the quizzes at ' + (new Date(day2time).toString()) + ' it is currently ' + (new Date(currenttime).toString())
+    if day2time > currenttime
+      hoursleft = (day2time - currenttime) / (1000 * 60 * 60)
+      $('#quiztimedetails').text 'Please wait ' + hoursleft.toFixed(2) + ' hours, then revisit this page to do the quizzes'
+    else
+      showquiz()
+
