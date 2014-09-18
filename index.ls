@@ -2355,6 +2355,11 @@ computeScoreFromHistory = (qnumhistory, scorehistory) ->
     power = power * 0.25
   return total / divisor
 
+haveCorrectlyAnsweredQuestion = root.haveCorrectlyAnsweredQuestion = (qidx) ->
+  if root.question_recency_info[qidx]?
+    return true
+  return false
+
 haveSeenQuestion = root.haveSeenQuestion = (qidx) ->
   if root.question_scores[qidx]?
     return true
@@ -2422,7 +2427,7 @@ getMasteryScoreForQuestion = root.getMasteryScoreForQuestion = (qidx) ->
   questionscore = (getScoreForQuestion qidx) * 4.0 # 0 = answered the worst, 1 = answered the best
   recencyscore = (getRecencyScoreForQuestion qidx) * 1.0 # 0 = oldest, 1 = most recent
   videoscore = (getVideoScoreForQuestion qidx) * 2.0 # 0 = haven't watched any, 1 = watched 100%
-  if qidx == 0 or haveSeenQuestion(qidx) or haveSeenQuestion(qidx - 1)
+  if qidx == 0 or haveCorrectlyAnsweredQuestion(qidx) or haveCorrectlyAnsweredQuestion(qidx - 1)
     return Math.max(0, Math.min(1, (questionscore + recencyscore + videoscore) / 7))
   return null
 
@@ -2528,7 +2533,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
     question-title = root.video_info[vidname].title + ', part ' + (vidpart + 1) + '/' + root.video_info[vidname].parts.length
   if root.platform == 'quizcram'
     question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length
-    if haveSeenQuestion(question.idx)
+    if haveCorrectlyAnsweredQuestion(question.idx)
       question-subtitle = 'Question ' + (question.idx + 1) + ' of ' + root.questions.length + ' (review)'
     question-subtitle-div = J('span').text question-subtitle
     question-score-div = J('span.questionscore_' + question.idx).css({
@@ -3172,7 +3177,9 @@ updateMasteryScoreDisplay = root.updateMasteryScoreDisplay = (qidx) ->
   videoprogress = getVideoScoreForQuestion qidx
   #if questionscore > 0
   #  scoredisplay.text 'Question Mastery: ' + toPercent(questionscore) + '%'
-  if questionscore > 0
+  #if questionscore > 0
+  #if haveSeenQuestion(qidx)
+  if haveCorrectlyAnsweredQuestion(qidx)
     scoredisplay.text(toPercent(questionscore) + '% correct, ' + toPercent(videoprogress) + '% seen')
   #else if videoprogress > 0.01
   #  scoredisplay.text(toPercent(videoprogress) + '% seen')
