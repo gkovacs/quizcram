@@ -2,8 +2,13 @@
 
 import json
 from subprocess import check_output, call
+from os import path
 
-outfile = 'mongoexport_' + check_output('gdate --rfc-3339=seconds', shell=True).strip().replace(' ', '_') + '.json'
+datecmd = 'date'
+if path.exists('/usr/local/bin/gdate'):
+  datecmd = '/usr/local/bin/gdate'
+
+outfile = 'mongoexport_' + check_output(datecmd + ' --rfc-3339=seconds', shell=True).strip().replace(' ', '_') + '.json'
 login = json.load(open('mongologin.json'))
 host = login['mongohost']
 db = login['mongodb']
