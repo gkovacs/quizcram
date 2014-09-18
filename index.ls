@@ -4,6 +4,10 @@ J = $.jade
 
 {sum, reverse} = require \prelude-ls
 
+consolelog = (line) ->
+  #console.log line
+  return
+
 # Date.now = Date.now || -> +new Date
 
 stringEach = (l) ->
@@ -164,8 +168,6 @@ randomString = (length) ->
 
 getlog = root.getlog = (callback) ->
   $.getJSON '/viewlog?' + $.param({username: root.username}), (logs) ->
-    for line in logs
-      console.log JSON.stringify(line)
     callback logs
 
 postJSON = root.postJSON = (url, jsondata, callback) ->
@@ -197,7 +199,7 @@ ensureLoggedToServer = (list, name) ->
   if not name?
     name = randomString(14)
   if root.server-received-logidx[name]?
-    console.log 'already ensuring logged to server: ' + name
+    consolelog 'already ensuring logged to server: ' + name
     return
   root.server-received-logidx[name] = -1
   setInterval ->
@@ -336,12 +338,9 @@ decompressBinaryArray = (compressedData) ->
   return [parseInt(x) for x in uncompressed]
 
 sendVideoPartsSeen = root.sendVideoPartsSeen = ->
-  console.log 'sendVideoPartsSeen called!'
   to-be-sent = getVideoPartsSeenThatNeedToBeSentCompressed()
-  console.log 'parts sent: ' + JSON.stringify(Object.keys(to-be-sent))
   if Object.keys(to-be-sent).length == 0
     return
-  #console.log to-be-sent
   qnum = getCurrentQuestionQnum()
   qidx = getQidx qnum
   addlog {
@@ -549,7 +548,6 @@ setStartTime = root.setStartTime = (time, qnum) ->
   video[0].currentTime = time
 
 insertAfter = (qnum, contents) ->
-  console.log "insertAfter #qnum #contents"
   contents.insertAfter $("\#body_#qnum")
 
 seekVideoToPercent = (percent) ->
@@ -934,7 +932,6 @@ insertVideo = (vidname, vidpart, options) ->
     .data(\start, start)
     .data(\end, end)
   setVideoBody vidname, vidpart, body
-  console.log vidname
   basefilename = root.video_info[vidname].filename
   #fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: 0, end: end + 1, randpart: randomString(10)}
   fileurl = getVideoFileUrl(basefilename, 0, end + 1)
@@ -976,7 +973,7 @@ insertVideo = (vidname, vidpart, options) ->
     #.data('focused', true)
     .click (evt) ->
       fixVideoHeight $(this)
-      console.log 'mousedown video ' + qnum
+      consolelog 'mousedown video ' + qnum
       makeVideoActive qnum
       if not isVideoPlaying()
         playVideo()
@@ -1017,7 +1014,6 @@ insertVideo = (vidname, vidpart, options) ->
   #setInterval ->
   #  console.log $("\#video_#qnum")[0].currentTime
   #, 1000
-  console.log video
   video-header = J(\div)
     .css {
       width: \100%
@@ -1067,7 +1063,7 @@ insertVideo = (vidname, vidpart, options) ->
     }
     .attr 'title', 'play / pause video [shortcut: space key]'
     .click (evt) ->
-      console.log 'play button clicked'
+      consolelog 'play button clicked'
       makeVideoActive qnum
       playPauseVideo()
       #evt.preventDefault()
@@ -1102,7 +1098,7 @@ insertVideo = (vidname, vidpart, options) ->
     .attr 'title', 'speed up playback speed [shortcut: =/+ key]'
     .click (evt) ->
       makeVideoActive qnum
-      console.log 'faster button clicked'
+      consolelog 'faster button clicked'
       increasePlaybackSpeed video
   current-speed = J('span.currentspeed')
     .css {
@@ -1251,11 +1247,6 @@ insertVideo = (vidname, vidpart, options) ->
   if not options.novideoskip
     body.append video-skip
   if options.quizzes
-    console.log 'insertVideo options.quizzes is true!'
-    console.log 'vidpart is:'
-    console.log vidpart
-    console.log 'vidname is:'
-    console.log vidname
     for let vidpartidx in [0 to vidpart]
       question-for-quiz-overlay = getQuestionsForVideoPart(vidname, vidpartidx)
       if not question-for-quiz-overlay? or question-for-quiz-overlay.length < 1
@@ -1282,8 +1273,8 @@ insertVideo = (vidname, vidpart, options) ->
   if /*(vidpart? and vidpart > 0) or*/ (root.video_dependencies[vidname]? and root.video_dependencies[vidname].length > 0) and not options.noprevvideo
     #body.append J('button.btn.btn-primary.btn-lg').text("show related videos from earlier").click (evt) ->
     view-previous-video-button = J(\span.linklike)/*.css(\float, \left).css(\margin-left, \10px).css(\margin-top, \10px)*/.css({margin-left: \30px, font-size: \24px}).html('<span class="glyphicon glyphicon-step-backward"></span> previous video').click (evt) ->
-      console.log 'do not understand video'
-      console.log vidname
+      consolelog 'do not understand video'
+      consolelog vidname
       viewPreviousClip vidname, vidpart
       #showChildVideo qnum
       #dependencies = []
@@ -1438,7 +1429,7 @@ insertBefore = (qnum, content) ->
 insertReviewForQuestion = (qnum) ->
   body = getBody qnum
   qidx = getQidx qnum
-  console.log 'qidx is: ' + qidx
+  consolelog 'qidx is: ' + qidx
   question = root.questions[qidx]
   if question.videos?
     for vidinfo in question.videos
@@ -1472,7 +1463,7 @@ printStack = ->
     .replace(/^\s+at\s+/gm, '')
     .replace(/^Object.<anonymous>\s*\(/gm, '{anonymous}()@')
     .split('\n')
-  console.log stack
+  consolelog stack
 
 root.scroll-elem-idx = 0
 
@@ -1668,8 +1659,8 @@ getNextQuestion = ->
   scores.sort (a,b) ->
     return a.score - b.score
   new-qidx = scores[0].qidx
-  console.log 'new-qidx is: ' + new-qidx
-  console.log 'question is: ' + root.questions[new-qidx]
+  consolelog 'new-qidx is: ' + new-qidx
+  consolelog 'question is: ' + root.questions[new-qidx]
   return root.questions[new-qidx]
 
 interleavedConcat = (list1, list2) ->
@@ -2574,7 +2565,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
   quizvidpart = question.videos[0].part
   insertInVideoSubmitButton = ->
     body.append J('button.btn.btn-primary.btn-lg#submit_' + qnum).css('margin-right', '15px').html('<span class="glyphicon glyphicon-check"></span> submit answer').click (evt) ->
-      console.log 'in video submit button clicked'
+      consolelog 'in video submit button clicked'
       answers = getAnswerValue question.type, qnum
       isCorrect = isAnswerCorrect question, answers
       partialscore = getPartialScore qnum
@@ -2628,7 +2619,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
           }
   insertInVideoContinueButton = ->
     body.append J('button.btn.btn-primary.btn-lg#continue_' + qnum).css('margin-right', '15px').css('display', 'none').html('<span class="glyphicon glyphicon-forward"></span> continue').click (evt) ->
-      console.log 'in video continue button clicked'
+      consolelog 'in video continue button clicked'
       addlogvideo {
         event: \continue
         qidx: question.idx
@@ -2641,7 +2632,7 @@ insertQuestion = root.insertQuestion = (question, options) ->
       playVideo()
   insertInVideoSkipButton = ->
     body.append J('button.btn.btn-primary.btn-lg#skip_' + qnum).css('margin-right', '15px').html('<span class="glyphicon glyphicon-forward"></span> skip question').click (evt) ->
-      console.log 'in video skip button clicked'
+      consolelog 'in video skip button clicked'
       addlogvideo {
         event: \skip
         qidx: question.idx
@@ -2879,7 +2870,6 @@ replayLogs = root.replayLogs = (logs) ->
       continue
     if log.platform != root.platform
       continue
-    console.log 'replaying: ' + JSON.stringify(log)
     switch log.event
     | \insertquestion =>
       counterSet \qnum, log.qnum
@@ -2893,13 +2883,13 @@ replayLogs = root.replayLogs = (logs) ->
         decompressed = decompressBinaryArray compressedData
         root.video-parts-seen-server[vidname] = decompressed
         root.video-parts-seen[vidname] = decompressed[to]
-    | _ => console.log log
+    | _ => consolelog log
   root.replaying-logs = false
 
 replayLogsOrig = (logs) ->
   root.replaying-logs = true
   for log in logs
-    console.log 'replaying: ' + JSON.stringify(log)
+    consolelog 'replaying: ' + JSON.stringify(log)
     switch log.event
     | \insertquestion =>
       if log.qnum != 0 #if bodyExists(log.qnum)
@@ -2911,7 +2901,7 @@ replayLogsOrig = (logs) ->
     | \next => (getButton log.qnum, \next).click()
     | \checkbox => setOption \checkbox, log.qnum, log.optionidx, log.value
     | \radio => setOption \radio, log.qnum, log.optionidx, log.value
-    | _ => console.log(log)
+    | _ => consolelog(log)
   root.replaying-logs = false
 
 videoHeightFractionVisible = ->
@@ -3127,7 +3117,7 @@ downloadAndParseAllSubtitles = root.downloadAndParseAllSubtitles = ->
         vidinfo.subtitle = subs
         callback(null)
   async.series tasks, ->
-    console.log 'downloadAndParseAllSubtitles done!'
+    consolelog 'downloadAndParseAllSubtitles done!'
 
 updateQuestions = root.updateQuestions = ->
   for question,idx in root.questions
@@ -3143,10 +3133,10 @@ updateQuestions = root.updateQuestions = ->
       vidname = question.videos[0].name
       vidinfo = root.video_info[vidname]
       if not vidinfo?
-        console.log 'no vidinfo!'
-        console.log vidname
-        console.log idx
-        console.log question
+        consolelog 'no vidinfo!'
+        consolelog vidname
+        consolelog idx
+        consolelog question
       question.course = vidinfo.course
     */
 
@@ -3219,13 +3209,13 @@ setKeyBindings = ->
         skipToEndOfSeenPortion $(\.activevideo).data(\qnum)
         playVideo()
       | 32 => playPauseVideo() # space
-      | _ => console.log key; return true
+      | _ => consolelog key; return true
       evt.preventDefault()
       return false
 
 quizCramInitialize = ->
   updateMasteryScoreDisplayProcess()
-  console.log 'ready'
+  consolelog 'ready'
   fixVideoHeightProcess()
   #questionAlwaysShownProcess()
   /*
@@ -3309,7 +3299,7 @@ quizCramInitialize = ->
     getlog (logs) ->
       if logs? and logs.length > 0
         root.logging-disabled = true
-        console.log 'replaying logs!'
+        consolelog 'replaying logs!'
         root.logged-data = logs
         replayLogs(logs)
         root.logging-disabled = false
@@ -3329,7 +3319,7 @@ courseraInitialize = ->
   ]
   idx = -1
   for let vidname,vidinfo of root.video_info
-    console.log vidname
+    consolelog vidname
     vidpart = vidinfo.parts.length - 1
     idx += 1
     video-selector = J('#videoselector_' + idx)
@@ -3357,7 +3347,7 @@ courseraInitialize = ->
         video-selector.addClass \activevideoselect
         root.current-video-vidname = vidname
         root.current-video-vidpart = vidpart
-        console.log vidname
+        consolelog vidname
         newvideo = insertVideo vidname, vidpart, { nopart: true, quizzes: true, noprevvideo: true, noprogressdisplay: true, novideoskip: true }
         $('.rightbar').append newvideo
         root.current-video-qnum = getVideo(vidname, vidpart).data \qnum
@@ -3385,7 +3375,6 @@ testExamInitialize = ->
   for question in root.questions
     if question.selfrate
       continue
-    console.log JSON.stringify(question)
     insertQuestion question, {immediate: true, novideo: true, append: true, nobuttons: true, nocontainer: true}
   #randomizeChildrenOrder $('#quizstream')
   submit-button = J('button.btn.btn-primary.btn-lg#submitquiz').html('<span class="glyphicon glyphicon-check"></span> Submit Quiz').click (evt) ->

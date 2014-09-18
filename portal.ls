@@ -48,6 +48,10 @@ setPreStudyUrl = ->
   $('#prestudy').text 'Pre-Study Questionnaire'
   $('#prestudy').attr 'href', url
 
+getlog = root.getlog = (callback) ->
+  $.getJSON '/viewlog?' + $.param({username: root.username}), (logs) ->
+    callback logs
+
 isFirefox = ->
   return navigator.userAgent.search('Firefox') != -1
 
@@ -171,3 +175,10 @@ $(document).ready ->
     setPostStudyUrl unitnum
     $('#url' + unitnum).attr(\href, url)
     $('#cond' + unitnum).text platform
+  getlog (logs) ->
+    #console.log 'get logs: ' + JSON.stringify(logs)
+    if not logs? or logs.length < 1
+      return
+    starttime = logs[0].time
+    day2time = starttime + 1000 * 60 * 60 * 24 # + 24 hours
+    $('#quiztimedetails').text 'You started watching videos at ' + (new Date(starttime).toString()) + ' so you can take the exam at ' + (new Date(day2time).toString())

@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mongoimport --db quizcram --collection logs $1

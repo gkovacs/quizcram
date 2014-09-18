@@ -3,7 +3,7 @@
 import json
 from subprocess import check_output, call
 
-outfile = 'mongoexport_' + check_output('gdate --rfc-3339=seconds', shell=True).strip().replace(' ', '_') + '.json'
+outfile = 'mongoexportlocal_' + check_output('gdate --rfc-3339=seconds', shell=True).strip().replace(' ', '_') + '.json'
 login = json.load(open('mongologin.json'))
 host = login['mongohost']
 db = login['mongodb']
