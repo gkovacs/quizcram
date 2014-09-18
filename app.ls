@@ -16,7 +16,7 @@ if __dirname.indexOf('quizcram-development') != -1
   root.isdevel = true
 
 getMongoDbReal = (callback) ->
-  {mongourl} = JSON.parse(fs.readFileSync(\mongologin.json, \utf-8))
+  {mongourl} = JSON.parse(fs.readFileSync(\mongologinlocal.json, \utf-8))
   MongoClient.connect mongourl, {
     auto_reconnect: true
     poolSize: 20
