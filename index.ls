@@ -251,6 +251,8 @@ addlog = root.addlog = (logdata) ->
     data.username = root.username
   if not data.course?
     data.course = root.coursename
+  if not data.halfnum?
+    data.halfnum = root.halfnum
   if not data.platform?
     data.platform = root.platform
   if not data.time?
@@ -3053,6 +3055,7 @@ updateTimeStarted = ->
     root.time-started = Date.now()
 
 root.coursename = null
+root.halfnum = null
 root.platform = 'quizcram'
 
 updateCourseName = root.updateCourseName = ->

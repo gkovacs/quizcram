@@ -496,7 +496,7 @@ root.questions_extra = [
     type: 'checkbox'
     options: [
       'It is a demyelinating disease in the Central Nervous System' #
-      'It is a demyelinating disesase in the Peripheral Nervous System'
+      'It is a demyelinating disease in the Peripheral Nervous System'
       'Is it a disorder of the Olgiodendrocytes' #
       'It is a disorder of the Schwann cells'
     ]
