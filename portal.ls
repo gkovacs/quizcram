@@ -140,7 +140,9 @@ submitname = root.submitname = ->
   window.location = window.location.pathname + '?' + $.param(params)
 
 $(document).ready ->
-  hideQuizzes()
+  $('#nameinput').keydown (evt) ->
+    if evt.keyCode == 13 # return / enter
+      submitname()
   console.log 'ready!'
   params = getUrlParameters()
   if not isFirefox()

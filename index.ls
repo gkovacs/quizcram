@@ -665,6 +665,12 @@ getQnumOfPanelAbove = root.getQnumOfPanelAbove = (qnum) ->
 removeAllVideos = root.removeAllVideos = ->
   $('.videopanel').remove()
 
+getVideoFileUrl = (video, start, end) ->
+  video_base = video.split('.')[0]
+  video_path = video
+  output_file = video_base + '_' + start + '_' + end + '.webm'
+  return 'http://educrowd.stanford.edu/' + output_file
+
 fixVideoHeight = root.fixVideoHeight = (video) ->
   if video.length < 1
     return
@@ -928,7 +934,8 @@ insertVideo = (vidname, vidpart, options) ->
   setVideoBody vidname, vidpart, body
   console.log vidname
   basefilename = root.video_info[vidname].filename
-  fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: 0, end: end + 1, randpart: randomString(10)}
+  #fileurl = '/segmentvideo?video=' + basefilename + '&' + $.param {start: 0, end: end + 1, randpart: randomString(10)}
+  fileurl = getVideoFileUrl(basefilename, 0, end + 1)
   title = root.video_info[vidname].title
   # {filename, title} = root.video_info[vidinfo.name]
   fulltitle = title
