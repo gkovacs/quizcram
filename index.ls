@@ -2013,6 +2013,8 @@ hideAnswer = root.hideAnswer = (qnum) ->
   enableAnswerOptions qnum
   scrambleAnswerOptions qnum
 
+root.forcedreview = false
+
 showAnswer = root.showAnswer = (qnum) ->
   qidx = getQidx qnum
   question = root.questions[qidx]
@@ -2032,6 +2034,8 @@ showAnswer = root.showAnswer = (qnum) ->
   vidname = question.videos[0].name
   vidpart = question.videos[0].part
   showButton qnum, \review
+  if root.platform == \quizcram
+    root.forcedreview = true
   hideButton qnum, \watch
   updateWatchButtonProgress(vidname, vidpart)
   disableAnswerOptions qnum
@@ -2075,13 +2079,26 @@ root.currentQuestionQnum = 0
 getCurrentQuestionQnum = root.getCurrentQuestionQnum = ->
   root.currentQuestionQnum
 
-playVideo = ->
-  resetIfNeeded getCurrentQuestionQnum()
+playVideo = root.playVideo = ->
+  qnum = getCurrentQuestionQnum()
+  resetIfNeeded qnum
   video = $('.activevideo')
   if video.length < 1
     return
   if not video[0].paused
     return
+  videopanel = getVideoPanel video
+  vidname = videopanel.data \vidname
+  vidpart = videopanel.data \vidpart
+  console.log 'vidname played:' + vidname + ' vidpart: ' + vidpart
+  console.log 'forcedreivew:' + forcedreview
+  if root.platform == \quizcram and root.forcedreview
+    root.forcedreview = false
+    percent-seen = getVideoProgress vidname, vidpart
+    console.log 'percent-seen:' + percent-seen
+    if percent-seen < 0.75
+      waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.10)
+      hideButton qnum, \check
   addlogvideo {
     event: \play
   }
@@ -2728,12 +2745,8 @@ insertQuestion = root.insertQuestion = (question, options) ->
       setDefaultButton watch-video-button
     body.append watch-video-button
   insertReviewVideoButton = ->
-    review-video-button = J('button.btn.btn-primary.btn-lg#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').css(\width, \100%).html('<span class="glyphicon glyphicon-play"></span> review video before answering again').click (evt) ->
+    review-video-button = J('button.btn.btn-primary.btn-lg.reviewbutton#review_' + qnum).addClass('review_' + vidnamepart).css(\display, \none).css('margin-right', '15px').css(\width, \100%).html('<span class="glyphicon glyphicon-play"></span> review video before answering again').click (evt) ->
       (getButton qnum, \watch).click()
-      percent-seen = getVideoProgress vidname, vidpart
-      if percent-seen < 0.75
-        waitBeforeAnswering qnum, Math.min(0.75, percent-seen + 0.10)
-        hideButton qnum, \check
     body.append review-video-button
   insertNextQuestionButton = ->
     body.append J('button.btn.btn-primary.btn-lg#next_' + qnum).css(\display, \none).css('margin-right', '15px').css(\width, \100%)/*.attr('disabled', true)*/.html('<span class="glyphicon glyphicon-forward"></span> next video').click (evt) ->
