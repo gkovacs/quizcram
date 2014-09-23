@@ -1176,8 +1176,8 @@ insertVideo = (vidname, vidpart, options) ->
       border-radius: \15px
       color: \white
       font-size: \20px
-      top: \40px
-      left: \20px
+      top: \10px
+      left: \10px
       text-align: \center
       display: \none
       cursor: \pointer
@@ -1259,7 +1259,7 @@ insertVideo = (vidname, vidpart, options) ->
           position: \absolute
           left: \0px
           right: \0px
-          top: \40px
+          top: \0px
           bottom: \40px
           border: '3px solid black'
           display: \none
