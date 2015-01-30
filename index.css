@@ -1,0 +1,25 @@
+body {
+  background-color: #add8e6;
+}
+.linklike {
+  color: #add8e6;
+}
+.linklike:hover {
+  cursor: pointer;
+  cursor: hand;
+  text-decoration: underline;
+}
+hr.vspace {
+  visibility: hidden;
+  margin-bottom: -1px;
+  margin: 0px;
+}
+.noafter:after {
+  content: '';
+}
+.nobefore:before {
+  content: '';
+}
+.activevideoselect {
+  font-weight: bold;
+}

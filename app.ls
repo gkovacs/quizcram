@@ -16,7 +16,9 @@ if __dirname.indexOf('quizcram-development') != -1
   root.isdevel = true
 
 getMongoDbReal = (callback) ->
-  {mongourl} = JSON.parse(fs.readFileSync(\mongologinlocal.json, \utf-8))
+  mongourl = process.env.MONGOHQ_URL ? process.env.MONGOLAB_URI ? process.env.MONGOSOUP_URL
+  if not mongourl?
+    {mongourl} = JSON.parse(fs.readFileSync(\mongologinlocal.json, \utf-8))
   MongoClient.connect mongourl, {
     auto_reconnect: true
     poolSize: 20
@@ -188,6 +190,7 @@ app.get '/index.html', get_index
 spawn = require('child_process').spawn
 
 serverRootStatic = 'http://educrowd.stanford.edu/'
+#serverRootStatic = 'http://quizcramvideo.herokuapp.com/file/static/'
 
 segmentVideo = (req, res) ->
   console.log 'segmentvideo'
@@ -282,10 +285,12 @@ app.get '/mkoverlay', (req, res) ->
     height: height
   }
 
+portnum = 8080
 if root.isdevel
-  app.listen(8081, '0.0.0.0')
-  console.log('Listening on port 8081')
-else
-  app.listen(8080, '0.0.0.0')
-  console.log('Listening on port 8080')
+  portnum = 8081
+if process.env.PORT?
+  portnum = process.env.PORT
+
+app.listen portnum, '0.0.0.0'
+console.log 'Listening on port ' + portnum
 

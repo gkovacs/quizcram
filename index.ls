@@ -670,6 +670,7 @@ getVideoFileUrl = (video, start, end) ->
   video_path = video
   output_file = video_base + '_' + start + '_' + end + '.webm'
   return 'http://educrowd.stanford.edu/' + output_file
+  #return 'http://quizcramvideo.herokuapp.com/file/static/' + output_file
 
 fixVideoHeight = root.fixVideoHeight = (video) ->
   if video.length < 1
